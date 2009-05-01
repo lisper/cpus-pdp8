@@ -1,7 +1,7 @@
 // PDP-8 i/o
 // Based on descriptions in "Computer Engineering"
 // Dev 2006 Brad Parker brad@heeltoe.com
-//
+// Revamp 2009 Brad Parker brad@heeltoe.com
 
 /*
  iot's touched by focal
@@ -184,13 +184,12 @@ will process the information.
  */
 
 
-module pdp8_io(clk, reset_n, iot, state, pc, ac, mb,
-	       io_select,
-	       io_data_out, io_data_avail, io_interrupt, io_skip, io_clear_ac);
+module pdp8_io(clk, reset, iot, state, mb,
+	       io_data_in, io_data_out, io_select,
+	       io_data_avail, io_interrupt, io_skip);
    
-   input clk, reset_n, iot;
-   input [11:0] pc;
-   input [11:0] ac;
+   input clk, reset, iot;
+   input [11:0] io_data_in;
    input [11:0]      mb;
    input [3:0] 	     state;
    input [5:0] 	     io_select;
@@ -199,7 +198,6 @@ module pdp8_io(clk, reset_n, iot, state, pc, ac, mb,
    output reg 	     io_data_avail;
    output reg 	     io_interrupt;
    output reg 	     io_skip;
-   output reg 	     io_clear_ac;
    
    
    reg 		     rx_int, tx_int;
@@ -223,89 +221,143 @@ module pdp8_io(clk, reset_n, iot, state, pc, ac, mb,
    parameter 	     E3 = 4'b1011;
 
 
-   parameter PCA = 12'o4000;	// photocell status
-   parameter DRE = 12'o2000;	// data req enable
-   parameter WLS = 12'o1000;	// write lock status
-   parameter EIE = 12'o0400;	// error int enable
-   parameter PIE = 12'o0200;	// photocell int enb
-   parameter CIE = 12'o0100;	// done int enable
-   parameter MEX = 12'o0070;	// memory extension
-   parameter DRL = 12'o0004;	// data late error
-   parameter NXD = 12'o0002;	// non-existent disk
-   parameter PER = 12'o0001;	// parity error
+   parameter PCA_bit = 12'o4000;	// photocell status
+   parameter DRE_bit = 12'o2000;	// data req enable
+   parameter WLS_bit = 12'o1000;	// write lock status
+   parameter EIE_bit = 12'o0400;	// error int enable
+   parameter PIE_bit = 12'o0200;	// photocell int enb
+   parameter CIE_bit = 12'o0100;	// done int enable
+   parameter MEX_bit = 12'o0070;	// memory extension
+   parameter DRL_bit = 12'o0004;	// data late error
+   parameter NXD_bit = 12'o0002;	// non-existent disk
+   parameter PER_bit = 12'o0001;	// parity error
 
+   wire      ADC;
+   wire      DCF;
+   reg [11:0] DMA;
+   reg [7:0]  EMA;
+   reg 	      PEF;
+   reg       rf08_rw;
+   reg       rf08_start_io;
+   reg 	      CIE, DRE, DRL, EIE, MEX, NXD, PCA, PER, PIE, WLS;
+   
+   assign    DCF = 1'b0;
+   assign    ADC = DMA == /*DWA??*/0;
 
-   always @(state)
+   // combinatorial
+   always @(state or
+	    rx_int or tx_int or
+	    ADC or DRL or PER or WLS or NXD or DCF)
      begin
-	case (state)
+	// sampled during f1
+	io_skip = 0;
+	io_data_out = io_data_in;
+	io_data_avail = 1;
+	
+	if (state == F0 && iot)
+	  case (io_select)
+	    6'o03:
+	      begin
+		 if (mb[0])
+		   io_skip = rx_int;
+
+		 if (mb[2])
+		   io_data_out = rx_data;
+	      end
+	    
+	    6'o04:
+	      if (mb[0])
+		io_skip = tx_int;
+
+	    6'o60:
+	      case (mb[2:0])
+		3'o03: // DMAR
+		  io_data_out = 0;
+		3'o03: // DMAW
+		  io_data_out = 0;
+	      endcase
+
+	    6'o61:
+	      case (mb[2:0])
+		3'o2: // DSAC
+		  if (ADC)
+		    begin
+		       io_skip = 1;
+		       io_data_out = 0;
+		    end
+		3'o6: // DIMA
+		  io_data_out = { PCA, DRE,WLS,EIE, PIE,CIE,MEX, DRL,NXD,PER };
+		3'o5: // DIML
+		  io_data_out = 0;
+		
+	      endcase
+	    
+	    6'o62:
+	      case (mb[2:0])
+		3'o1: // DFSE
+		  if (DRL | PER | WLS | NXD)
+		    io_skip = 1;
+		3'o2: // ???
+		  if (DCF)
+		    io_skip = 1;
+		3'o3: // DISK
+		  if (DRL | PER | WLS | NXD | DCF)
+		    io_skip = 1;
+		3'o6: // DMAC
+		  io_data_out = DMA;
+	      endcase 
+
+	    6'o64:
+	      case (mb[2:0])
+		3: // DXAL
+		  io_data_out = 0;
+		5: // DXAC
+		  io_data_out = EMA;
+	      endcase
+	    
+	  endcase // case(io_select)
+     end
+   
+
+   //
+   // registers
+   //
+   always @(posedge clk)
+     if (reset)
+       begin
+       end
+     else
+       case (state)
 	  F0:
 	    begin
 	       // sampled during f1
-	       io_skip <= 0;
 	       io_data_avail <= 0;
-	       io_clear_ac <= 0;
 	       
 	       if (iot)
 		 case (io_select)
-		   6'o03:
-		     if (mb[0])
-		       io_skip <= rx_int;
-
-		   6'o04:
-		     if (mb[0])
-		       begin
-			   $display("tsf; tx_int %b, pc %o", tx_int, pc);
-			   io_skip <= tx_int;
-		       end
-
 		   6'o60: // DCMA
 		     if (mb[2:0] == 3'b001)
 		       begin
 			  DMA <= 0;
-			  PEF < = 0;
+			  PEF <= 0;
 			  DRL <= 0;
 		       end
 		   6'o61:
 		     case (mb[2:0])
-n		       3'o1: // DCIM
+		       3'o1: // DCIM
 			 begin
 			    CIE <= 0;
 			    EMA <= 0;
 			 end
 		       3'o2: // DSAC
-// xxx
-assign ADC = DMA == DWA;
-		       
 			 begin
-			    if (ADC)
-			      begin
-				 io_skip <= 1;
-				 io_clear_ac <= 1;
-			      end
 			 end
 		       3'o5: // DIML
 			 begin
-			    CIE <= AC[8];
-			    EMA <= AC[7:0];
-			 end
-		       3'o6: // DIMA
-			 begin
-			    AC <= { PCA,DRE,WLS,EIE,PIE,CIE, MEX, DRL,NXD,PER };
+			    CIE <= io_data_in[8];
+			    EMA <= io_data_in[7:0];
 			 end
 		     endcase // case(mb[2:0])
-
-		   6'o62:
-		     case (mb[2:0])
-		       3'o1: // DFSE
-			 if (DRL | PER | WLS | NXD)
-			   io_skip <= 1;
-		       3'o2: // ???
-			 if (DCF)
-			   io_skip <= 1;
-		       3'o3: // DISK
-			 if (DRL | PER | WLS | NXD | DCF)
-			   io_skip <= 1;
-		     endcase
 		 endcase
 	    end
 
@@ -320,11 +372,6 @@ assign ADC = DMA == DWA;
 		     begin
 			if (mb[1])
 			  rx_int <= 0;
-			if (mb[2])
-			  begin
-			     io_data_out <= rx_data;
-			     io_data_avail <= 1;
-			  end
 		     end
 
 		   6'o04:
@@ -333,8 +380,7 @@ assign ADC = DMA == DWA;
 			  tx_int <= 0;
 			if (mb[2])
 			  begin
-			     $display("tls; %o", ac);
-			     tx_data <= ac;
+			     tx_data <= io_data_in;
 			     tx_int <= 1;
 			     tx_delaying <= 1;
 			     tx_delay <= 4'b1111;
@@ -346,43 +392,28 @@ assign ADC = DMA == DWA;
 		     case (mb[2:0])
 		       3'o03: // DMAR
 			 begin
-			    DMA <= AC;
-			    io_clear_ac <= 0;
+			    // clear ac
+			    DMA <= io_data_in;
 			    rf08_start_io <= 1;
 			    rf08_rw <= 0;
 			 end
 
 		       3'o03: // DMAW
 			 begin
-			    DMA <= AC;
-			    io_clear_ac <= 0;
+			    // clear ac
+			    DMA <= io_data_in;
 			    rf08_start_io <= 1;
 			    rf08_rw <= 1;
 			 end
 		     endcase // case(mb[2:0])
-
-		   6'o62:
-		     case (mb[2:0])
-		       6: // DMAC
-			 begin
-//			    io_clear_ac <= 1;
-			    io_ac <= DMA;
-			 end
-		     endcase
 
 		   6'o64:
 		     case (mb[2:0])
 		       1: // DCXA
 			 EMA <= 0;
 		       3: // DXAL
-			 begin
-			    EMA <= AC;
-			    io_clean_ac <= 1;
-			 end
-		       5: // DXAC
-			 begin
-			    AC <= EMA;
-			 end
+			 // clear ac
+			 EMA <= io_data_in;
 		     endcase
 		   
                  endcase
@@ -412,8 +443,6 @@ assign ADC = DMA == DWA;
 		 end
 	    end
 
-
-	endcase // case(state)
-     end
-
+       endcase // case(state)
+   
 endmodule
