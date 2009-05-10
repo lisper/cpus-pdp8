@@ -245,8 +245,8 @@ module pdp8(clk, reset,
     * 			ac <= 0
     */
    assign 	skip_condition = (mb[6] && ac[11]) ||
-				 (mb[5] && ac == 0) ||
-				 (mb[4] && l == 1);
+				 (mb[5] && (ac == 12'b0)) ||
+				 (mb[4] && l);
 
    assign 	pc_incr =
 		  (opr & !mb[8]) ||
@@ -324,6 +324,7 @@ module pdp8(clk, reset,
        pc <= 0;
      else
        begin
+if (state == F1) $display("pc_skip %b", pc_skip);
 	  //if (state == F1 || state == D3 || state == E3)
 	    //$display(" pc <- %o", pc_mux);
 	    pc <= pc_mux;
@@ -419,10 +420,11 @@ module pdp8(clk, reset,
 	      if (interrupt && interrupt_enable &&
 		  !interrupt_inhibit && !interrupt_cycle)
 		begin
-		   $display("interrupt; %b %b %b",
-			    interrupt, interrupt_enable, interrupt_cycle);
+		   $display("xxx interrupt, pc %o; %b %b %b",
+			    pc, interrupt, interrupt_enable, interrupt_cycle);
 		   interrupt_cycle <= 1;
 		   interrupt <= 0;
+		   interrupt_enable <= 0;
 
 		   // simulate a jsr to 0
 		   mb <= 12'o4000;
@@ -436,7 +438,7 @@ module pdp8(clk, reset,
 		   interrupt_cycle <= 0;
 //?? interrupt_inhibit <= 0;
 //?? ib_pending <= 0;
-		   $display(" read ram %o -> %o", ram_addr, ram_data_in);
+		   //$display("read ram [%o] -> %o", ram_addr, ram_data_in);
 		   mb <= ram_data_in;
 		   ir <= ram_data_in[11:9];
 		end
@@ -542,16 +544,18 @@ module pdp8(clk, reset,
 		     begin
 			if (mb[0])			// IAC
 			  {l,ac} <= {l,ac} + 1'b1;
-			if (mb[3:1] == 3'b001)		// BSW
-			  {l,ac} <= {l,ac[5:0],ac[11:6]};
-			if (mb[3] && !mb[1])		// RAR
-			  {l,ac} <= {ac[0],l,ac[11:1]};
-			if (mb[3] && mb[1])		// RTR
-			  {l,ac} <= {ac[1:0],l,ac[11:2]};
-			if (mb[2] && !mb[1])		// RAL
-			  {l,ac} <= {ac[11:0],l};
-			if (mb[2] && mb[1])		// RTL
-			  {l,ac} <= {ac[10:0],l,ac[11]};
+			case (mb[3:1])
+			  3'b001:		// BSW
+			    {l,ac} <= {l,ac[5:0],ac[11:6]};
+			  3'b010:		// RAL
+			    {l,ac} <= {ac[11:0],l};
+			  3'b011:		// RTL
+			    {l,ac} <= {ac[10:0],l,ac[11]};
+			  3'b100:		// RAR
+			    {l,ac} <= {ac[0],l,ac[11:1]};
+			  3'b101:		// RTR
+			    {l,ac} <= {ac[1:0],l,ac[11:2]};
+			endcase
 		     end
 
 		   if (!UF)
@@ -617,7 +621,7 @@ module pdp8(clk, reset,
 
 	 D0:
 	   begin
-	      $display(" read ram %o -> %o", ram_addr, ram_data_in);
+	      $display("read ram [%o] -> %o", ram_addr, ram_data_in);
 	      mb <= ram_data_in;
 	   end
 
@@ -631,7 +635,7 @@ module pdp8(clk, reset,
 	 D2:
 	   begin
 	      // write ram
-	      $display(" write ram %o <- %o", ram_addr, ram_data_out);
+	      $display("write ram [%o] <- %o", ram_addr, ram_data_out);
 	   end
 	 
 	 D3:
@@ -653,7 +657,7 @@ module pdp8(clk, reset,
 
 	 E0:
 	   begin
-	      $display(" read ram %o -> %o", ram_addr, ram_data_in);
+	      $display("read ram [%o] -> %o", ram_addr, ram_data_in);
 	      mb <= ram_data_in;
 	   end
 
@@ -676,7 +680,7 @@ module pdp8(clk, reset,
 	 E2:
 	   begin
 	      // write ram
-	      $display(" write ram %o <- %o", ram_addr, ram_data_out);
+	      $display("write ram [%o] <- %o", ram_addr, ram_data_out);
 	   end
 	 
 	 E3:
@@ -685,7 +689,7 @@ module pdp8(clk, reset,
 		ac <= ac & mb;
 	      else
 		if (tad)
-		  {l,ac} <= ac + mb;
+		  {l,ac} <= {l,ac} + {1'b0,mb};
 		else
 		  if (dca)
 		    ac <= 0;

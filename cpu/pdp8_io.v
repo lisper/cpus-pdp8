@@ -203,7 +203,7 @@ module pdp8_io(clk, reset, iot, state, mb,
    reg 		     rx_int, tx_int;
    reg [12:0] 	     rx_data, tx_data;
    reg 		     tx_delaying;
-   reg [3:0] 	     tx_delay;
+integer tx_delay;
 
    parameter 	     F0 = 4'b0000;
    parameter 	     F1 = 4'b0001;
@@ -254,7 +254,7 @@ module pdp8_io(clk, reset, iot, state, mb,
 	io_data_out = io_data_in;
 	io_data_avail = 1;
 	
-	if (state == F0 && iot)
+	if (state == F1 && iot)
 	  case (io_select)
 	    6'o03:
 	      begin
@@ -267,7 +267,10 @@ module pdp8_io(clk, reset, iot, state, mb,
 	    
 	    6'o04:
 	      if (mb[0])
-		io_skip = tx_int;
+		begin
+		   io_skip = tx_int;
+		   $display("xxx io_skip %b", tx_int);
+		end
 
 	    6'o60:
 	      case (mb[2:0])
@@ -376,15 +379,22 @@ module pdp8_io(clk, reset, iot, state, mb,
 
 		   6'o04:
 		     begin
+			if (mb[0])
+			  begin
+			  end
 			if (mb[1])
-			  tx_int <= 0;
+			  begin
+			     tx_int <= 0;
+			     $display("xxx reset tx_int");
+			  end
 			if (mb[2])
 			  begin
 			     tx_data <= io_data_in;
+			     $display("xxx tx_data %o", io_data_in);
 			     tx_int <= 1;
 			     tx_delaying <= 1;
-			     tx_delay <= 4'b1111;
-			     $display("set tx_int");
+			     tx_delay <= 98;
+			     $display("xxx set tx_int");
 			  end
 		     end // case: 6'o04
 
@@ -434,9 +444,10 @@ module pdp8_io(clk, reset, iot, state, mb,
 	       if (tx_delaying)
 		 begin
 		    tx_delay <= tx_delay - 1;
-		    if (tx_delay == 4'b0)
+		    //$display("xxx delay %d", tx_delay);
+		    if (tx_delay == 0)
 		      begin
-			 $display("iot2 %t, set io_interrupt", $time);
+			 $display("iot2 %t, xxx set io_interrupt", $time);
 			 tx_delaying <= 0;
 			 io_interrupt <= 1;
 		      end

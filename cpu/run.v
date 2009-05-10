@@ -106,15 +106,18 @@ module test;
     cycle = 0;
 
   always @(posedge cpu.clk)
-//   if (cpu.state == 4'b0000)
+   if (cpu.state == 4'b0000)
     begin
       cycle = cycle + 1;
-      #1 $display("#%d, r%b s%d, pc %o ir%o ma %o mb %o j%b l%b ac %o, i%b/%b",
-		cycle, cpu.run, cpu.state, cpu.pc,
-		cpu.ir, cpu.ma, cpu.mb, cpu.jmp, cpu.l, cpu.ac,
-		cpu.interrupt_enable, cpu.interrupt);
+//      #1 $display("#%d, r%b s%d, pc %o ir%o ma %o mb %o j%b l%b ac %o, i%b/%b",
+//		cycle, cpu.run, cpu.state, cpu.pc,
+//		cpu.ir, cpu.ma, cpu.mb, cpu.jmp, cpu.l, cpu.ac,
+//		cpu.interrupt_enable, cpu.interrupt);
        //#1 $display("   io_data_in %o, io_data_out %o",
        //io_data_in, io_data_out);
+
+      #1 $display("pc %o ir %o l %b ac %o ion %o",
+		  cpu.pc, cpu.mb, cpu.l, cpu.ac, cpu.interrupt_enable);
 
        if (state == 4'b1100)
 	 $finish;
