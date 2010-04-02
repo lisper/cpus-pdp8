@@ -169,7 +169,8 @@
 #define NAMELEN             128
 #define SYMBOL_COLUMNS        5
 #define SYMLEN                7
-#define SYMBOL_TABLE_SIZE  8192
+//#define SYMBOL_TABLE_SIZE  8192
+#define SYMBOL_TABLE_SIZE  (1024*64)
 #define MAC_MAX_ARGS         20         /* Must be < 26                       */
 #define MAC_MAX_LENGTH     8192
 #define MAC_TABLE_LENGTH   1024         /* Must be <= 4096.                   */
@@ -488,6 +489,8 @@ SYM_T permanent_symbols[] =
   /* Keyboard/Reader                                                          */
   { FIXED,  "KSF",    06031   },    /* SKIP ON KEYBOARD FLAG                  */
   { FIXED,  "KCC",    06032   },    /* CLEAR KEYBOARD FLAG                    */
+//  { FIXED,  "KSR",    06033   },    /* SKIP, CLEAR KEYBOARD FLAG              */
+  { FIXED,  "KSR",    06031   },
   { FIXED,  "KRS",    06034   },    /* READ KEYBOARD BUFFER (STATIC)          */
   { FIXED,  "KRB",    06036   },    /* READ KEYBOARD BUFFER & CLEAR FLAG      */
   /* Teleprinter/Punch                                                        */
@@ -954,6 +957,11 @@ void getArgs( int argc, char *argv[] )
           xref = TRUE;
           break;
 
+	case 'o':
+	  pathname = argv[++ix];
+	  goto nextarg;
+	  break;
+
         default:
           fprintf( stderr, "%s: unknown flag: %s\n", argv[0], argv[ix] );
           fprintf( stderr, " -d -- dump symbol table\n" );
@@ -969,9 +977,12 @@ void getArgs( int argc, char *argv[] )
     else
     {
       filix_start = ix;
-      pathname = argv[ix];
+      if (pathname == NULL)
+	pathname = argv[ix];
       break;
     }
+  nextarg:
+    ;
   } /* end for                                                                */
 
   if( pathname == NULL )
@@ -995,6 +1006,9 @@ void getArgs( int argc, char *argv[] )
   {
     jx--;
   }
+
+  if (jx < 0)
+	  jx = len;
 
   switch( pathname[jx] )
   {
@@ -1163,6 +1177,7 @@ void onePass()
               {
                 if( sym->val != (clc & 07777) && pass == 2 )
                 {
+printf("pass %d, val %o, clc %o\n", pass, sym->val, clc);
                   errorSymbol( &duplicate_label, sym->name, lexstart );
                 }
                 sym->type = sym->type | DUPLICATE;
