@@ -1,6 +1,6 @@
 
 module pdp8_tt(clk, reset, iot, state, mb,
-	       io_data_in, io_data_out, io_select,
+	       io_data_in, io_data_out, io_select, io_selected,
 	       io_data_avail, io_interrupt, io_skip);
    
    input clk, reset, iot;
@@ -9,6 +9,7 @@ module pdp8_tt(clk, reset, iot, state, mb,
    input [3:0] 	     state;
    input [5:0] 	     io_select;
 
+   output reg	     io_selected;
    output reg [11:0] io_data_out;
    output reg 	     io_data_avail;
    output reg 	     io_interrupt;
@@ -31,14 +32,16 @@ integer tx_delay;
 	    rx_int or tx_int)
      begin
 	// sampled during f1
-	io_skip = 0;
+	io_skip = 1'b0;
 	io_data_out = io_data_in;
-	io_data_avail = 1;
+	io_data_avail = 1'b1;
+	io_selected = 1'b0;
 	
 	if (state == F1 && iot)
 	  case (io_select)
 	    6'o03:
 	      begin
+		 io_selected = 1'b1;
 		 if (mb[0])
 		   io_skip = rx_int;
 
@@ -47,11 +50,14 @@ integer tx_delay;
 	      end
 	    
 	    6'o04:
-	      if (mb[0])
-		begin
-		   io_skip = tx_int;
-		   $display("xxx io_skip %b", tx_int);
-		end
+	      begin
+		 io_selected = 1'b1;
+		 if (mb[0])
+		   begin
+		      io_skip = tx_int;
+		      $display("xxx io_skip %b", tx_int);
+		   end
+	      end
 	  endcase // case(io_select)
      end
    

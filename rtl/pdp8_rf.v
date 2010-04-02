@@ -264,7 +264,7 @@ will process the information.
 
 
 module pdp8_rf(clk, reset, iot, state, mb,
-	       io_data_in, io_data_out, io_select,
+	       io_data_in, io_data_out, io_select, io_selected,
 	       io_data_avail, io_interrupt, io_skip);
    
    input clk, reset, iot;
@@ -273,6 +273,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
    input [3:0] 	     state;
    input [5:0] 	     io_select;
 
+   output reg 	     io_selected;
    output reg [11:0] io_data_out;
    output reg 	     io_data_avail;
    output reg 	     io_interrupt;
@@ -306,6 +307,22 @@ module pdp8_rf(clk, reset, iot, state, mb,
    assign DCF = 1'b0;
    assign ADC = DMA == /*DWA??*/0;
 
+   parameter IDLE = 4'b1111;
+   parameter DB0 = 4'b0000;
+   parameter DB1 = 4'b0001;
+   parameter DB2 = 4'b0010;
+   parameter DB3 = 4'b0011;
+   parameter DB4 = 4'b0100;
+   parameter DB5 = 4'b0101;
+   parameter DB6 = 4'b0110;
+   parameter DB7 = 4'b0111;
+   parameter DB8 = 4'b1000;
+   parameter DB9 = 4'b1001;
+
+   wire [3:0] db_next_state;
+   reg [3:0]  db_state;
+   reg 	      dma_start;
+   
    // combinatorial
    always @(state or
 	    ADC or DRL or PER or WLS or NXD or DCF)
@@ -313,63 +330,77 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	// sampled during f1
 	io_skip = 0;
 	io_data_out = io_data_in;
-	io_data_avail = 1;
-	dma_start = 0;
+	io_data_avail = 1'b1;
+	dma_start = 1'b0;
+	io_selected = 1'b0;
 	
 	if (state == F1 && iot)
 	  case (io_select)
 	    6'o60:
-	      case (mb[2:0])
-		3'o03: // DMAR
-		  begin
-		     io_data_out = 0;
-		     dma_start = 1;
-		  end
-		3'o03: // DMAW
-		  begin
-		     io_data_out = 0;
-		     dma_start = 1;
-		  end
-		
-	      endcase
-
+	      begin
+		 io_selected = 1'b1;
+		 case (mb[2:0])
+		   3'o03: // DMAR
+		     begin
+			io_data_out = 0;
+			dma_start = 1;
+		     end
+		   3'o03: // DMAW
+		     begin
+			io_data_out = 0;
+			dma_start = 1;
+		     end
+		 endcase
+	      end // case: 6'o60
+	    
 	    6'o61:
-	      case (mb[2:0])
-		3'o2: // DSAC
-		  if (ADC)
-		    begin
-		       io_skip = 1;
-		       io_data_out = 0;
-		    end
-		3'o6: // DIMA
-		  io_data_out = { PCA, DRE,WLS,EIE, PIE,CIE,MEX, DRL,NXD,PER };
-		3'o5: // DIML
-		  io_data_out = 0;
-		
-	      endcase
+	      begin
+		 io_selected = 1'b1;
+		 case (mb[2:0])
+		   3'o2: // DSAC
+		     if (ADC)
+		       begin
+			  io_skip = 1;
+			  io_data_out = 0;
+		       end
+		   3'o6: // DIMA
+		     io_data_out = { PCA,
+				     DRE,WLS,EIE,
+				     PIE,CIE,MEX, 
+				     DRL,NXD,PER };
+		   3'o5: // DIML
+		     io_data_out = 0;
+		 endcase // case(mb[2:0])
+	      end
 	    
 	    6'o62:
-	      case (mb[2:0])
-		3'o1: // DFSE
-		  if (DRL | PER | WLS | NXD)
-		    io_skip = 1;
-		3'o2: // ???
-		  if (DCF)
-		    io_skip = 1;
-		3'o3: // DISK
-		  if (DRL | PER | WLS | NXD | DCF)
-		    io_skip = 1;
-		3'o6: // DMAC
-		  io_data_out = DMA;
-	      endcase 
-
+	      begin
+		 io_selected = 1'b1;
+		 case (mb[2:0])
+		   3'o1: // DFSE
+		     if (DRL | PER | WLS | NXD)
+		       io_skip = 1;
+		   3'o2: // ???
+		     if (DCF)
+		       io_skip = 1;
+		   3'o3: // DISK
+		     if (DRL | PER | WLS | NXD | DCF)
+		       io_skip = 1;
+		   3'o6: // DMAC
+		     io_data_out = DMA;
+		 endcase 
+	      end
+		   
 	    6'o64:
-	      case (mb[2:0])
-		3: // DXAL
-		  io_data_out = 0;
-		5: // DXAC
-		  io_data_out = EMA;
-	      endcase
+	      begin
+		 io_selected = 1'b1;
+		 case (mb[2:0])
+		   3: // DXAL
+		     io_data_out = 0;
+		   5: // DXAC
+		     io_data_out = EMA;
+		 endcase // case(mb[2:0])
+	      end
 	    
 	  endcase // case(io_select)
      end
@@ -467,18 +498,16 @@ module pdp8_rf(clk, reset, iot, state, mb,
 
        endcase // case(state)
 
-   always @(*)
-     begin
-	db_next_state = IDLE;
-	if (dma_start)
-	  db_next_state = DB0;
-     end
+   //
+   assign db_next_state =
+			 dma_start ? DB0 :
+			 IDLE;
    
    always @(posedge clk)
      if (reset)
-       state <= IDLE;
+       db_state <= IDLE;
      else
-       state <= db_next_state;
+       db_state <= db_next_state;
    
 	  
 endmodule
