@@ -1,6 +1,7 @@
 
-all: showbin
+SUBDIRS = macro showbin maker
 
-showbin: showbin.c
-	cc -o showbin showbin.c
+all clean:
+	for d in $(SUBDIRS); do $(MAKE) -C $$d $@; done
+
 
