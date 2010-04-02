@@ -186,7 +186,7 @@ will process the information.
 
 module pdp8_io(clk, reset, iot, state, mb,
 	       io_data_in, io_data_out, io_select,
-	       io_data_avail, io_interrupt, io_skip);
+	       io_data_avail, io_interrupt, io_skip, io_clear_ac);
    
    input clk, reset, iot;
    input [11:0] io_data_in;
@@ -197,7 +197,8 @@ module pdp8_io(clk, reset, iot, state, mb,
    output reg [11:0] io_data_out;
    output reg 	     io_data_avail;
    output reg 	     io_interrupt;
-   output reg 	     io_skip;
+   output wire 	     io_skip;
+   output wire 	     io_clear_ac;
    
    
    reg 		     rx_int, tx_int;
@@ -237,8 +238,8 @@ integer tx_delay;
    reg [11:0] DMA;
    reg [7:0]  EMA;
    reg 	      PEF;
-   reg       rf08_rw;
-   reg       rf08_start_io;
+   reg 	      rf08_rw;
+   reg 	      rf08_start_io;
    reg 	      CIE, DRE, DRL, EIE, MEX, NXD, PCA, PER, PIE, WLS;
    
    assign    DCF = 1'b0;
@@ -252,7 +253,7 @@ integer tx_delay;
 	// sampled during f1
 	io_skip = 0;
 	io_data_out = io_data_in;
-	io_data_avail = 1;
+	io_clear_ac = 0;
 	
 	if (state == F1 && iot)
 	  case (io_select)
@@ -287,11 +288,15 @@ integer tx_delay;
 		    begin
 		       io_skip = 1;
 		       io_data_out = 0;
+		       io_clear_ac = 1;
 		    end
 		3'o6: // DIMA
 		  io_data_out = { PCA, DRE,WLS,EIE, PIE,CIE,MEX, DRL,NXD,PER };
 		3'o5: // DIML
-		  io_data_out = 0;
+		  begin
+		     io_data_out = 0;
+		     io_clear_ac = 1;
+		  end
 		
 	      endcase
 	    
@@ -313,7 +318,10 @@ integer tx_delay;
 	    6'o64:
 	      case (mb[2:0])
 		3: // DXAL
-		  io_data_out = 0;
+		  begin
+		     io_data_out = 0;
+		     io_clear_ac = 1;
+		  end
 		5: // DXAC
 		  io_data_out = EMA;
 	      endcase
@@ -328,6 +336,8 @@ integer tx_delay;
    always @(posedge clk)
      if (reset)
        begin
+	  rf08_rw <= 0;
+	  rf08_start_io <= 0;
        end
      else
        case (state)
@@ -367,6 +377,8 @@ integer tx_delay;
 	  F1:
 	    if (iot)
 	      begin
+		 io_data_avail <= 1;
+		 
 		 $display("iot2 %t, state %b, mb %o, io_select %o",
 			  $time, state, mb, io_select);
 
