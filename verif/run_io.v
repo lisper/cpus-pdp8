@@ -1,8 +1,10 @@
-// run_rf.v
-// testing top end for pdp8_rf.v
+// run_io.v
+// testing top end for pdp8_io.v
 //
 
+`include "../rtl/pdp8_tt.v"
 `include "../rtl/pdp8_rf.v"
+`include "../rtl/pdp8_io.v"
 
 
 `timescale 1ns / 1ns
@@ -16,13 +18,14 @@ module test;
    wire        io_data_avail;
    wire        io_interrupt;
    wire        io_skip;
+   wire        io_clear_ac;
    wire [5:0]  io_select;
    
    wire        iot;
    wire [3:0]  state;
    wire [11:0] mb;
    
-   pdp8_rf rf(.clk(clk),
+   pdp8_io io(.clk(clk),
 	      .reset(reset),
 	      .iot(iot),
 	      .state(state),
@@ -32,14 +35,15 @@ module test;
 	      .io_select(io_select),
 	      .io_data_avail(io_data_avail),
 	      .io_interrupt(io_interrupt),
-	      .io_skip(io_skip));
+	      .io_skip(io_skip),
+	      .io_clear_ac(io_clear_ac));
 
   initial
     begin
       $timeformat(-9, 0, "ns", 7);
 
-      $dumpfile("pdp8_rf.vcd");
-      $dumpvars(0, test.rf);
+      $dumpfile("pdp8_io.vcd");
+      $dumpvars(0, test.io);
     end
 
   initial
@@ -70,7 +74,7 @@ module test;
   initial
     cycle = 0;
 
-  always @(posedge rf.clk)
+  always @(posedge io.clk)
     begin
       cycle = cycle + 1;
     end

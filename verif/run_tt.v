@@ -1,8 +1,8 @@
-// run_rf.v
-// testing top end for pdp8_rf.v
+// run_tt.v
+// testing top end for pdp8_tt.v
 //
 
-`include "../rtl/pdp8_rf.v"
+`include "../rtl/pdp8_tt.v"
 
 
 `timescale 1ns / 1ns
@@ -22,7 +22,7 @@ module test;
    wire [3:0]  state;
    wire [11:0] mb;
    
-   pdp8_rf rf(.clk(clk),
+   pdp8_tt tt(.clk(clk),
 	      .reset(reset),
 	      .iot(iot),
 	      .state(state),
@@ -38,8 +38,8 @@ module test;
     begin
       $timeformat(-9, 0, "ns", 7);
 
-      $dumpfile("pdp8_rf.vcd");
-      $dumpvars(0, test.rf);
+      $dumpfile("pdp8_tt.vcd");
+      $dumpvars(0, test.tt);
     end
 
   initial
@@ -70,7 +70,7 @@ module test;
   initial
     cycle = 0;
 
-  always @(posedge rf.clk)
+  always @(posedge tt.clk)
     begin
       cycle = cycle + 1;
     end
