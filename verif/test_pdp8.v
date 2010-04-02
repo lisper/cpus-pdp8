@@ -2,7 +2,7 @@
 // testing top end for pdp8.v
 //
 
-`include "pdp8.v"
+`include "../rtl/pdp8.v"
 `include "pdp8_io.v"
 `include "pdp8_ram.v"
 
