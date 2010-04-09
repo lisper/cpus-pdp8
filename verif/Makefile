@@ -3,6 +3,10 @@ CVER_FLAGS =
 
 RTESTS = test_tt test_rf test_io
 
+RTL = \
+	../rtl/pdp8_tt.v ../rtl/pdp8_rf.v ../rtl/pdp8_io.v \
+	../rtl/pdp8.v
+
 #---------------------------------------------------------------------
 
 define runone_verilog_regression
@@ -17,7 +21,7 @@ $(RTEST_LOGS) : %.log : %.v $(RTL)
 	$(call runone_verilog_regression,$<,$@)
 
 # verilog testbench regression tests
-rgress: $(RTEST_LOGS)
+regress: $(RTEST_LOGS)
 
 test_tt: test_tt.v
 	$(call runone_verilog_regression,$<,$@)
@@ -32,4 +36,4 @@ test_io: test_io.v
 #
 clean:
 	rm -f verilog.log
-	rm -f *.vcd
+	rm -f *.vcd *.log

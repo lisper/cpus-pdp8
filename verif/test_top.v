@@ -2,16 +2,21 @@
 // testing top end for pdp8.v
 //
 
-`include "pdp8.v"
-`include "pdp8_io.v"
-`include "pdp8_ram.v"
+`include "../rtl/pdp8_tt.v"
+`include "../rtl/pdp8_rf.v"
+`include "../rtl/pdp8_io.v"
+`include "../rtl/pdp8_ram.v"
+`include "../rtl/pdp8.v"
+`include "../rtl/top.v"
+`include "../rtl/ram_32kx12.v"
+`include "../rtl/debounce.v"
 
 `timescale 1ns / 1ns
 
 module test;
 
 
-   reg	rs232_txd;
+   wire	rs232_txd;
    wire rs232_rxd;
 
    reg [3:0] button;
@@ -76,7 +81,7 @@ module test;
       $timeformat(-9, 0, "ns", 7);
 
       $dumpfile("pdp8.vcd");
-      $dumpvars(0, test.cpu);
+      $dumpvars(0, test.top);
     end
 
   initial
@@ -111,7 +116,7 @@ module test;
       #1 $display("pc %o ir %o l %b ac %o ion %o",
 		  top.cpu.pc, top.cpu.mb, top.cpu.l, top.cpu.ac, top.cpu.interrupt_enable);
 
-       if (state == 4'b1100)
+       if (top.cpu.state == 4'b1100)
 	 $finish;
     end
 
