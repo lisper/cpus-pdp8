@@ -3,13 +3,6 @@
 // copyright Brad Parker <brad@heeltoe.com> 2009
 //
 
-`include "pdp8.v"
-`include "pdp8_tt.v"
-`include "pdp8_rf.v"
-`include "pdp8_io.v"
-`include "pdp8_ram.v"
-`include "debounce.v"
-
 `timescale 1ns / 1ns
 
 module top(rs232_txd, rs232_rxd,
@@ -134,6 +127,7 @@ module top(rs232_txd, rs232_rxd,
 	   .io_data_avail(io_data_avail),
 	   .io_interrupt(io_interrupt),
 	   .io_skip(io_skip),
+	   .io_clear_ac(io_clear_ac),
 	   .iot(iot),
 	   .mb(mb),
 	   .switches(switches));
@@ -148,7 +142,8 @@ module top(rs232_txd, rs232_rxd,
 	      .io_select(io_select),
 	      .io_data_avail(io_data_avail),
 	      .io_interrupt(io_interrupt),
-	      .io_skip(io_skip));
+	      .io_skip(io_skip),
+   	      .io_clear_ac(io_clear_ac));
 
    pdp8_ram ram(.clk(clk),
 	       .reset(reset), 

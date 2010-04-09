@@ -1,4 +1,3 @@
-
 /*
   RF08
 
@@ -123,16 +122,18 @@ usually through the program interrupt facility.  An interrupt is
 requested when the data transfer is completed and the service routine
 will process the information.
 
- xxx:
- 	if (databreak_req)
- 	  begin
-		databreak_done <= 0;
- 		next_state <= DB0;
- 	  end
-
 
  -----------    -----------    -----------    ----------- 
 
+ external signals:
+
+ ma_out
+ ram_write_req
+ ram_read_req
+ ram_done
+ mb_in
+ mb_out 
+ 
  DISK STATE MACHINE:
   
  // setup
@@ -144,20 +145,76 @@ will process the information.
    ide_block = {1'b0, track, 3'b0} + {8'b0, dma[11:8]}
    ide_block_index = dma[7:0];
 
- read_block:
-   read block
-   start dma
-   write block
-   if dma-stopped-at-end-of-block
-     goto read_block
+ idle
+ 
+ start-xfer
+   read wc
+   read addr
 
- // read block into buffer
- DR0:
-	read[
-	if (db_eob)
- 	  dr_next_state = 
-
+   if read
+     goto check-xfer-read
+   else
+     goto begin-xfer-write
+ 
+ check-xfer-read
+   if disk-addr-page == memory-buffer-addr-page
+      read memory-buffer-page[offset]
+      goto next-xfer-read
+   else
+      if memory-buffer-dirty == 0
+         goto read-new-page
+      else
+         goto write-old-page
+ 
+ next-xfer-read
+   write M[addr]
+   goto next-xfer-incr
+ 
+ next-xfer-incr
+   incr addr
+   incr wc
+   if wc == 0
+      goto done-xfer
+   if read
+     goto check-xfer-read
+   else
+     goto begin-xfer-write
+ 
+ begin-xfer-write
+   read data from memory
+   goto check-xfer-write
   
+ check-xfer-write
+   if disk-addr-page == memory-buffer-addr-page
+      write memory-buffer-page[offset]
+      set memory-buffer-dirty = 1
+      goto next-xfer-incr
+   else
+      if memory-buffer-dirty == 0
+         goto read-new-page
+      else
+         goto write-old-page
+
+ done-xfer
+   write addr
+   write wc
+   set done/interrupt
+   goto idle
+
+ read-new-page
+   read block from ide
+   set memory-buffer-addr-page
+   set memory-buffer-dirty = 0
+   if read
+     goto check-xfer-read
+   else
+     goto check-xfer-write
+ 
+ write-old-page
+   write block to ide
+   set memory-buffer-dirty = 0
+   goto read-new-page
+ 
  -----------    -----------    -----------    ----------- 
  
  DMA STATE MACHINE:
@@ -189,57 +246,113 @@ will process the information.
  databreak_notdone_req = 0;
  
  // idle
- DB0:
+ DB_idle:
  
  // read word count
- DB1:
+ DB_start_xfer1:
 	ma_out = wc-address;
-        databreak_notdone_req = 1;
- 	db_next_state = DB2;
+ 	ram_read_req = 1;
+ 	if ram_done db_next_state = DB_start_xfer2;
 
- // write word count + 1
- DB2:
- 	mb_out = mb_in + 1;
- 	ram_write = 1;
-	if (mb_in == 12'o7777)
- 	  databreak_done_req = 1;
- 	db_next_state = DB3;
-
- // finish write
- DB3:
- 	db_next_state = DB4;
-
- // read current address
- DB4: 
+ // read addr
+ DB_start_xfer2:
+ 	wc = mb_in;
 	ma_out = wc-address | 1;
- 	db_next_state = DB5;
+ 	ram_read_req = 1;
+        db_next_state = DB_start_xfer3; 
+ 
+ DB_start_xfer3:
+ 	ram_addr = mb_in
+ 	db_next_state = DB_check_xfer_read;
 
- // write current address + 1
- DB5:
- 	mb_out = mb_in + 1;
- 	ram_write = 1;
- 	db_next_state = DB6;
+ // read buffer 
+ DB_check_xfer_read:
+ 	buffer_addr = disk_addr_offset
+        if disk-addr-page == memory-buffer-addr-page
+  	  db_next_state = DB_next_xfer_read;
+        else
+          if buffer_dirty == 0
+ 	    db_next_state = DB_read_new_page;
+          else
+  	    db_next_state = DB_write_old_page;
 
- // finish write
- DB6:
- 	db_next_state = DB7;
+ // advance
+ DB_next_xfer_read: 
+        ma_out = ram_addr
+ 	mb_out = buffer_out
+        ram_write_req = 1
+ 	if ram_done db_next_state = DB_next_xfer_incr;
+ 
+ DB_next_xfer_incr: 
+        disk_addr <= disk_addr + 1
+ 	new_da = {ema, dma} + 19'b1;
 
- // set up read/write address
- DB7:
-	ma_out = mb_in;
- 	db_next_state = DB8;
+        ram_addr <= ram_addr + 1
+        wc <= wc + 1
+ 	done = wc == 07777
+ 	if done
+  	    db_next_state = DB_done_xfer;
+        else
+            if read
+ 	      db_next_state = DB_check_xfer_read; 
+            else
+              db_next_state = DB_begin_xfer_write; 
 
- // do read or start write
- DB8: 
-	if (databreak_write)
-		disk_buffer[disk_buffer_index] = memory_bus; 
-	else 
- 	  begin
- 		mb_out = disk_buffer[disk_buffer_index];
- 		ram_write = 1;
-	  end
-	db_next_state = DB9;
+ // write to ram
+ DB7_begin_xfer_write:
+        ma_out = ram_addr
+ 	mb_out = buffer_out
+        ram_read_req = 1
+ 	if ram_done db_next_state = DB_check_xfer_write;
 
+ // read buffer
+ DB_check_xfer_write:
+        buffer_addr = disk_addr_offset
+        if disk-addr-page == memory-buffer-addr-page
+           buffer_wr = 1
+           buffer-dirty <= 1
+           db_next_state = DB_next_xfer_incr; 
+        else
+           if buffer-dirty == 0
+             db_next_state = DB_read_new_page
+           else
+             db_next_state = DB_write_old_page
+
+ // done 
+ DB_done_xfer:
+	ma_out = wc-address;
+        mb_out = ram_addr
+ 	ram_write_req = 1;
+ 	if ram_done db_next_state = DB_start_xfer1;
+ 
+ DB_done_xfer1:
+	ma_out = wc-address | 1;
+        mb_out = wc
+ 	ram_write_req = 1;
+ 	if ram_done db_next_state = DB_done_xfer2;
+
+ DB_done_xfer2:
+   set done/interrupt
+        db_next_state = DB_idle
+
+ DB_read_new_page:
+   read block from ide
+   set memory-buffer-addr-page
+        buffer-dirty <= 0
+	if read
+	  db_next_state = DB_check_xfer_read
+ 	else
+	  db_next_state = DB_check_xfer_write
+ 
+ DB_write_old_page:
+   write block to ide
+        buffer-dirty <= 0
+	db_next_state = DB_read-new-page
+ 
+
+
+------
+ 
  // finish read/write
  DB9:
 	disk_buffer_index = disk_buffer_index + 1;
@@ -249,12 +362,12 @@ will process the information.
 	if (databreak_done)
 	  begin
  	    db_done = 1;
- 	    db_next_state = DB0;
+ 	    db_next_state = DB_idle;
  	  end
  	else
 	  if (disk_buffer_index == 8'b0)
 	    begin 
-	      db_next_state = DB0;
+	      db_next_state = DB_idle;
  	      db_eob = 1;
  	    end
           else
@@ -276,7 +389,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
    output reg 	     io_selected;
    output reg [11:0] io_data_out;
    output reg 	     io_data_avail;
-   output reg 	     io_interrupt;
+   output 	     io_interrupt;
    output reg 	     io_skip;
    
    parameter 	     F0 = 4'b0000;
@@ -307,8 +420,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
    assign DCF = 1'b0;
    assign ADC = DMA == /*DWA??*/0;
 
-   parameter IDLE = 4'b1111;
-   parameter DB0 = 4'b0000;
+   parameter DB_idle = 4'b0000;
    parameter DB1 = 4'b0001;
    parameter DB2 = 4'b0010;
    parameter DB3 = 4'b0011;
@@ -322,7 +434,10 @@ module pdp8_rf(clk, reset, iot, state, mb,
    wire [3:0] db_next_state;
    reg [3:0]  db_state;
    reg 	      dma_start;
-   
+
+   //
+   assign io_interrupt = 1'b0;
+
    // combinatorial
    always @(state or
 	    ADC or DRL or PER or WLS or NXD or DCF)
@@ -340,12 +455,12 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	      begin
 		 io_selected = 1'b1;
 		 case (mb[2:0])
-		   3'o03: // DMAR
+		   6'o03: // DMAR
 		     begin
 			io_data_out = 0;
 			dma_start = 1;
 		     end
-		   3'o03: // DMAW
+		   6'o03: // DMAW
 		     begin
 			io_data_out = 0;
 			dma_start = 1;
@@ -451,13 +566,14 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	  F1:
 	    if (iot)
 	      begin
+		 if (io_select == 6'o60 || io_select == 6'o64)
 		 $display("iot2 %t, state %b, mb %o, io_select %o",
 			  $time, state, mb, io_select);
 
 		 case (io_select)
 		   6'o60:
 		     case (mb[2:0])
-		       3'o03: // DMAR
+		       6'o03: // DMAR
 			 begin
 			    // clear ac
 			    DMA <= io_data_in;
@@ -465,7 +581,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			    rf08_rw <= 0;
 			 end
 
-		       3'o03: // DMAW
+		       6'o03: // DMAW
 			 begin
 			    // clear ac
 			    DMA <= io_data_in;
@@ -487,25 +603,25 @@ module pdp8_rf(clk, reset, iot, state, mb,
 
 	      end // if (iot)
 
-	  F2:
-	    begin
-	       if (io_interrupt)
-	       	 $display("iot2 %t, reset io_interrupt", $time);
-
-	       // sampled during f0
-	       io_interrupt <= 0;
-	    end
+//	  F2:
+//	    begin
+//	       if (io_interrupt)
+//	       	 $display("iot2 %t, reset io_interrupt", $time);
+//
+//	       // sampled during f0
+//	       io_interrupt <= 0;
+//	    end
 
        endcase // case(state)
 
    //
    assign db_next_state =
-			 dma_start ? DB0 :
-			 IDLE;
+			 dma_start ? DB1 :
+			 DB_idle;
    
    always @(posedge clk)
      if (reset)
-       db_state <= IDLE;
+       db_state <= DB_idle;
      else
        db_state <= db_next_state;
    

@@ -71,10 +71,7 @@ module pdp8_io(clk, reset, iot, state, mb,
 			 rf_io_selected ? rf_io_data_avail :
 			 1'b0;
    
-   assign io_interrupt =
-			tt_io_selected ? tt_io_interrupt :
-			rf_io_selected ? rf_io_interrupt :
-			1'b0;
+   assign io_interrupt = tt_io_interrupt | rf_io_selected;
 
    assign io_skip =
 		   tt_io_selected ? tt_io_skip :

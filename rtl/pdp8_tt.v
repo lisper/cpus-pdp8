@@ -12,7 +12,7 @@ module pdp8_tt(clk, reset, iot, state, mb,
    output reg	     io_selected;
    output reg [11:0] io_data_out;
    output reg 	     io_data_avail;
-   output reg 	     io_interrupt;
+   output  	     io_interrupt;
    output reg 	     io_skip;
    
    
@@ -26,17 +26,21 @@ integer tx_delay;
    parameter 	     F2 = 4'b0010;
    parameter 	     F3 = 4'b0011;
 
-
+   // interrupt output
+   assign io_interrupt = rx_int || tx_int;
+   
    // combinatorial
-   always @(state or
-	    rx_int or tx_int)
+   always @(state or rx_int or tx_int)
      begin
 	// sampled during f1
 	io_skip = 1'b0;
 	io_data_out = io_data_in;
 	io_data_avail = 1'b1;
 	io_selected = 1'b0;
-	
+
+	//if (state == F1 && iot)
+	//$display("io_select %o", io_select);
+
 	if (state == F1 && iot)
 	  case (io_select)
 	    6'o03:
@@ -68,6 +72,7 @@ integer tx_delay;
    always @(posedge clk)
      if (reset)
        begin
+	  tx_int <= 0;
        end
      else
        case (state)
@@ -80,8 +85,9 @@ integer tx_delay;
 	  F1:
 	    if (iot)
 	      begin
-		 $display("iot2 %t, state %b, mb %o, io_select %o",
-			  $time, state, mb, io_select);
+		 if (io_select == 6'o03 || io_select == 6'o04)
+		 if (0) $display("iot2 %t, state %b, mb %o, io_select %o",
+				 $time, state, mb, io_select);
 
 		 case (io_select)
 		   6'o03:
@@ -104,25 +110,15 @@ integer tx_delay;
 			  begin
 			     tx_data <= io_data_in;
 			     $display("xxx tx_data %o", io_data_in);
-			     tx_int <= 1;
 			     tx_delaying <= 1;
-			     tx_delay <= 98;
-			     $display("xxx set tx_int");
+//			     tx_delay <= 98;
+tx_delay <= 20;  
 			  end
 		     end // case: 6'o04
 
                  endcase
 
 	      end // if (iot)
-
-	  F2:
-	    begin
-	       if (io_interrupt)
-	       	 $display("iot2 %t, reset io_interrupt", $time);
-
-	       // sampled during f0
-	       io_interrupt <= 0;
-	    end
 
 	  F3:
 	    begin
@@ -132,9 +128,9 @@ integer tx_delay;
 		    //$display("xxx delay %d", tx_delay);
 		    if (tx_delay == 0)
 		      begin
-			 $display("iot2 %t, xxx set io_interrupt", $time);
+			 $display("xxx set tx_int");
 			 tx_delaying <= 0;
-			 io_interrupt <= 1;
+			 tx_int <= 1;
 		      end
 		 end
 	    end

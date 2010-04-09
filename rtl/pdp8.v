@@ -71,31 +71,77 @@
 //
 // cpu states
 //
-//  F0 fetch
+//  F0 fetch ram[IF,pc]
 //  F1 incr pc
-//  F2 write
+//  F2 ?
 //  F3 dispatch
 //
-//  E0 read
-//  E1 decode
-//  E2 write
-//  E3 load
+// then
+//
+//    E0 read ram[ea]
+//    E1 decode
+//    E2 write ram
+//    E3 load
 //
 // or
 //
-//  D0 read
-//  D1 wait
-//  D2 write
-//  D3 load
+//    D0 read ram[ea]
+//    D1 wait
+//    D2 write ram
+//    D3 load
 //
 //  H0 halted
 //
 // ------
+// Rules for address calculation
+// 0 and
+// 1 tad
+// 2 isz
+// 3 dca
+//
+// //	11
+//	109876543210
+//      cccIZooooooo
+//
+//	bit 8 - indirect
+//	bit 7 - page 0
+//	bits 6:0 offset
+//
+//	if 8:7 == 2'b00
+//		ea =     IF, pc[11:7], offset[6:0]    ;; current page
+//	if 8:7 == 2'b01
+//		ea =     IF, 5'b0, offset[6:0]	      ;; page 0
+//	if 8:7 == 2'b10
+//		ea = (DF, MA( IF, pc[11:7], offset[6:0] ))  ;; *(current page)
+//	if 8:7 == 2'b11
+//		ea = (DF, MA( IF, 5'b0, offset[6:0] ))      ;; *(page 0)
+
+// 4 jms
+// 5 jmp
 // 
+// ------
+// 
+//	ea <= if Z
+//		if I
+//			{DF, 5'b0,     mb[6:0]};
+//		else
+//			{IF, 5'b0,     mb[6:0]};
+//	    else
+//		if I
+//			{DF, pc[11:7], mb[6:0]};
+//		else
+//			{IF, pc[11:7], mb[6:0]};
+// 
+// ------
+
 //  F0 fetch
+//	ma = {IF,pc}
 //	check for interrupt
 //
 //  F1 incr pc
+//	ma = 0
+//	ea <= { IF, ir_z_flag ? pc[11:7] : 5'b0, mb[6:0] };
+//
 //	if opr
 //		group 1 processing
 // 		group 2 processing
@@ -104,28 +150,39 @@
 // 
 //	incr pc or skip (incr pc by 2)
 // 
-//  F2 write
-// 	ma <= pc
+//  F2 ??
+// 	ma = pc
 // 
 //  F3 dispatch
+//	ma = ea
 //	if opr
 //		group1 processing
 // 
 //	if !opr && !iot
 // 		possible defer
 // 
-// 
 //  D0
-//	mb <= memory
+//	ma = ea
+//	mb <= ram[ma]
 //  D1
-//  D2
+//	ma = 0
+//  D2 write index reg
+//	ma = index reg ? ea : {DF,mb}
+//	ram_wr = 1
 //  D3
+//	ea <= mb
+//	ma = 0
 //
 //  E0
-//	mb <= memory
+//	ma = ea
+//	mb <= ram[ma]
 //  E1
-//  E2 write isz value
+//	ma = 0
+//  E2 write isz value, dca value, jms return
+//	ma = ea
+//	ram_wr = 1
 //  E3
+//	ma = ea + 1 (only bottom 12 bits)
 //
 
 //
@@ -187,6 +244,9 @@ module pdp8(clk, reset,
 
    // instruction register
    reg [2:0] 	ir;
+   reg 		ir_z_flag;
+   reg 		ir_i_flag;
+   
 
    // extended memory - instruction field & data field
    reg [2:0] 	IF;
@@ -317,6 +377,8 @@ module pdp8(clk, reset,
     
    assign next_state = state == F0 ? F1 :
 		       state == F1 && (~iot | (iot & io_data_avail)) ? F2 :
+// xxx fix this
+//		       state == F1 && (iot & ~io_data_avail) ? F1 :
 		       state == F2 ? F3 :
 		       state == F3 ? (~run ? H0 :
 				      next_is_F0 ? F0 :
@@ -343,10 +405,11 @@ module pdp8(clk, reset,
        pc <= 0;
      else
        begin
-if (state == F1) $display("pc_skip %b", pc_skip);
+	  //if (state == F1)
+	  //  $display("pc_incr %b pc_skip %b", pc_incr, pc_skip);
 	  //if (state == F1 || state == D3 || state == E3)
-	    //$display(" pc <- %o", pc_mux);
-	    pc <= pc_mux;
+	  //$display(" pc <- %o", pc_mux);
+	  pc <= pc_mux;
        end
 
    assign pc_mux = (state == F1 && pc_skip) ? (pc + 12'd2) :
@@ -383,13 +446,13 @@ if (state == F1) $display("pc_skip %b", pc_skip);
        ea <= 0;
      else
 	  if (state == F1)
-	    ea <= {DF, mb[7] ? pc[11:7] : 5'b0, mb[6:0]};
+	    ea <= { IF, ir_z_flag ? pc[11:7] : 5'b0, mb[6:0] };
 	  else
 	    if (state == D3)
-	      ea <= mb;
+	      ea <= { (ir_i_flag && (!jmp && !jms)) ? DF : IF, mb };
 
    wire is_index_reg;
-   assign is_index_reg = ea[11:3] == 8'h01;
+   assign is_index_reg = ea[11:3] == 9'o001;
    
    //
    // ma
@@ -412,7 +475,8 @@ if (state == F1) $display("pc_skip %b", pc_skip);
    reg 	  interrupt_inhibit_ion;
 
    assign interrupt_inhibit = interrupt_inhibit_delay[0] |
-			      interrupt_inhibit_delay[1];
+			      interrupt_inhibit_delay[1] |
+			      interrupt_inhibit_ion;
 
    always @(posedge clk)
      if (reset)
@@ -457,7 +521,11 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 	  ac <= 0;
 	  mq <= 0;
 	  l <= 0;
-	  ir <= 0;
+
+	  ir <= 3'b000;
+	  ir_z_flag <= 1'b0;
+	  ir_i_flag <= 1'b0;
+
 	  run <= 1;
 	  interrupt_enable <= 0;
 	  interrupt_cycle <= 0;
@@ -477,12 +545,16 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 	 F0:
 	   begin
 	      interrupt_skip <= 0;
+	      interrupt_inhibit_ion = 1'b0;
 	      
 	      if (interrupt && interrupt_enable &&
 		  !interrupt_inhibit && !interrupt_cycle)
 		begin
-		   $display("xxx interrupt, pc %o; %b %b %b",
-			    pc, interrupt, interrupt_enable, interrupt_cycle);
+		   if (0)
+		   $display("xxx interrupt, pc %o; %b %b %b; %b %b",
+			    pc,
+			    interrupt, interrupt_enable, interrupt_cycle,
+			    interrupt_inhibit, interrupt_inhibit_delay);
 		   interrupt_cycle <= 1;
 		   interrupt <= 0;
 		   interrupt_enable <= 0;
@@ -490,6 +562,8 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 		   // simulate a jsr to 0
 		   mb <= 12'o4000;
 		   ir <= 3'o4;
+		   ir_i_flag <= 1'b0;
+		   ir_z_flag <= 1'b0;
 		   SF <= {UF,IF,DF};
 		   IF <= 3'b000;
 		   DF <= 3'b000;
@@ -498,9 +572,11 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 		begin
 		   interrupt_cycle <= 0;
 
-		   //$display("read ram [%o] -> %o", ram_addr, ram_data_in);
+		   if (0) $display("read ram [%o] -> %o", ram_addr, ram_data_in);
 		   mb <= ram_data_in;
 		   ir <= ram_data_in[11:9];
+		   ir_i_flag <= ram_data_in[8];
+		   ir_z_flag <= ram_data_in[7];
 		end
 	   end
 
@@ -527,13 +603,25 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 		end
 
 	      if (opr)
-		case ({mb[8],mb[0]})
+		casex ({mb[8],mb[0]})
 		  2'b0x:	// group 1
 		    begin
-		       if (mb[7]) ac <= 0;
-		       if (mb[6]) l <= 0;
-		       if (mb[5]) ac <= ~ac;
-		       if (mb[4]) l <= ~l;
+		       case ({mb[7],mb[5]})
+			 2'b01: ac <= ~ac;
+			 2'b10: ac <= 12'o0;
+			 2'b11: ac <= 12'o7777;
+		       endcase
+
+		       case ({mb[6],mb[4]})
+			 2'b01: l <= ~l;
+			 2'b10: l <= 1'b0;
+			 2'b11: l <= 1'b1;
+		       endcase
+		       
+//		       if (mb[7]) ac <= 0;
+//		       if (mb[6]) l <= 0;
+//		       if (mb[5]) ac <= ~ac;
+//		       if (mb[4]) l <= ~l;
 		    end
 
 		  2'b10:	// group 2
@@ -554,7 +642,7 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 
 	      if (iot)
 		begin
-		   case (io_select)
+		   casex (io_select)
 		     6'b000000:	// ION, IOF
 		       case (mb[2:0])
 			 3'b001:
@@ -583,9 +671,9 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 			      case (io_select[2:0])
 				3'b000: UI <= 0;			// CINT
 
-				3'b001: ac <= { 6'b0, DF, 3'b0 };	// RDF
-				3'b010: ac <= { 6'b0, IF, 3'b0 };	// RIF
-				3'b011: ac <= { 5'b0, SF };		// RIB
+				3'b001: ac <= ac | { 6'b0, DF, 3'b0 };	// RDF
+				3'b010: ac <= ac | { 6'b0, IF, 3'b0 };	// RIF
+				3'b011: ac <= ac | { 5'b0, SF };	// RIB
 				3'b100: begin				// RMF
 				   UB <= SF[6];
 				   IB <= SF[5:3];
@@ -626,7 +714,19 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 		end // if (iot)
 	      
 	      if (io_interrupt)
-		interrupt <= 1;
+		begin
+		   if (0)
+		   $display("F1 - set interrupt; (%b %b %b, %b %b %b)",
+			    interrupt_enable, 
+			    interrupt_inhibit,
+			    interrupt_cycle,
+			    IB_pending, UB_pending,
+			    interrupt_inhibit_delay);
+
+		   interrupt <= 1;
+		end
+	      else
+		   interrupt <= 0;
 
 	   end // case: F1
 
@@ -634,6 +734,10 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 	   begin
 	      if (opr)
 		begin
+		   // group 1
+		   if (!mb[8] && mb[0])		/* IAC */
+		     {l,ac} <= {l,ac} + 13'o00001;
+
 	     	   // group 3
 		   if (mb[8] & mb[0])
 		     case ({mb[6:4]})
@@ -657,8 +761,8 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 		   // group 1
 		   if (!mb[8])
 		     begin
-			if (mb[0])			// IAC
-			  {l,ac} <= {l,ac} + 1'b1;
+//			if (mb[0])			// IAC
+//			  {l,ac} <= {l,ac} + 13'o00001;
 			case (mb[3:1])
 			  3'b001:		// BSW
 			    {l,ac} <= {l,ac[5:0],ac[11:6]};
@@ -736,7 +840,7 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 
 	 D0:
 	   begin
-	      $display("read ram [%o] -> %o", ram_addr, ram_data_in);
+	      if (0) $display("read ram [%o] -> %o", ram_addr, ram_data_in);
 	      mb <= ram_data_in;
 	   end
 
@@ -750,7 +854,8 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 	 D2:
 	   begin
 	      // write ram
-	      $display("write ram [%o] <- %o", ram_addr, ram_data_out);
+	      if (ram_wr)
+	      if (0) $display("write ram [%o] <- %o", ram_addr, ram_data_out);
 	   end
 	 
 	 D3:
@@ -772,7 +877,7 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 
 	 E0:
 	   begin
-	      $display("read ram [%o] -> %o", ram_addr, ram_data_in);
+	      if (0) $display("read ram [%o] -> %o", ram_addr, ram_data_in);
 	      mb <= ram_data_in;
 	   end
 
@@ -795,7 +900,9 @@ if (state == F1) $display("pc_skip %b", pc_skip);
 	 E2:
 	   begin
 	      // write ram
-	      $display("write ram [%o] <- %o", ram_addr, ram_data_out);
+	      if (ram_wr)
+	      if (0) $display("write ram [%o] <- %o (pc %o)",
+				ram_addr, ram_data_out, pc);
 	   end
 	 
 	 E3:

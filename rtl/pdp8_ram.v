@@ -1,7 +1,5 @@
 //
 
-`include "ram_32kx12.v"
-
 module pdp8_ram(clk, reset, addr, data_in, data_out, rd, wr);
 
    input clk;
