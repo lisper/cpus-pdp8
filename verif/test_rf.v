@@ -3,7 +3,7 @@
 //
 
 `include "../rtl/pdp8_rf.v"
-
+`include "../rtl/ram_256x12.v"
 
 `timescale 1ns / 1ns
 

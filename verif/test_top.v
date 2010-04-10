@@ -9,12 +9,12 @@
 `include "../rtl/pdp8.v"
 `include "../rtl/top.v"
 `include "../rtl/ram_32kx12.v"
+`include "../rtl/ram_256x12.v"
 `include "../rtl/debounce.v"
 
 `timescale 1ns / 1ns
 
 module test;
-
 
    wire	rs232_txd;
    wire rs232_rxd;
@@ -106,15 +106,9 @@ module test;
    if (top.cpu.state == 4'b0000)
     begin
       cycle = cycle + 1;
-//      #1 $display("#%d, r%b s%d, pc %o ir%o ma %o mb %o j%b l%b ac %o, i%b/%b",
-//		cycle, top.cpu.run, top.cpu.state, top.cpu.pc,
-//		top.cpu.ir, top.cpu.ma, top.cpu.mb, top.cpu.jmp, top.cpu.l, top.cpu.ac,
-//		top.cpu.interrupt_enable, top.cpu.interrupt);
-       //#1 $display("   io_data_in %o, io_data_out %o",
-       //io_data_in, io_data_out);
-
       #1 $display("pc %o ir %o l %b ac %o ion %o",
-		  top.cpu.pc, top.cpu.mb, top.cpu.l, top.cpu.ac, top.cpu.interrupt_enable);
+		  top.cpu.pc, top.cpu.mb, top.cpu.l, top.cpu.ac,
+		  top.cpu.interrupt_enable);
 
        if (top.cpu.state == 4'b1100)
 	 $finish;
