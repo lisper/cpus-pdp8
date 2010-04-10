@@ -290,7 +290,7 @@ will process the information.
  // read from ram
  DB_begin_xfer_write:
         ma_out = dma_addr
- 	mb_out = buffer_out
+ 	buffer_hold <= ram_in
         ram_read_req = 1
  	if ram_done db_next_state = DB_check_xfer_write;
 
@@ -454,6 +454,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
    reg 	      buffer_dirty;
 
    reg [11:0] buffer_hold;
+   wire [11:0] buffer_out;
    
    wire       buffer_matches_DMA;
    wire       buffer_rd;
@@ -474,6 +475,13 @@ module pdp8_rf(clk, reset, iot, state, mb,
    assign buffer_addr = disk_addr[7:0];
 			 
    assign ide_done = 1;
+
+   // ide sector buffer
+   ram_256x12 buffer(.A(buffer_addr),
+		     .DI(buffer_hold),
+		     .DO(buffer_out),
+		     .CE_N(1'b0),
+		     .WE_N(~buffer_wr));
    
    // combinatorial
    always @(state or
