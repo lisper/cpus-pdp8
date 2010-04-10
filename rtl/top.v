@@ -1,6 +1,6 @@
 //
 // pdp-8/i in verilog - fpga top level
-// copyright Brad Parker <brad@heeltoe.com> 2009
+// copyright Brad Parker <brad@heeltoe.com> 2009-2010
 //
 
 `timescale 1ns / 1ns
@@ -105,6 +105,13 @@ module top(rs232_txd, rs232_rxd,
    wire [3:0]  state;
    wire [11:0] mb;
 
+   wire        ext_ram_read_req;
+   wire        ext_ram_write_req;
+   wire [14:0] ext_ram_ma;
+   wire [11:0] ext_ram_in;
+   wire        ext_ram_done;
+   wire [11:0] ext_ram_out;
+
    debounce reset_sw(.clk(sysclk), .in(button[3]), .out(reset));
 
 //   display show_pc(.clk(sysclk), .reset(reset),
@@ -130,7 +137,13 @@ module top(rs232_txd, rs232_rxd,
 	   .io_clear_ac(io_clear_ac),
 	   .iot(iot),
 	   .mb(mb),
-	   .switches(switches));
+	   .switches(switches),
+	   .ext_ram_read_req(ext_ram_read_req),
+	   .ext_ram_write(ext_ram_write_req),
+	   .ext_ram_done(ext_ram_done),
+	   .ext_ram_ma(ext_ram_ma),
+	   .ext_ram_in(ext_ram_out),
+	   .ext_ram_out(ext_ram_in));
    
    pdp8_io io(.clk(clk),
 	      .reset(reset),
@@ -143,7 +156,13 @@ module top(rs232_txd, rs232_rxd,
 	      .io_data_avail(io_data_avail),
 	      .io_interrupt(io_interrupt),
 	      .io_skip(io_skip),
-   	      .io_clear_ac(io_clear_ac));
+   	      .io_clear_ac(io_clear_ac),
+	      .io_ram_read_req(ext_ram_read_req),
+	      .io_ram_write(ext_ram_write_req),
+	      .io_ram_done(ext_ram_done),
+	      .io_ram_ma(ext_ram_ma),
+	      .io_ram_in(ext_ram_in),
+	      .io_ram_out(ext_ram_out));
 
    pdp8_ram ram(.clk(clk),
 	       .reset(reset), 

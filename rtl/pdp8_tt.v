@@ -11,7 +11,7 @@ module pdp8_tt(clk, reset, iot, state, mb,
 
    output reg	     io_selected;
    output reg [11:0] io_data_out;
-   output reg 	     io_data_avail;
+   output  	     io_data_avail;
    output  	     io_interrupt;
    output reg 	     io_skip;
    
@@ -28,6 +28,8 @@ integer tx_delay;
 
    // interrupt output
    assign io_interrupt = rx_int || tx_int;
+
+   assign io_data_avail = 1'b1;
    
    // combinatorial
    always @(state or rx_int or tx_int)
@@ -35,7 +37,6 @@ integer tx_delay;
 	// sampled during f1
 	io_skip = 1'b0;
 	io_data_out = io_data_in;
-	io_data_avail = 1'b1;
 	io_selected = 1'b0;
 
 	//if (state == F1 && iot)
@@ -78,8 +79,6 @@ integer tx_delay;
        case (state)
 	  F0:
 	    begin
-	       // sampled during f1
-	       io_data_avail <= 0;
 	    end
 
 	  F1:

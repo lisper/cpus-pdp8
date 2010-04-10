@@ -21,9 +21,7 @@ module ram_32kx12(A, DI, DO, CE_N, WE_N);
       for (i = 0; i < 32768; i=i+1)
         ram[i] = 12'b0;
 
-`ifdef verilator
        n = 0;
-`endif
 
 `ifdef __ICARUS__
        n = $value$plusargs("test=%s", testfilename);
@@ -32,6 +30,13 @@ module ram_32kx12(A, DI, DO, CE_N, WE_N);
 `ifdef __CVER__
        n = $scan$plusargs("test=", testfilename);
 `endif
+
+       if (n == 0)
+	 begin
+	    testfilename = "../verif/default.mem";
+	    n = 1;
+	 end
+       
        if (n > 0)
 	 begin
 	    $display("ram: code filename: %s", testfilename);

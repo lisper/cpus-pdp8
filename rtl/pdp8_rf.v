@@ -1,9 +1,17 @@
 /*
   RF08
 
-  2048 words/track
-  128 tracks
-
+  2048 words/track	11 bits
+  128 tracks		 7 bits
+  4 disks		 2 bits
+                        -------
+                        20 bits
+ 
+       1       111
+  dma  98765432109876543210  
+       ddtttttttwwwwwwwwwww
+  ema  876543210
+ 
   mapped to IDE drive;
     2048 x 12 bits -> 2048 x 16 bits = 8 blocks of 512 bytes
     each track is 8 blocks
@@ -19,10 +27,6 @@
 
   writes to dma trigger; adc is asserted after match w/disk
  
-  1       111
-  98765432109876543210  
-           wwwwwwwwwww
-
   -------------
 
   memory:
@@ -85,7 +89,7 @@
 
  uses 3 cycle data break
  
- ac 7:0, ac 11:0 => 20 bit {EMA,DMA}
+ ac 8:0, ac 10:0 => 20 bit {EMA,DMA}
  20 bit {EMA,DMA} = { disk-select, track-select 6:0, word-select 11:0 }
 
  status
@@ -122,29 +126,10 @@ usually through the program interrupt facility.  An interrupt is
 requested when the data transfer is completed and the service routine
 will process the information.
 
-
  -----------    -----------    -----------    ----------- 
 
- external signals:
-
- ma_out
- ram_write_req
- ram_read_req
- ram_done
- mb_in
- mb_out 
- 
- DISK STATE MACHINE:
+ HIGH LEVEL DISK STATE MACHINE:
   
- // setup
-   wire [8:0] track;
-   wire [11:0] ide_block;
-   wire [7:0] ide_block_index;
- 
-   track = {ema[7:0], dma[11]};
-   ide_block = {1'b0, track, 3'b0} + {8'b0, dma[11:8]}
-   ide_block_index = dma[7:0];
-
  idle
  
  start-xfer
@@ -157,17 +142,17 @@ will process the information.
      goto begin-xfer-write
  
  check-xfer-read
-   if disk-addr-page == memory-buffer-addr-page
-      read memory-buffer-page[offset]
+   if memory buffer contains disk page
+      read word from memory buffer at offset
       goto next-xfer-read
    else
-      if memory-buffer-dirty == 0
-         goto read-new-page
-      else
+      if memory buffer dirty
          goto write-old-page
+      else
+         goto read-new-page
  
  next-xfer-read
-   write M[addr]
+   write memory at addr
    goto next-xfer-incr
  
  next-xfer-incr
@@ -181,94 +166,100 @@ will process the information.
      goto begin-xfer-write
  
  begin-xfer-write
-   read data from memory
+   read from memory at addr
    goto check-xfer-write
   
  check-xfer-write
-   if disk-addr-page == memory-buffer-addr-page
-      write memory-buffer-page[offset]
-      set memory-buffer-dirty = 1
+   if memory buffer contains disk page
+      write word to memory buffer at offset
+      set memory buffer dirty
       goto next-xfer-incr
    else
-      if memory-buffer-dirty == 0
-         goto read-new-page
-      else
+      if memory buffer dirty
          goto write-old-page
+      else
+         goto read-new-page
 
  done-xfer
-   write addr
-   write wc
+   write addr to memory
+   write wc to memory
    set done/interrupt
    goto idle
 
  read-new-page
-   read block from ide
-   set memory-buffer-addr-page
-   set memory-buffer-dirty = 0
+   read memory buffer from ide
+   remember memory buffer disk address
+   clear memory buffer dirty
    if read
      goto check-xfer-read
    else
      goto check-xfer-write
  
  write-old-page
-   write block to ide
-   set memory-buffer-dirty = 0
+   write memory buffer to ide
+   clear memory buffer dirty
    goto read-new-page
  
  -----------    -----------    -----------    ----------- 
  
- DMA STATE MACHINE:
+ DISK / DMA STATE MACHINE:
 
- wire [7:0] disk_buffer_index;
- wire databreak_done_req;
- wire databreak_notdone_req;
+ external signals:
 
- reg databreak_done;
-  
- always @(posedge clk)
-   if (databreak_done_req)
-     databreak_done <= 1;
-   else
-     if (databreak_notdone_req)
-       databreak_done <= 0;
-
- always @(posedge clk)
-   if (db_state == DB9)
-     begin
- 	ema <= new_da[18:11];
-  	dma <= new_da[10:0];
-     end
+ ma_out
+ ram_write_req
+ ram_read_req
+ ram_done
+ mb_in
+ mb_out 
  
- db_done = 0; 
- db_eob = 0; 
- ram_write = 0;
- databreak_done_req = 0;
- databreak_notdone_req = 0;
+ internal signals:
+
+ reg [19:0] disk_addr;
+  
+ wire [8:0] track;
+ wire [11:0] ide_block;
+ wire [7:0] ide_block_index;
+ 
+ track = {ema[7:0], dma[11]};
+ ide_block = {1'b0, track, 3'b0} + {8'b0, dma[11:8]}
+ ide_block_index = dma[7:0];
+
+
+ db_done <= 0; 
+ dma_done = 0; 
+ ram_read_req = 0;
+ ram_write_req = 0;
  
  // idle
  DB_idle:
  
  // read word count
  DB_start_xfer1:
+	disk_addr <= {ema, dma};
 	ma_out = wc-address;
  	ram_read_req = 1;
+ 	dma_wc <= mb_in;
  	if ram_done db_next_state = DB_start_xfer2;
 
  // read addr
  DB_start_xfer2:
- 	wc = mb_in;
 	ma_out = wc-address | 1;
  	ram_read_req = 1;
+ 	dma_addr <= mb_in
         db_next_state = DB_start_xfer3; 
  
  DB_start_xfer3:
- 	ram_addr = mb_in
- 	db_next_state = DB_check_xfer_read;
+        if read
+ 	  db_next_state = DB_check_xfer_read; 
+        else
+          db_next_state = DB_begin_xfer_write; 
 
- // read buffer 
+ // check buffer address
  DB_check_xfer_read:
  	buffer_addr = disk_addr_offset
         if disk-addr-page == memory-buffer-addr-page
+          buffer_rd = 1
   	  db_next_state = DB_next_xfer_read;
         else
           if buffer_dirty == 0
@@ -276,21 +267,19 @@ will process the information.
           else
   	    db_next_state = DB_write_old_page;
 
- // advance
+ // write to ram
  DB_next_xfer_read: 
-        ma_out = ram_addr
+        ma_out = dma_addr
  	mb_out = buffer_out
         ram_write_req = 1
  	if ram_done db_next_state = DB_next_xfer_incr;
  
  DB_next_xfer_incr: 
         disk_addr <= disk_addr + 1
- 	new_da = {ema, dma} + 19'b1;
-
-        ram_addr <= ram_addr + 1
-        wc <= wc + 1
- 	done = wc == 07777
- 	if done
+        dma_addr <= dma_addr + 1
+        dma_wc <= dma_wc + 1
+ 	dma_done = dma_wc == 07777
+ 	if dma_done
   	    db_next_state = DB_done_xfer;
         else
             if read
@@ -298,104 +287,103 @@ will process the information.
             else
               db_next_state = DB_begin_xfer_write; 
 
- // write to ram
- DB7_begin_xfer_write:
-        ma_out = ram_addr
+ // read from ram
+ DB_begin_xfer_write:
+        ma_out = dma_addr
  	mb_out = buffer_out
         ram_read_req = 1
  	if ram_done db_next_state = DB_check_xfer_write;
 
- // read buffer
+ // check buffer address
  DB_check_xfer_write:
         buffer_addr = disk_addr_offset
         if disk-addr-page == memory-buffer-addr-page
            buffer_wr = 1
-           buffer-dirty <= 1
+           buffer_dirty <= 1
            db_next_state = DB_next_xfer_incr; 
         else
-           if buffer-dirty == 0
+           if buffer_dirty == 0
              db_next_state = DB_read_new_page
            else
              db_next_state = DB_write_old_page
 
  // done 
  DB_done_xfer:
+  	ema <= disk_addr[18:11];
+  	dma <= disk_addr[10:0];
+
 	ma_out = wc-address;
-        mb_out = ram_addr
+        mb_out = dma_addr
  	ram_write_req = 1;
  	if ram_done db_next_state = DB_start_xfer1;
  
  DB_done_xfer1:
 	ma_out = wc-address | 1;
-        mb_out = wc
+        mb_out = dma_wc
  	ram_write_req = 1;
  	if ram_done db_next_state = DB_done_xfer2;
 
  DB_done_xfer2:
-   set done/interrupt
+ 	// wait for F2
+ 	if state == F2
+ 	  db_next_state = DB_done_xfer3
+	else
+ 	  db_next_state = DB_done_xfer2
+ 
+ DB_done_xfer3:
+ 	db_done <= 1
+ 	//interrupt
         db_next_state = DB_idle
 
  DB_read_new_page:
-   read block from ide
-   set memory-buffer-addr-page
-        buffer-dirty <= 0
+	read block from ide
+ 	set memory-buffer-addr-page
+        buffer_dirty <= 0
 	if read
 	  db_next_state = DB_check_xfer_read
  	else
 	  db_next_state = DB_check_xfer_write
  
  DB_write_old_page:
-   write block to ide
-        buffer-dirty <= 0
-	db_next_state = DB_read-new-page
- 
+	write block to ide
+        buffer_dirty <= 0
+	db_next_state = DB_read_new_page
 
-
-------
  
- // finish read/write
- DB9:
-	disk_buffer_index = disk_buffer_index + 1;
- 
- 	new_da = {ema, dma} + 19'b1;
-
-	if (databreak_done)
-	  begin
- 	    db_done = 1;
- 	    db_next_state = DB_idle;
- 	  end
- 	else
-	  if (disk_buffer_index == 8'b0)
-	    begin 
-	      db_next_state = DB_idle;
- 	      db_eob = 1;
- 	    end
-          else
-            db_next_state = DB1;
- 
- */
+ -----------    -----------    -----------    ----------- 
+*/
 
 
 module pdp8_rf(clk, reset, iot, state, mb,
 	       io_data_in, io_data_out, io_select, io_selected,
-	       io_data_avail, io_interrupt, io_skip);
-   
+	       io_data_avail, io_interrupt, io_skip,
+	       ram_read_req, ram_write_req, ram_done,
+	       ram_ma, ram_in, ram_out);
+
    input clk, reset, iot;
    input [11:0] io_data_in;
-   input [11:0]      mb;
-   input [3:0] 	     state;
-   input [5:0] 	     io_select;
-
-   output reg 	     io_selected;
+   input [11:0] mb;
+   input [3:0] 	state;
+   input [5:0] 	io_select;
+   input 	ram_done;
+   input [11:0] ram_in;
+   
    output reg [11:0] io_data_out;
+   output reg 	     io_selected;
    output reg 	     io_data_avail;
    output 	     io_interrupt;
    output reg 	     io_skip;
-   
-   parameter 	     F0 = 4'b0000;
-   parameter 	     F1 = 4'b0001;
-   parameter 	     F2 = 4'b0010;
-   parameter 	     F3 = 4'b0011;
+
+   output 	     ram_read_req;
+   output 	     ram_write_req;
+   output [11:0]     ram_out;
+   output [14:0]     ram_ma;
+
+   parameter [3:0]
+		F0 = 4'b0000,
+		F1 = 4'b0001,
+		F2 = 4'b0010,
+		F3 = 4'b0011;
 
    parameter PCA_bit = 12'o4000;	// photocell status
    parameter DRE_bit = 12'o2000;	// data req enable
@@ -408,36 +396,85 @@ module pdp8_rf(clk, reset, iot, state, mb,
    parameter NXD_bit = 12'o0002;	// non-existent disk
    parameter PER_bit = 12'o0001;	// parity error
 
+   parameter WC_ADDR = 15'o07750;
+   parameter CA_ADDR = 15'o07751;
+
    wire      ADC;
    wire      DCF;
+   wire      PCA;
+   wire      DRE;
+   wire      DRL;
+   wire      PER;
+   
    reg [11:0] DMA;
    reg [7:0]  EMA;
    reg 	      PEF;
-   reg 	      rf08_rw;
-   reg 	      rf08_start_io;
-   reg 	      CIE, DRE, DRL, EIE, MEX, NXD, PCA, PER, PIE, WLS;
+   reg 	      CIE, EIE, MEX, NXD, PIE, WLS;
    
-   assign DCF = 1'b0;
-   assign ADC = DMA == /*DWA??*/0;
-
-   parameter DB_idle = 4'b0000;
-   parameter DB1 = 4'b0001;
-   parameter DB2 = 4'b0010;
-   parameter DB3 = 4'b0011;
-   parameter DB4 = 4'b0100;
-   parameter DB5 = 4'b0101;
-   parameter DB6 = 4'b0110;
-   parameter DB7 = 4'b0111;
-   parameter DB8 = 4'b1000;
-   parameter DB9 = 4'b1001;
-
-   wire [3:0] db_next_state;
+   assign DRL = 1'b0;
+   assign PER = 1'b0;
+   
+   reg [10:0] photocell_counter;
+   
+   parameter [3:0]
+		DB_idle		 	= 4'b0000,
+		DB_start_xfer1		= 4'b0001,
+		DB_start_xfer2		= 4'b0010,
+		DB_start_xfer3		= 4'b0011,
+		DB_check_xfer_read	= 4'b0100,
+		DB_next_xfer_read	= 4'b0101,
+		DB_next_xfer_incr	= 4'b0110,
+		DB_begin_xfer_write	= 4'b0111,
+		DB_check_xfer_write	= 4'b1000,
+		DB_done_xfer		= 4'b1001,
+		DB_done_xfer1		= 4'b1010,
+		DB_done_xfer2		= 4'b1011,
+		DB_done_xfer3		= 4'b1100,
+		DB_read_new_page	= 4'b1101,
+		DB_write_old_page	= 4'b1111;
+     
+   reg [3:0]  db_next_state;
    reg [3:0]  db_state;
+
+   wire	      active;
+   reg 	      is_read;
+   reg 	      is_write;
+
    reg 	      dma_start;
+   reg 	      db_done;
+   wire       dma_done;
 
+   reg [15:0] dma_addr;
+   reg [11:0] dma_wc;
+
+   reg [19:0] disk_addr;
+
+   wire [7:0] buffer_addr;
+   reg [19:8] buffer_disk_addr;
+   reg 	      buffer_dirty;
+
+   reg [11:0] buffer_hold;
+   
+   wire       buffer_matches_DMA;
+   wire       buffer_rd;
+   wire       buffer_wr;
+   
+   wire       ide_read_req;
+   wire       ide_write_req;
+   wire       ide_done;
+   
    //
-   assign io_interrupt = 1'b0;
+   assign io_interrupt = (CIE & db_done) ||
+			 (PIE & PCA) ||
+			 (EIE & (WLS | DRL | NXD | PER));
 
+   assign active = is_read | is_write;
+
+   assign buffer_matches_DMA = buffer_disk_addr[19:8] == disk_addr[19:8];
+   assign buffer_addr = disk_addr[7:0];
+			 
+   assign ide_done = 1;
+   
    // combinatorial
    always @(state or
 	    ADC or DRL or PER or WLS or NXD or DCF)
@@ -455,15 +492,15 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	      begin
 		 io_selected = 1'b1;
 		 case (mb[2:0])
-		   6'o03: // DMAR
+		   3'o3: // DMAR
 		     begin
 			io_data_out = 0;
-			dma_start = 1;
+			dma_start = 1'b1;
 		     end
-		   6'o03: // DMAW
+		   3'o3: // DMAW
 		     begin
 			io_data_out = 0;
-			dma_start = 1;
+			dma_start = 1'b1;
 		     end
 		 endcase
 	      end // case: 6'o60
@@ -510,9 +547,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	      begin
 		 io_selected = 1'b1;
 		 case (mb[2:0])
-		   3: // DXAL
+		   3'o3: // DXAL
 		     io_data_out = 0;
-		   5: // DXAC
+		   3'o5: // DXAC
 		     io_data_out = EMA;
 		 endcase // case(mb[2:0])
 	      end
@@ -527,14 +564,18 @@ module pdp8_rf(clk, reset, iot, state, mb,
    always @(posedge clk)
      if (reset)
        begin
+	  is_read <= 1'b0;
+	  is_write <= 1'b0;
+
+	  EMA <= 0;
+	  DMA <= 0;
+	  PEF <= 0;
+	  CIE <= 0;
        end
      else
        case (state)
 	  F0:
 	    begin
-	       // sampled during f1
-	       io_data_avail <= 0;
-	       
 	       if (iot)
 		 case (io_select)
 		   6'o60: // DCMA
@@ -542,22 +583,25 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		       begin
 			  DMA <= 0;
 			  PEF <= 0;
-			  DRL <= 0;
 		       end
 		   6'o61:
 		     case (mb[2:0])
 		       3'o1: // DCIM
 			 begin
+			    MEX <= 0;
 			    CIE <= 0;
-			    EMA <= 0;
+			    PIE <= 0;
+			    EIE <= 0;
 			 end
 		       3'o2: // DSAC
 			 begin
 			 end
 		       3'o5: // DIML
-			 begin
-			    CIE <= io_data_in[8];
-			    EMA <= io_data_in[7:0];
+			   begin
+			      EIE <= io_data_in[8];
+			      PIE <= io_data_in[7];
+			      CIE <= io_data_in[6];
+			      MEX <= io_data_in[5:3];
 			 end
 		     endcase // case(mb[2:0])
 		 endcase
@@ -577,16 +621,14 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			 begin
 			    // clear ac
 			    DMA <= io_data_in;
-			    rf08_start_io <= 1;
-			    rf08_rw <= 0;
+			    is_read <= 1'b1;
 			 end
 
 		       6'o03: // DMAW
 			 begin
 			    // clear ac
 			    DMA <= io_data_in;
-			    rf08_start_io <= 1;
-			    rf08_rw <= 1;
+			    is_write <= 1'b1;
 			 end
 		     endcase // case(mb[2:0])
 
@@ -612,18 +654,219 @@ module pdp8_rf(clk, reset, iot, state, mb,
 //	       io_interrupt <= 0;
 //	    end
 
+	 // F3 is a convenient time to do this
+	 // note that state machine waits when done till next F2
+	 // to sync up DB_done_xfer3 and F3
+	 F3:
+	   if (db_state == DB_done_xfer3)
+	     begin
+  		EMA <= disk_addr[19:12];
+  		DMA <= disk_addr[11:0];
+		is_read <= 1'b0;
+		is_write <= 1'b0;
+	     end
+
        endcase // case(state)
 
-   //
-   assign db_next_state =
-			 dma_start ? DB1 :
-			 DB_idle;
-   
+   // comb logic for next state
+   always @(*)
+     begin
+	db_next_state = DB_idle;
+	case (db_state)
+	  DB_idle:
+	    if (dma_start)
+	      db_next_state = DB_start_xfer1;
+
+	  DB_start_xfer1:
+	    db_next_state = ram_done ? DB_start_xfer2 : DB_start_xfer1;
+	  
+	  DB_start_xfer2:
+	    db_next_state = ram_done ? DB_start_xfer3 : DB_start_xfer2;
+	  
+	  DB_start_xfer3:
+	    db_next_state = is_read ? DB_check_xfer_read : DB_begin_xfer_write;
+
+	  DB_check_xfer_read:
+            if (buffer_matches_DMA)
+	      db_next_state = DB_next_xfer_read;
+            else
+  	      db_next_state = buffer_dirty ? DB_write_old_page:DB_read_new_page;
+
+	  DB_next_xfer_read:
+	    db_next_state = ram_done ? DB_next_xfer_incr : DB_next_xfer_read;
+	  
+	  DB_next_xfer_incr:
+	    if (dma_done)
+  	      db_next_state = DB_done_xfer;
+            else
+	      db_next_state = is_read ? DB_check_xfer_read:DB_begin_xfer_write;
+
+	  DB_begin_xfer_write:
+ 	    db_next_state = ram_done ? DB_check_xfer_write:DB_begin_xfer_write;
+
+	  DB_check_xfer_write:
+            if (buffer_matches_DMA)
+	      db_next_state = DB_next_xfer_incr;
+            else
+  	      db_next_state = buffer_dirty ? DB_write_old_page:DB_read_new_page;
+
+	  DB_done_xfer:
+	    db_next_state = ram_done ? DB_done_xfer1 : DB_done_xfer;
+
+	  DB_done_xfer1:
+	    db_next_state = ram_done ? DB_done_xfer2 : DB_done_xfer1;
+
+	  DB_done_xfer2:
+	    db_next_state = state == F2 ? DB_done_xfer3 : DB_done_xfer2;
+
+	  DB_done_xfer3:
+            db_next_state = DB_idle;
+
+	  DB_read_new_page:
+	    db_next_state = ide_done ?
+			    (is_read ? DB_check_xfer_read:DB_check_xfer_write) :
+			    DB_read_new_page;
+	  DB_write_old_page:
+	    db_next_state = ide_done ? DB_read_new_page : DB_write_old_page;
+	  
+	endcase
+     end
+
+   // db_state
    always @(posedge clk)
      if (reset)
        db_state <= DB_idle;
      else
        db_state <= db_next_state;
-   
+
+   assign dma_done = dma_wc == 12'o7777;
+
+   // general state
+   always @(posedge clk)
+     if (reset)
+       begin
+	  db_done <= 1'b1;
+	  dma_wc <= 12'b0;
+	  dma_addr <= 15'b0;
+
+	  disk_addr <= 20'b0;
 	  
+	  buffer_disk_addr[19:8] <= 12'b111111111111;
+	  buffer_dirty <= 1'b0;
+	  buffer_hold <= 12'b0;
+       end
+     else
+       begin
+	  case (db_state)
+	    DB_idle:
+	      begin
+		 disk_addr <= {EMA, DMA};
+		 db_done <= 0;
+	      end
+	    
+	    DB_start_xfer1:
+	      begin
+		 dma_wc <= ram_in;
+	      end
+	    
+	    DB_start_xfer2:
+	      begin
+		 dma_addr <= ram_in;
+	      end
+
+	    DB_start_xfer3:
+	      begin
+		 // this state might be not be needed
+	      end
+
+	    DB_begin_xfer_write:
+	      begin
+		 buffer_hold <= ram_in;
+	      end
+	    
+	    DB_next_xfer_incr:
+	      begin
+		 disk_addr <= disk_addr + 20'b1;
+		 dma_addr <= dma_addr + 15'b1;
+		 dma_wc <= dma_wc + 12'b1;
+	      end
+
+	    DB_check_xfer_write:
+	      buffer_dirty <= 1;
+
+	    DB_done_xfer2:
+	      db_done <= 1;
+
+	    DB_read_new_page:
+	      begin
+		 buffer_dirty <= 0;
+		 buffer_disk_addr[19:8] <= disk_addr[19:8];
+	      end
+ 
+	    DB_write_old_page:
+	      begin
+		 buffer_dirty <= 0;
+		 buffer_disk_addr[19:8] <= disk_addr[19:8];
+	      end
+	    
+	  endcase // case (db_state)
+       end // else: !if(reset)
+
+   //
+   // external ram control
+   //
+   assign ram_ma =
+		  db_state == DB_start_xfer1 ? WC_ADDR :
+		  db_state == DB_start_xfer2 ? CA_ADDR :
+		  db_state == DB_next_xfer_read ? dma_addr :
+		  db_state == DB_begin_xfer_write ? dma_addr :
+		  db_state == DB_done_xfer ? WC_ADDR :
+		  db_state == DB_done_xfer1 ? CA_ADDR :
+		  15'b0;
+
+   assign ram_read_req =
+			(db_state == DB_start_xfer1) |
+			(db_state == DB_start_xfer2) |
+			(db_state == DB_begin_xfer_write);
+   
+   assign ram_write_req =
+			 (db_state == DB_next_xfer_read) |
+			 (db_state == DB_done_xfer) |
+			 (db_state == DB_done_xfer1);
+
+   assign ram_out =
+		   db_state == DB_next_xfer_read ? buffer_hold :
+		   db_state == DB_begin_xfer_write ? buffer_hold :
+		   db_state == DB_done_xfer ? dma_addr :
+		   db_state == DB_done_xfer1 ? dma_wc :
+		   12'b0;
+
+   assign buffer_rd = db_state == DB_check_xfer_read && buffer_matches_DMA;
+   assign buffer_wr = db_state == DB_check_xfer_write && buffer_matches_DMA;
+   
+   assign ide_read_req = db_state == DB_read_new_page;
+   assign ide_write = db_state == DB_write_old_page;
+
+   //
+   // RF08 state
+   //
+   assign ADC = buffer_matches_DMA;
+
+   always @(posedge clk)
+     if (reset)
+       photocell_counter <= 0;
+     else
+       photocell_counter <= photocell_counter + 1;
+
+   assign PCA = photocell_counter == 0;
+   assign DRE = PCA;
+   assign DCF = db_done;
+
+   always @(posedge clk)
+     if (reset)
+       begin
+	  WLS <= 1'b0;
+       end
+
 endmodule
+

@@ -1,10 +1,13 @@
-// PDP-8 in verilog
-// Brad Parker brad@heeltoe.com
+// PDP-8/I in verilog
+// copyright Brad Parker <brad@heeltoe.com> 2005-2010
 // 
 // Based on descriptions in "Computer Engineering" and various PDP-8/I manuals
+// fully implements extended memory (IF & DF) and user mode (KT8/I)
 //
 // Mar 2010
 //	co-simulation with simh & behavioral model to boot TSS/8
+//	passes 8/I instruction and extended memory diags
+//	split out peripherals, added external dma
 // Apr 2009
 //	major revamp for synthesis, removed latches, added muxes, new top
 // Jan 2007
@@ -17,12 +20,6 @@
 //	added IF, DF, user mode
 // Nov 2005 Brad Parker brad@heeltoe.com
 //	initial work; runs focal a bit
-//
-
-// TODO:
-// fully implement extended memory (IF & DF), user mode (KT8/I)
-// add df32/rf08
-// 6000 pws ac <= switches
 //
 
 //   
@@ -71,7 +68,7 @@
 //
 // cpu states
 //
-//  F0 fetch ram[IF,pc]
+//  F0 read ram[IF,pc]
 //  F1 incr pc
 //  F2 ?
 //  F3 dispatch
@@ -133,7 +130,9 @@
 //			{IF, pc[11:7], mb[6:0]};
 // 
 // ------
-
+//
+// Actions take during each state:
+//
 //  F0 fetch
 //	ma = {IF,pc}
 //	check for interrupt
@@ -157,7 +156,6 @@
 //	ma = ea
 //	if opr
 //		group1 processing
-// 
 //	if !opr && !iot
 // 		possible defer
 // 
@@ -166,7 +164,7 @@
 //	mb <= ram[ma]
 //  D1
 //	ma = 0
-//  D2 write index reg
+//  D2 (write index reg)
 //	ma = index reg ? ea : {DF,mb}
 //	ram_wr = 1
 //  D3
@@ -178,7 +176,7 @@
 //	mb <= ram[ma]
 //  E1
 //	ma = 0
-//  E2 write isz value, dca value, jms return
+//  E2 (write isz value, dca value, jms return)
 //	ma = ea
 //	ram_wr = 1
 //  E3
@@ -201,7 +199,9 @@ module pdp8(clk, reset,
 	    ram_addr, ram_data_out, ram_data_in, ram_rd, ram_wr,
 	    io_select, io_data_out, io_data_in,
 	    io_data_avail, io_interrupt, io_skip, io_clear_ac,
-	    switches, iot, state, mb);
+	    switches, iot, state, mb,
+	    ext_ram_read_req, ext_ram_write_req, ext_ram_done,
+	    ext_ram_ma, ext_ram_in, ext_ram_out);
 
    input clk, reset;
    input [11:0] ram_data_in;
@@ -224,6 +224,15 @@ module pdp8(clk, reset,
    output [11:0] mb;
    
    input [11:0] switches;
+
+   input 	ext_ram_read_req;
+   input 	ext_ram_write_req;
+   input [14:0] ext_ram_ma;
+   input [11:0] ext_ram_in;
+
+   output 	ext_ram_done;
+   output [11:0] ext_ram_out;
+   
 
    // memory buffer, holds data, instructions
    reg [11:0] 	mb;
@@ -336,26 +345,25 @@ module pdp8(clk, reset,
    assign 	pc_skip =
 		  (opr && (mb[8] && !mb[0]) && (skip_condition ^ mb[3])) ||
 		  (iot && (io_skip || interrupt_skip));
-   //		(iot && mb[0] && io_skip);
    
-
    // cpu states
-   parameter 	F0 = 4'b0000;
-   parameter 	F1 = 4'b0001;
-   parameter 	F2 = 4'b0010;
-   parameter 	F3 = 4'b0011;
+   parameter [3:0]
+		F0 = 4'b0000,
+		F1 = 4'b0001,
+		F2 = 4'b0010,
+		F3 = 4'b0011,
 
-   parameter 	D0 = 4'b0100;
-   parameter 	D1 = 4'b0101;
-   parameter 	D2 = 4'b0110;
-   parameter 	D3 = 4'b0111;
+		D0 = 4'b0100,
+		D1 = 4'b0101,
+		D2 = 4'b0110,
+		D3 = 4'b0111,
 
-   parameter 	E0 = 4'b1000;
-   parameter 	E1 = 4'b1001;
-   parameter 	E2 = 4'b1010;
-   parameter 	E3 = 4'b1011;
+		E0 = 4'b1000,
+		E1 = 4'b1001,
+		E2 = 4'b1010,
+		E3 = 4'b1011,
 
-   parameter 	H0 = 4'b1100;
+		H0 = 4'b1100;
 
    //
    // cpu state state machine
@@ -377,7 +385,6 @@ module pdp8(clk, reset,
     
    assign next_state = state == F0 ? F1 :
 		       state == F1 && (~iot | (iot & io_data_avail)) ? F2 :
-// xxx fix this
 //		       state == F1 && (iot & ~io_data_avail) ? F1 :
 		       state == F2 ? F3 :
 		       state == F3 ? (~run ? H0 :
@@ -405,10 +412,6 @@ module pdp8(clk, reset,
        pc <= 0;
      else
        begin
-	  //if (state == F1)
-	  //  $display("pc_incr %b pc_skip %b", pc_incr, pc_skip);
-	  //if (state == F1 || state == D3 || state == E3)
-	  //$display(" pc <- %o", pc_mux);
 	  pc <= pc_mux;
        end
 
@@ -425,13 +428,22 @@ module pdp8(clk, reset,
    //
    assign ram_rd = (state == F0) ||
 		   (state == D0) ||
-		   (state == E0);
+		   (state == E0) ||
+		   (state == F2 && ext_ram_read_req);
 
    assign ram_wr = (state == D2 && is_index_reg) ||
-		   (state == E2 && (isz || dca || jms));
+		   (state == E2 && (isz || dca || jms)) ||
+		   (state == F2 && ext_ram_write_req);
 
-   assign ram_addr = ma;
-   assign ram_data_out = mb;
+   /* peripherals get ram access during F2 */
+   wire ext_ram_req;
+   
+   assign ext_ram_req = ext_ram_read_req | ext_ram_write_req;
+   assign ext_ram_done = state == F2 && ext_ram_req;
+   assign ext_ram_out = ext_ram_req ? ram_data_in : 12'b0;
+   
+   assign ram_addr = ext_ram_req ? ext_ram_ma : ma;
+   assign ram_data_out = ext_ram_req ? ext_ram_in : mb;
 
    assign io_select = mb[8:3];
    assign io_data_out = ac;
@@ -541,7 +553,9 @@ module pdp8(clk, reset,
        end
      else
        case (state)
+	 //
 	 // FETCH 
+	 //
 	 F0:
 	   begin
 	      interrupt_skip <= 0;
@@ -617,11 +631,6 @@ module pdp8(clk, reset,
 			 2'b10: l <= 1'b0;
 			 2'b11: l <= 1'b1;
 		       endcase
-		       
-//		       if (mb[7]) ac <= 0;
-//		       if (mb[6]) l <= 0;
-//		       if (mb[5]) ac <= ~ac;
-//		       if (mb[4]) l <= ~l;
 		    end
 
 		  2'b10:	// group 2
@@ -695,9 +704,9 @@ module pdp8(clk, reset,
 				     UB <= 1;
 				     interrupt_inhibit_ub = 1'b1;
 				  end
-			      endcase // case(io_select[2:0])
+			      endcase
 			    end // if (mb[2:0] == 3'b100)
-		       end // case: endcase...
+		       end
 		   endcase // case(io_select)
 
 		   if (io_data_avail)
@@ -761,8 +770,6 @@ module pdp8(clk, reset,
 		   // group 1
 		   if (!mb[8])
 		     begin
-//			if (mb[0])			// IAC
-//			  {l,ac} <= {l,ac} + 13'o00001;
 			case (mb[3:1])
 			  3'b001:		// BSW
 			    {l,ac} <= {l,ac[5:0],ac[11:6]};
@@ -808,36 +815,13 @@ module pdp8(clk, reset,
 			  mq <= 0;
 		     end
 		   
-//		   ir <= 0;
-//		   mb <= 0;
 		end // if (opr)
 
-//	      if (iot)
-//		begin
-//		   ir <= 0;
-//		   mb <= 0;
-//		end
-
-//	      if (!(opr || iot))
-//		begin
-//		   if (!mb[8] & jmp)
-//		     begin
-//			//pc <= ma;
-//			ir <= 0;
-//			mb <= 0;
-//		     end
-//
-//		   if (mb[8])
-//		     mb <= 0;
-//
-//		   if (!mb[8] & !jmp)
-//		     mb <= 0;
-//		end
 	   end // case: F3
 	 
-
+	 //
 	 // DEFER
-
+	 //
 	 D0:
 	   begin
 	      if (0) $display("read ram [%o] -> %o", ram_addr, ram_data_in);
@@ -860,21 +844,11 @@ module pdp8(clk, reset,
 	 
 	 D3:
 	   begin
-//	      if (jmp)
-//		begin
-//		   //pc <= mb;
-//		   ir <= 0;
-//		   mb <= 0;
-//		end
-//
-//	      if (!jmp)
-//		begin
-//		   mb <= 0;
-//		end
 	   end
 
+	 //
 	 // EXECUTE
-
+	 //
 	 E0:
 	   begin
 	      if (0) $display("read ram [%o] -> %o", ram_addr, ram_data_in);
@@ -915,9 +889,6 @@ module pdp8(clk, reset,
 		else
 		  if (dca)
 		    ac <= 0;
-
-	      // pc <- ma
-//	      ir <= 0;
 	   end
        endcase // case(state)
    
