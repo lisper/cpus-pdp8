@@ -1,3 +1,10 @@
+fip.pal - line 2029, added missing "I"
+si.pal - line 270; orig was "jmp com1", changed to be "jmp com2"
+init.pal - line 626; orig was "ksr", changed to be "ksf"
+ts8.pal - line 6608; "I" added to label
+          line 6803; typo
+------
+
 README
 
 fipb.pal
