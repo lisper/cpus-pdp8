@@ -250,7 +250,7 @@ int field_load(int dstfield, char *filename)
 
 		if (allow) {
 		    if (filled[field][origin]) {
-			printf("%s: field %d, addr %o; duplicate (old %04x new %04o)\n",
+			printf("%s: field %d, addr %o; duplicate (old %04o new %04o)\n",
 			       filename, field, origin,
 			       fields[field][origin], word & 07777);
 		    }
