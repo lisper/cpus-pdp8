@@ -1,9 +1,9 @@
 /* 256x12 static ram */
 module ram_256x12(A, DI, DO, CE_N, WE_N);
 
-   input[14:0] A;
-   input [11:0] DI;
-   input 	CE_N, WE_N;
+   input [7:0]   A;
+   input [11:0]  DI;
+   input 	 CE_N, WE_N;
    output [11:0] DO;
 
    reg [11:0] 	 ram [0:255];

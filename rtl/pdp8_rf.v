@@ -1,6 +1,8 @@
 /*
-  RF08
+  RF08 Emulation using IDE disk
 
+  RF08 Sizes:
+ 
   2048 words/track	11 bits
   128 tracks		 7 bits
   4 disks		 2 bits
@@ -12,7 +14,7 @@
        ddtttttttwwwwwwwwwww
   ema  876543210
  
-  mapped to IDE drive;
+  mapping RF08 to IDE disk drive
     2048 x 12 bits -> 2048 x 16 bits = 8 blocks of 512 bytes
     each track is 8 blocks
     each disk is (128 * 8) = 1024 blocks
@@ -23,18 +25,18 @@
   ema bits 7 & 8 select which rs08 disk
   ema bits 6 - 0 select disk head  (track #)
  
-  dma contains lower disk word address
+  dma contains lower disk word address (offset into block)
 
-  writes to dma trigger; adc is asserted after match w/disk
+  writes to dma trigger i/o; adc is asserted after match w/disk
  
   -------------
 
-  memory:
+  PDP-8 memory:
 
  	7750 word count
 	7751 current address
  
-  iot:
+  PDP-8 IOT's:
  
   660x
   661x
@@ -87,15 +89,16 @@
 
   6646 DMMT	Maintenance
 
- uses 3 cycle data break
+  Real RF08 uses 3 cycle data break
  
- ac 8:0, ac 10:0 => 20 bit {EMA,DMA}
- 20 bit {EMA,DMA} = { disk-select, track-select 6:0, word-select 11:0 }
+  ac 8:0, ac 10:0 => 20 bit {EMA,DMA}
+  20 bit {EMA,DMA} = { disk-select, track-select 6:0, word-select 11:0 }
 
  status
+    EIE = WLS | DRL | NXD | PER
+
 */
 
-//  EIE = WLS | DRL | NXD | PER
 
 /*
  3 cycle data break
@@ -127,6 +130,9 @@ requested when the data transfer is completed and the service routine
 will process the information.
 
  -----------    -----------    -----------    ----------- 
+*/
+
+/*
 
  HIGH LEVEL DISK STATE MACHINE:
   
@@ -358,7 +364,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	       io_data_in, io_data_out, io_select, io_selected,
 	       io_data_avail, io_interrupt, io_skip,
 	       ram_read_req, ram_write_req, ram_done,
-	       ram_ma, ram_in, ram_out);
+	       ram_ma, ram_in, ram_out,
+	       ide_dior, ide_diow, ide_cs, ide_da, ide_data_bus);
 
    input clk, reset, iot;
    input [11:0] io_data_in;
@@ -379,6 +386,14 @@ module pdp8_rf(clk, reset, iot, state, mb,
    output [11:0]     ram_out;
    output [14:0]     ram_ma;
 
+   output 	     ide_dior;
+   output 	     ide_diow;
+   output [1:0]      ide_cs;
+   output [2:0]      ide_da;
+   inout [15:0]      ide_data_bus;
+   
+   // -------------------------------------------------------
+   
    parameter [3:0]
 		F0 = 4'b0000,
 		F1 = 4'b0001,
@@ -463,7 +478,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
    wire       ide_read_req;
    wire       ide_write_req;
    wire       ide_done;
-   
+   wire       ide_error;
+       
    //
    assign io_interrupt = (CIE & db_done) ||
 			 (PIE & PCA) ||
@@ -474,16 +490,62 @@ module pdp8_rf(clk, reset, iot, state, mb,
    assign buffer_matches_DMA = buffer_disk_addr[19:8] == disk_addr[19:8];
    assign buffer_addr = disk_addr[7:0];
 			 
-   assign ide_done = 1;
+   //
+   // sector buffer
+   //
+   wire       ide_active;
+   wire [7:0] buff_addr;
+   wire [11:0] buff_in;
+   wire [11:0] buff_out;
+   wire        buff_rd;
+   wire        buff_wr;
 
+   wire [7:0]  ide_buffer_addr;
+   wire [23:0] ide_block_number;
+   wire [11:0] ide_buffer_in;
+   wire [11:0] ide_buffer_out;
+  
    // ide sector buffer
-   ram_256x12 buffer(.A(buffer_addr),
-		     .DI(buffer_hold),
-		     .DO(buffer_out),
-		     .CE_N(1'b0),
-		     .WE_N(~buffer_wr));
+   ram_256x12 buffer(.A(buff_addr),
+		     .DI(buff_in),
+		     .DO(buff_out),
+		     .CE_N(~buff_rd),
+		     .WE_N(~buff_wr));
+
+   assign ide_active = ide_read_req | ide_write_req;
    
-   // combinatorial
+   assign buff_addr = ide_active ? ide_buffer_addr : buffer_addr;
+   assign buff_in = ide_active ? ide_buffer_out : buffer_hold;
+   assign buff_out = ide_active ? ide_buffer_in : buffer_out;
+   assign buff_rd = ide_active ? ide_buffer_rd : 1'b1;
+   assign buff_wr = ide_active ? ide_buffer_wr : buffer_wr;
+   
+   // ide disk
+   ide_disk disk(.clk(clk),
+		 .reset(reset),
+		 .ide_lba(ide_block_number),
+		 .ide_read_req(ide_read_req),
+		 .ide_write_req(ide_write_req),
+		 .ide_error(ide_error),
+		 .ide_done(ide_done),
+		 .buffer_addr(ide_buffer_addr),
+		 .buffer_rd(ide_buffer_rd), 
+		 .buffer_wr(ide_buffer_wr),
+		 .buffer_in(ide_buffer_in),
+		 .buffer_out(ide_buffer_out),
+		 .ide_data_bus(ide_data_bus),
+		 .ide_dior(ide_dior),
+		 .ide_diow(ide_diow), 
+		 .ide_cs(ide_cs),
+		 .ide_da(ide_da));
+
+   assign ide_block_number = { 12'b0, disk_addr[19:8] };
+
+   //
+   // RF controller
+   //
+   
+   // combinatorial logic
    always @(state or
 	    ADC or DRL or PER or WLS or NXD or DCF)
      begin
@@ -499,7 +561,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	    6'o60:
 	      begin
 		 io_selected = 1'b1;
-		 case (mb[2:0])
+		 case (mb[2:0] )
 		   3'o3: // DMAR
 		     begin
 			io_data_out = 0;
@@ -653,14 +715,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
 
 	      end // if (iot)
 
-//	  F2:
-//	    begin
-//	       if (io_interrupt)
-//	       	 $display("iot2 %t, reset io_interrupt", $time);
-//
-//	       // sampled during f0
-//	       io_interrupt <= 0;
-//	    end
+	  F2:
+	    begin
+	    end
 
 	 // F3 is a convenient time to do this
 	 // note that state machine waits when done till next F2
@@ -676,7 +733,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 
        endcase // case(state)
 
-   // comb logic for next state
+   // comb logic to create 'next state'
    always @(*)
      begin
 	db_next_state = DB_idle;
@@ -734,6 +791,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	    db_next_state = ide_done ?
 			    (is_read ? DB_check_xfer_read:DB_check_xfer_write) :
 			    DB_read_new_page;
+
 	  DB_write_old_page:
 	    db_next_state = ide_done ? DB_read_new_page : DB_write_old_page;
 	  
@@ -816,12 +874,11 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		 buffer_dirty <= 0;
 		 buffer_disk_addr[19:8] <= disk_addr[19:8];
 	      end
-	    
-	  endcase // case (db_state)
-       end // else: !if(reset)
+	  endcase
+       end
 
    //
-   // external ram control
+   // external ram control (for dma to/from pdp-8 memory)
    //
    assign ram_ma =
 		  db_state == DB_start_xfer1 ? WC_ADDR :
@@ -853,13 +910,14 @@ module pdp8_rf(clk, reset, iot, state, mb,
    assign buffer_wr = db_state == DB_check_xfer_write && buffer_matches_DMA;
    
    assign ide_read_req = db_state == DB_read_new_page;
-   assign ide_write = db_state == DB_write_old_page;
+   assign ide_write_req = db_state == DB_write_old_page;
 
    //
    // RF08 state
    //
    assign ADC = buffer_matches_DMA;
 
+   // fake the photocell sensor
    always @(posedge clk)
      if (reset)
        photocell_counter <= 0;
@@ -870,6 +928,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
    assign DRE = PCA;
    assign DCF = db_done;
 
+   /* we don't support write lock */
    always @(posedge clk)
      if (reset)
        begin

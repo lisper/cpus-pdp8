@@ -7,22 +7,23 @@ module ide_disk(clk, reset,
 		ide_lba, ide_read_req, ide_write_req,
 		ide_error, ide_done,
 		buffer_addr, buffer_rd, buffer_wr,
-		buffer_in, buffer_out);
+		buffer_in, buffer_out,
+		ide_data_bus, ide_dior, ide_diow, ide_cs, ide_da);
 
    input clk;
    input reset;
-   input [24:0] ide_lba;
+   input [23:0] ide_lba;
    input 	ide_read_req;
    input 	ide_write_req;
 
    output 	ide_error;
    output 	ide_done;
    
-   output [7:0] buffer_addr;
-   output 	buffer_rd;
-   output buffer_wr;
+   output reg [7:0] buffer_addr;
+   output reg	buffer_rd;
+   output reg 	buffer_wr;
+   output reg [11:0] buffer_out;
    output [11:0] buffer_in;
-   output [11:0] buffer_out;
 
    parameter [4:0]
 		ready = 5'd0,
@@ -87,8 +88,18 @@ module ide_disk(clk, reset,
    output [1:0]  ide_cs;
    output [2:0]  ide_da;
 
+   //
+   reg [4:0] 	 ide_state;
+   reg [4:0] 	 ide_state_next;
+   
    reg [7:0] 	 offset;
    reg [7:0] 	 wc;
+   reg 		 err;
+   reg 		 done;
+
+   reg 		 set_done, clear_done;
+   reg 		 set_err, clear_err;
+   reg 		 inc_offset;
 
    // 
    ide ide1(.clk(clk), .reset(reset),
@@ -99,16 +110,20 @@ module ide_disk(clk, reset,
 	    .ide_cs(ide_cs), .ide_da(ide_da));
 
    //
-   wire [23:0] 	lba = ide_lba;
-   wire 	start = ide_read_req | ide_write_req;
+   wire [23:0] 	 lba;
+   wire 	start;
 
+   assign lba = ide_lba;
+   assign start = ide_read_req | ide_write_req;
+   assign ide_done = done;
+   
 
    //
-   alway @(posedge clk)
+   always @(posedge clk)
      if (reset)
        begin
 	  err <= 1'b0;
-	  done <= 1'b1;
+	  done <= 1'b0;
 	  offset <= 0;
 	  wc <= 0;
        end
@@ -142,6 +157,8 @@ module ide_disk(clk, reset,
      else
        begin
 	  ide_state <= ide_state_next;
+	  //if (ide_state_next != ready)
+	  //$display("ide_state %d", ide_state_next);
        end
 
    always @(ide_state or lba or start or
@@ -150,8 +167,6 @@ module ide_disk(clk, reset,
      begin
 	ide_state_next = ide_state;
 
-	assert_int = 0;
-	
 	set_err = 0;
 	clear_err = 0;
 
@@ -176,13 +191,13 @@ module ide_disk(clk, reset,
 	       if (start)
 		 begin
 		    ide_state_next = init0;
+		    clear_done = 1;
 		    $display("ide_disk: XXX go!");
 		 end
 	    end
 	  
 	  init0:
 	    begin
-	       clear_done = 1;
 	       ata_addr = ATA_STATUS;
 	       ata_rd = 1;
 	       if (ata_done &&
@@ -335,15 +350,15 @@ module ide_disk(clk, reset,
 	    begin
 	       //buffer write
 	       buffer_addr = offset;
-	       buffer_out = ata_out;
+	       buffer_out = ata_out[11:0];
 	       
 	       if (0) $display("read1: XXX ata_out %o, buffer_addr %o",
 			       ata_out, buffer_addr);
 			    
 	       buffer_wr = 1;
-	       inc_offset = 1;
+//	       inc_offset = 1;
 
-	       if (wc == 16'h0000)
+	       if (wc == 8'hff)
 		 ide_state_next = last0;
 	       else
 //		 if (wc == 16'hff00)
@@ -358,14 +373,14 @@ module ide_disk(clk, reset,
 	       buffer_addr = offset;
 	       buffer_rd = 1;
 
-	       ata_in = dma_data_in;
+	       ata_in = {4'b0, buffer_in};
 	       inc_offset = 1;
 	       ide_state_next = write1;
 	    end
 
 	  write1:
 	    begin
-	       if (wc == 0)
+	       if (wc == 9'hff)
 		 ide_state_next = last0;
 	       else
 //	       if (wc == 16'hff00)
@@ -399,6 +414,7 @@ module ide_disk(clk, reset,
 
 	  last3:
 	    begin
+	       clear_done = 1;
 	       ide_state_next = ready;
 	       $display("ide_disk: XXX last3, done");
 	    end
