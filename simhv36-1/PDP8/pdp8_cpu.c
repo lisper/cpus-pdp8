@@ -320,6 +320,7 @@ static int mtrace = 0;
 extern void tt_service(void);
 
 static unsigned long cycles;
+static unsigned long max_cycles;
 int need_stop;
 
 t_stat sim_instr (void)
@@ -348,6 +349,9 @@ while (reason == 0) {                                   /* loop until halted */
 
 #if 1
 	cycles++;
+	if (max_cycles && cycles >= max_cycles)
+		need_stop = 1;
+
 	if (need_stop) {
 		printf("\r\nxxx %lu stop\n", cycles);
 		reason = STOP_HALT;
@@ -412,7 +416,7 @@ while (reason == 0) {                                   /* loop until halted */
 
     if (dtrace) {
 	    printf("pc %04o ir %04o l%o ac %04o ion %d "
-		   "(IF%o DF%o UF%o SF%o IB%o UB%o)\n",
+		   "(IF%o DF%o UF%o SF%03o IB%o UB%o)\n",
 		   MA, IR, LAC & 010000 ? 1 : 0, LAC & 07777,
 		   int_req & INT_ION ? 1 : 0,
 		   IF>>12, DF>>12, UF, SF, IB>>12, UB);
@@ -1349,6 +1353,10 @@ pcq_r = find_reg ("PCQ", NULL, dptr);
 if (pcq_r) pcq_r->qptr = 0;
 else return SCPE_IERR;
 sim_brk_types = sim_brk_dflt = SWMASK ('E');
+#if 1
+if (getenv("Q")) dtrace = 0;
+if (getenv("M")) max_cycles = atoi(getenv("M"));
+#endif
 return SCPE_OK;
 }
 
