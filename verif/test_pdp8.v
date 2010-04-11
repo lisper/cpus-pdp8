@@ -7,6 +7,8 @@
 `include "../rtl/pdp8_io.v"
 `include "../rtl/pdp8_ram.v"
 `include "../rtl/pdp8.v"
+`include "../rtl/ide_disk.v"
+`include "../rtl/ide.v"
 `include "../rtl/ram_32kx12.v"
 `include "../rtl/ram_256x12.v"
 

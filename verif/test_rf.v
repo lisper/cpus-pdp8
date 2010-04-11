@@ -3,7 +3,10 @@
 //
 
 `include "../rtl/pdp8_rf.v"
+`include "../rtl/ide_disk.v"
+`include "../rtl/ide.v"
 `include "../rtl/ram_256x12.v"
+`include "../verif/fake_ide.v"
 
 `timescale 1ns / 1ns
 
@@ -29,7 +32,19 @@ module test;
    reg 	       iot;
    reg [3:0]   state;
    reg [11:0]  mb_in;
-   
+
+   wire        ide_dior;
+   wire        ide_diow;
+   wire [1:0]  ide_cs;
+   wire [2:0]  ide_da;
+   wire [15:0] ide_data_bus;
+
+   fake_ide ide(.ide_dior(ide_dior),
+		.ide_diow(ide_diow),
+		.ide_cs(ide_cs),
+		.ide_da(ide_da),
+		.ide_data_bus(ide_data_bus));
+
    pdp8_rf rf(.clk(clk),
 	      .reset(reset),
 	      .iot(iot),
@@ -46,7 +61,12 @@ module test;
 	      .ram_done(ram_done),
 	      .ram_ma(ram_ma),
 	      .ram_in(ram_in),
-	      .ram_out(ram_out));
+	      .ram_out(ram_out),
+	      .ide_dior(ide_dior),
+	      .ide_diow(ide_diow),
+	      .ide_cs(ide_cs),
+	      .ide_da(ide_da),
+	      .ide_data_bus(ide_data_bus));
 
    //
    task write_rf_reg;
@@ -136,7 +156,7 @@ module test;
 	write_rf_reg(12'o6000, 12'o0000);
 	write_rf_reg(12'o6000, 12'o0000);
   
-	#3000 $finish;
+	#40000 $finish;
      end
 
   always
