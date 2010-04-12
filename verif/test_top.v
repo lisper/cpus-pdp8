@@ -2,6 +2,8 @@
 // testing top end for pdp8.v
 //
 
+`include "../rtl/ide.v"
+`include "../rtl/ide_disk.v"
 `include "../rtl/pdp8_tt.v"
 `include "../rtl/pdp8_rf.v"
 `include "../rtl/pdp8_io.v"

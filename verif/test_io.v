@@ -6,6 +6,12 @@
 `include "../rtl/pdp8_rf.v"
 `include "../rtl/pdp8_io.v"
 
+`include "../verif/fake_uart.v"
+`include "../rtl/brg.v"
+`include "../rtl/ide_disk.v"
+`include "../rtl/ide.v"
+`include "../rtl/ram_256x12.v"
+
 
 `timescale 1ns / 1ns
 
@@ -25,6 +31,18 @@ module test;
    wire [3:0]  state;
    wire [11:0] mb;
    
+   wire        ext_ram_read_req;
+   wire        ext_ram_write_req;
+   wire [14:0] ext_ram_ma;
+   wire [11:0] ext_ram_in;
+   wire        ext_ram_done;
+   wire [11:0] ext_ram_out;
+
+   wire [15:0] ide_data_bus;
+   wire        ide_dior, ide_diow;
+   wire [1:0]  ide_cs;
+   wire [2:0]  ide_da;
+
    pdp8_io io(.clk(clk),
 	      .reset(reset),
 	      .iot(iot),
@@ -36,7 +54,18 @@ module test;
 	      .io_data_avail(io_data_avail),
 	      .io_interrupt(io_interrupt),
 	      .io_skip(io_skip),
-	      .io_clear_ac(io_clear_ac));
+	      .io_clear_ac(io_clear_ac),
+	      .io_ram_read_req(ext_ram_read_req),
+	      .io_ram_write_req(ext_ram_write_req),
+	      .io_ram_done(ext_ram_done),
+	      .io_ram_ma(ext_ram_ma),
+	      .io_ram_in(ext_ram_in),
+	      .io_ram_out(ext_ram_out),
+   	      .ide_dior(ide_dior),
+	      .ide_diow(ide_diow),
+	      .ide_cs(ide_cs),
+	      .ide_da(ide_da),
+	      .ide_data_bus(ide_data_bus));
 
   initial
     begin

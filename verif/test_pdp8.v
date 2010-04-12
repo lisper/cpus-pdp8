@@ -43,6 +43,11 @@ module test;
    wire        ext_ram_done;
    wire [11:0] ext_ram_out;
 
+   wire [15:0] ide_data_bus;
+   wire        ide_dior, ide_diow;
+   wire [1:0]  ide_cs;
+   wire [2:0]  ide_da;
+
   pdp8 cpu(.clk(clk),
 	   .reset(reset),
 	   .ram_addr(ram_addr),
@@ -85,7 +90,12 @@ module test;
 	      .io_ram_done(ext_ram_done),
 	      .io_ram_ma(ext_ram_ma),
 	      .io_ram_in(ext_ram_in),
-	      .io_ram_out(ext_ram_out));
+	      .io_ram_out(ext_ram_out),
+   	      .ide_dior(ide_dior),
+	      .ide_diow(ide_diow),
+	      .ide_cs(ide_cs),
+	      .ide_da(ide_da),
+	      .ide_data_bus(ide_data_bus));
 
    pdp8_ram ram(.clk(clk),
 	       .reset(reset), 
@@ -95,7 +105,7 @@ module test;
 	       .rd(ram_rd),
    	       .wr(ram_wr));
 
-   reg [11:0]  starting_pc;
+   reg [14:0]  starting_pc;
 
    reg [1023:0] arg;
    integer 	n;
@@ -104,7 +114,7 @@ module test;
     begin
       $timeformat(-9, 0, "ns", 7);
 
-      $dumpfile("pdp8.vcd");
+      $dumpfile("test_pdp8.vcd");
       $dumpvars(0, test.cpu);
     end
 
@@ -117,9 +127,24 @@ module test;
        max_cycles = 0;
 
        max_cycles = 100;
-       starting_pc = 12'o0200;
+       starting_pc = 15'o00200;
+
+       show_pc = 0;
+       show_state = 0;
+
+       if (0) show_pc = 1;
+       if (0) show_state = 1;
+
 
 `ifdef __ICARUS__
+       n = $value$plusargs("showpc=%d", arg);
+	if (n > 0)
+	     show_pc = 1;
+
+       n = $value$plusargs("showstate=%d", arg);
+	if (n > 0)
+	     show_state = 1;
+
        n = $value$plusargs("pc=%o", arg);
 	if (n > 0)
 	  begin
@@ -143,6 +168,14 @@ module test;
 `endif       
 
 `ifdef __CVER__
+       n = $scan$plusargs("showpc", arg);
+	if (n > 0)
+	     show_pc = 1;
+
+       n = $scan$plusargs("showstate", arg);
+	if (n > 0)
+	     show_state = 1;
+
        n = $scan$plusargs("pc=", arg);
 	if (n > 0)
 	  begin
@@ -173,7 +206,8 @@ module test;
           reset = 0;
        end
 
-       cpu.pc = starting_pc;
+       cpu.pc = starting_pc[11:0];
+       cpu.IF = starting_pc[14:12];
 
 //      #5000000 $finish;
     end
@@ -189,14 +223,13 @@ module test;
    integer max_cycles;
    integer sample;
    integer show_pc;
+   integer show_one_pc;
    integer show_state;
 
   initial
     begin
        cycle = 0;
        sample = 0;
-       show_pc = 0;
-       show_state = 0;
     end
 
   always @(posedge cpu.clk)
@@ -204,27 +237,27 @@ module test;
        if (cpu.state == 4'b0000)
 	 begin
 	    sample = sample + 1;
-	    if (sample >= 50000)
+	    if (sample >= 5000/*50000*/)
 	      begin
 		 sample = 0;
-		 show_pc = 1;
+		 show_one_pc = 1;
 	      end
 
-	    if (1) show_pc = 1;
-	    if (0) show_state = 1;
-
+	    if (show_pc)
+	      show_one_pc = 1;
+	    
 	    cycle = cycle + 1;
 
 	    if (max_cycles > 0 && cycle >= max_cycles)
 	      $finish;
 
-	    if (show_pc)
+	    if (show_one_pc)
 	      #1 $display("pc %o ir %o l%b ac %o ion %o (IF%o DF%o UF%o SF%o IB%o UB%o) %b",
 			  cpu.pc, cpu.mb,
 			  cpu.l, cpu.ac, cpu.interrupt_enable,
 			  cpu.IF, cpu.DF, cpu.UF, cpu.SF, cpu.IB, cpu.UB,
 			  cpu.interrupt_inhibit_delay);
-	    show_pc = 0;
+	    show_one_pc = 0;
 	 end
 
        if (cpu.state == 4'b1100)
@@ -257,6 +290,11 @@ module test;
 	       endcase // case(state)
 	 end
     end
+
+   always @(posedge clk)
+     begin
+	$pli_ide(ide_data_bus, ide_dior, ide_diow, ide_cs, ide_da);
+     end
 
 endmodule
 
