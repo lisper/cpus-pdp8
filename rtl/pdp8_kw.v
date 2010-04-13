@@ -28,7 +28,7 @@ module pdp8_kw(clk, reset, iot, state, mb,
    reg [1:0] kw_src_ctr;
    reg 	     kw_src_clk;
 
-   reg [11:0] kw_clk;
+   reg [11:0] kw_ctr;
    reg 	      kw_int_en;
    reg 	      kw_clk_en;
    reg 	      kw_flag;
@@ -38,7 +38,7 @@ module pdp8_kw(clk, reset, iot, state, mb,
    assign   io_interrupt = kw_int_en && kw_flag;
 
    // combinatorial
-   always @(state or iot or io_select or kw_flag)
+   always @(state or iot or io_select or kw_flag or mb)
      begin
 	// sampled during f1
 	io_skip = 1'b0;
@@ -124,28 +124,28 @@ module pdp8_kw(clk, reset, iot, state, mb,
 
        endcase // case(state)
 
-   assign assert_kw_flag = kw_clk == 0;
+   assign assert_kw_flag = kw_ctr == 0;
    
    //
-   always @(posedge kw_src_clk or reset)
+   always @(posedge kw_src_clk or posedge reset)
      if (reset)
-       kw_clk <= 0;
+       kw_ctr <= 0;
      else
        if (kw_clk_en)
-	 kw_clk <= kw_clk + 1;
+	 kw_ctr <= kw_ctr + 1;
 
    // source clock - divide down cpu clock
    always @(posedge clk)
      if (reset)
        begin
 	  kw_src_ctr <= 0;
-	  kw_src_clk <= 0;
+	  kw_src_clk <= 1'b0;
        end
      else
        begin
 	  kw_src_ctr <= kw_src_ctr + 1;
 	  if (kw_src_ctr == 0)
-	    kw_src_clk = ~kw_src_clk;
+	    kw_src_clk <= ~kw_src_clk;
        end
 
 endmodule // pdp8_kw

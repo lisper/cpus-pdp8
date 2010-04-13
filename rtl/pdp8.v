@@ -426,6 +426,8 @@ module pdp8(clk, reset,
    //
    // ram
    //
+   wire is_index_reg;
+
    assign ram_rd = (state == F0) ||
 		   (state == D0) ||
 		   (state == E0) ||
@@ -465,7 +467,6 @@ module pdp8(clk, reset,
 	    if (state == D3)
 	      ea <= { (ir_i_flag && (!jmp && !jms)) ? DF : IF, mb };
 
-   wire is_index_reg;
    assign is_index_reg = ea[11:3] == 9'o001;
    
    //

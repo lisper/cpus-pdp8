@@ -1,11 +1,12 @@
 // PDP8 console emulation
 // brad@heeltoe.com
 
-`define sim_time
+//`define sim_time
 
 `define debug_tt_int 1
 //`define debug_tt_reg 1
 //`define debug_tt_state 1
+`define debug_tt_data 1
 
 module pdp8_tt(clk, brgclk, reset,
 	       iot, state, mb,
@@ -71,6 +72,7 @@ module pdp8_tt(clk, brgclk, reset,
 			   .tx_baud_clk(uart_tx_clk),
 			   .rx_baud_clk(uart_rx_clk));
 
+`ifdef sim_time
    //
    fake_uart tt_uart(.clk(clk),
 		     .reset(reset),
@@ -86,6 +88,23 @@ module pdp8_tt(clk, brgclk, reset,
 		     .rx_ack(rx_ack),
 		     .rx_empty(rx_empty),
 		     .rx_data(rx_data[7:0]));
+`else
+   //
+   uart tt_uart(.clk(clk),
+		.reset(reset),
+
+		.tx_clk(uart_tx_clk),
+		.tx_req(tto_req),
+		.tx_ack(tx_ack),
+		.tx_data(tx_data[7:0]), 
+		.tx_empty(tx_empty),
+		     
+		.rx_clk(uart_rx_clk),
+		.rx_req(tti_req),
+		.rx_ack(rx_ack),
+		.rx_data(rx_data[7:0]),
+		.rx_empty(rx_empty));
+`endif
    
    // interrupt output
    assign io_interrupt = rx_int || tx_int;
@@ -119,7 +138,9 @@ module pdp8_tt(clk, brgclk, reset,
 		 if (mb[2])
 		   begin
 		      io_data_out = rx_data;
+`ifdef debug_tt_data
 		      $display("xxx rx_data %o", rx_data);
+`endif
 		   end
 		 else
 		   io_data_out = 12'b0;
@@ -179,12 +200,16 @@ module pdp8_tt(clk, brgclk, reset,
 			     tx_int <= 1'b1;
 			   else
 			     tx_int <= 1'b0;
+`ifdef debug_tt_in
 			   $display("xxx reset tx_int");
+`endif
 			end
 		      if (mb[2])
 			begin
 			   tx_data <= io_data_in;
+`ifdef debug_tt_data
 			   $display("xxx tx_data %o", io_data_in);
+`endif
 			end
 		   end // case: 6'o04
                endcase
@@ -193,7 +218,9 @@ module pdp8_tt(clk, brgclk, reset,
 	    begin
 	       if (assert_tx_int)
 		 begin
+`ifdef debug_tt_int
 		    $display("xxx set tx_int");
+`endif
 		    tx_int <= 1;
 		 end
 	       if (assert_rx_int)

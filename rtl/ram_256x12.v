@@ -1,37 +1,43 @@
 /* 256x12 static ram */
-module ram_256x12(A, DI, DO, CE_N, WE_N);
+module ram_256x12(clk, reset, a, din, dout, ce, we);
 
-   input [7:0]   A;
-   input [11:0]  DI;
-   input 	 CE_N, WE_N;
-   output [11:0] DO;
+   input clk;
+   input reset;
+   
+   input [7:0]   a;
+   input [11:0]  din;
+   input 	 ce, we;
+   output [11:0] dout;
 
    reg [11:0] 	 ram [0:255];
+
+   // synthesis translate_off
    integer 	 i;
-   
+
    initial
      begin
 	for (i = 0; i < 256; i=i+1)
           ram[i] = 12'b0;
      end
+   // synthesis translate_on
    
-   always @(WE_N or CE_N or A or DI)
+   always @(posedge clk)
      begin
-	if (WE_N == 0 && CE_N == 0)
+	if (we && ce)
           begin
 `ifdef debug_ram
-	     $display("rf: buffer ram write [%o] <- %o", A, DI);
+	     $display("rf: buffer ram write [%o] <- %o", a, din);
 `endif
-             ram[ A ] = DI;
+             ram[a] = din;
           end
 
 `ifdef debug_ram
-	if (WE_N == 1 && CE_N == 0)
-	  $display("rf: buffer ram read [%o] -> %o", A, ram[A]);
+	if (we == 0 && ce == 1)
+	  $display("rf: buffer ram read [%o] -> %o", a, ram[a]);
 `endif
      end
    
-   assign DO = ram[ A ];
+   assign dout = ram[a];
 
 endmodule
 

@@ -161,8 +161,10 @@ module ide_disk(clk, reset,
 	  //$display("ide_state %d", ide_state_next);
        end
 
-   always @(ide_state or lba or start or
-            ata_done or ata_out)
+   always @(ide_state or ide_write_req or ide_read_req or
+	    lba or offset or wc or start or
+            ata_done or ata_out or
+	    buffer_in)
      begin
 	ide_state_next = ide_state;
 

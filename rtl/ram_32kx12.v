@@ -7,9 +7,9 @@ module ram_32kx12(A, DI, DO, CE_N, WE_N);
   output[11:0] DO;
 
   reg[11:0] ram [0:32767];
-  integer i;
 
    // synthesis translate_off
+   integer  i;
    reg [11:0] v;
    integer    file;
    reg [1023:0] str;
@@ -51,6 +51,7 @@ module ram_32kx12(A, DI, DO, CE_N, WE_N);
 	    $fclose(file);
 	 end
     end
+   // synthesis translate_on
    
 
   always @(WE_N or CE_N or A or DI)

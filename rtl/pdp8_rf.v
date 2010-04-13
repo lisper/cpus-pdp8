@@ -509,11 +509,13 @@ module pdp8_rf(clk, reset, iot, state, mb,
    wire        ide_buffer_wr;
   
    // ide sector buffer
-   ram_256x12 buffer(.A(buff_addr),
-		     .DI(buff_in),
-		     .DO(buff_out),
-		     .CE_N(~(buff_rd | buff_wr)),
-		     .WE_N(~buff_wr));
+   ram_256x12 buffer(.clk(clk),
+		     .reset(reset),
+		     .a(buff_addr),
+		     .din(buff_in),
+		     .dout(buff_out),
+		     .ce(buff_rd | buff_wr),
+		     .we(buff_wr));
 
    assign ide_buffer_in = buff_out;
    
@@ -572,7 +574,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			dma_start = 1'b1;
 			$display("rf: go! disk_addr %o", disk_addr);
 		     end
-		   3'o3: // DMAW
+		   3'o5: // DMAW
 		     begin
 			io_data_out = 0;
 			dma_start = 1'b1;
