@@ -7,7 +7,8 @@ module pdp8_io(clk, reset, iot, state, mb,
 	       io_data_in, io_data_out, io_select,
 	       io_data_avail, io_interrupt, io_skip, io_clear_ac,
 	       io_ram_read_req, io_ram_write_req, io_ram_done,
-	       io_ram_ma, io_ram_in, io_ram_out);
+	       io_ram_ma, io_ram_in, io_ram_out,
+               ide_dior, ide_diow, ide_cs, ide_da, ide_data_bus);
    
    input clk, reset, iot;
    input [11:0] io_data_in;
@@ -27,6 +28,10 @@ module pdp8_io(clk, reset, iot, state, mb,
    output wire 	      io_ram_write_req;
    output wire [14:0] io_ram_ma;
    output wire [11:0] io_ram_out;
+
+   wire 	     kw_io_selected;
+   wire 	     kw_io_interrupt;
+   wire 	     kw_io_skip;
    
    wire 	     tt_io_selected;
    wire [11:0] 	     tt_io_data_out;
@@ -42,7 +47,26 @@ module pdp8_io(clk, reset, iot, state, mb,
    wire 	     rf_io_skip;
    wire 	     rf_io_clear_ac;
 
+   output 	     ide_dior;
+   output 	     ide_diow;
+   output [1:0]      ide_cs;
+   output [2:0]      ide_da;
+   inout [15:0]      ide_data_bus;
+
+
+   pdp8_kw kw(.clk(clk),
+	      .reset(reset),
+	      .iot(iot),
+	      .state(state),
+	      .mb(mb),
+	      .io_select(io_select),
+
+	      .io_selected(kw_io_selected),
+	      .io_interrupt(kw_io_interrupt),
+	      .io_skip(kw_io_skip));
+	      
    pdp8_tt tt(.clk(clk),
+	      .brgclk(/*brgclk*/clk),
 	      .reset(reset),
 	      .iot(iot),
 	      .state(state),
@@ -75,7 +99,13 @@ module pdp8_io(clk, reset, iot, state, mb,
 	      .ram_done(io_ram_done),
 	      .ram_ma(io_ram_ma),
 	      .ram_in(io_ram_in),
-	      .ram_out(io_ram_out));
+	      .ram_out(io_ram_out),
+
+   	      .ide_dior(ide_dior),
+	      .ide_diow(ide_diow),
+	      .ide_cs(ide_cs),
+	      .ide_da(ide_da),
+	      .ide_data_bus(ide_data_bus));
 
    assign io_data_out =
 		       tt_io_selected ? tt_io_data_out :
@@ -87,16 +117,19 @@ module pdp8_io(clk, reset, iot, state, mb,
 			 rf_io_selected ? rf_io_data_avail :
 			 1'b0;
    
-   assign io_interrupt = tt_io_interrupt | rf_io_selected;
+   assign io_interrupt = kw_io_interrupt |
+			 tt_io_interrupt |
+			 rf_io_interrupt;
 
    assign io_skip =
+		   kw_io_selected ? kw_io_skip :
 		   tt_io_selected ? tt_io_skip :
 		   rf_io_selected ? rf_io_skip :
 		   1'b0;
 
    assign io_clear_ac =
-			tt_io_selected ? tt_io_clear_ac :
-			rf_io_selected ? rf_io_clear_ac :
-			1'b0;
+		       tt_io_selected ? tt_io_clear_ac :
+		       rf_io_selected ? rf_io_clear_ac :
+		       1'b0;
    
 endmodule

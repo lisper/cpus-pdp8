@@ -19,8 +19,16 @@ module ram_256x12(A, DI, DO, CE_N, WE_N);
      begin
 	if (WE_N == 0 && CE_N == 0)
           begin
+`ifdef debug_ram
+	     $display("rf: buffer ram write [%o] <- %o", A, DI);
+`endif
              ram[ A ] = DI;
           end
+
+`ifdef debug_ram
+	if (WE_N == 1 && CE_N == 0)
+	  $display("rf: buffer ram read [%o] -> %o", A, ram[A]);
+`endif
      end
    
    assign DO = ram[ A ];

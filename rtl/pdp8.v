@@ -437,13 +437,15 @@ module pdp8(clk, reset,
 
    /* peripherals get ram access during F2 */
    wire ext_ram_req;
+   wire ext_ram_grant;
    
    assign ext_ram_req = ext_ram_read_req | ext_ram_write_req;
    assign ext_ram_done = state == F2 && ext_ram_req;
+   assign ext_ram_grant = state == F2 && ext_ram_req;
    assign ext_ram_out = ext_ram_req ? ram_data_in : 12'b0;
    
-   assign ram_addr = ext_ram_req ? ext_ram_ma : ma;
-   assign ram_data_out = ext_ram_req ? ext_ram_in : mb;
+   assign ram_addr = ext_ram_grant ? ext_ram_ma : ma;
+   assign ram_data_out = ext_ram_grant ? ext_ram_in : mb;
 
    assign io_select = mb[8:3];
    assign io_data_out = ac;
@@ -792,7 +794,10 @@ module pdp8(clk, reset,
 			     if (mb[2])
 			       ac <= ac | switches;
 			     if (mb[1])
-			       run <= 0;
+			       begin
+				  $display("HLT! %o", mb);
+				  run <= 0;
+			       end
 			  end
 		     end
 

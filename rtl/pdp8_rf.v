@@ -1,6 +1,7 @@
-/*
-  RF08 Emulation using IDE disk
+// RF08 Emulation using IDE disk
+// brad@heeltoe.com
 
+/* 
   RF08 Sizes:
  
   2048 words/track	11 bits
@@ -415,7 +416,6 @@ module pdp8_rf(clk, reset, iot, state, mb,
    parameter CA_ADDR = 15'o07751;
 
    wire      ADC;
-   wire      DCF;
    wire      PCA;
    wire      DRE;
    wire      DRL;
@@ -423,8 +423,10 @@ module pdp8_rf(clk, reset, iot, state, mb,
    
    reg [11:0] DMA;
    reg [7:0]  EMA;
+   reg 	      DCF;
    reg 	      PEF;
-   reg 	      CIE, EIE, MEX, NXD, PIE, WLS;
+   reg 	      CIE, EIE, NXD, PIE, WLS;
+   reg [2:0]  MEX;
    
    assign DRL = 1'b0;
    assign PER = 1'b0;
@@ -459,7 +461,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
    reg 	      db_done;
    wire       dma_done;
 
-   reg [15:0] dma_addr;
+   reg [14:0] dma_addr;
    reg [11:0] dma_wc;
 
    reg [19:0] disk_addr;
@@ -469,7 +471,6 @@ module pdp8_rf(clk, reset, iot, state, mb,
    reg 	      buffer_dirty;
 
    reg [11:0] buffer_hold;
-   wire [11:0] buffer_out;
    
    wire       buffer_matches_DMA;
    wire       buffer_rd;
@@ -481,7 +482,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
    wire       ide_error;
        
    //
-   assign io_interrupt = (CIE & db_done) ||
+   assign io_interrupt = (CIE & DCF) ||
 			 (PIE & PCA) ||
 			 (EIE & (WLS | DRL | NXD | PER));
 
@@ -504,19 +505,22 @@ module pdp8_rf(clk, reset, iot, state, mb,
    wire [23:0] ide_block_number;
    wire [11:0] ide_buffer_in;
    wire [11:0] ide_buffer_out;
+   wire        ide_buffer_rd;
+   wire        ide_buffer_wr;
   
    // ide sector buffer
    ram_256x12 buffer(.A(buff_addr),
 		     .DI(buff_in),
 		     .DO(buff_out),
-		     .CE_N(~buff_rd),
+		     .CE_N(~(buff_rd | buff_wr)),
 		     .WE_N(~buff_wr));
 
+   assign ide_buffer_in = buff_out;
+   
    assign ide_active = ide_read_req | ide_write_req;
    
    assign buff_addr = ide_active ? ide_buffer_addr : buffer_addr;
    assign buff_in = ide_active ? ide_buffer_out : buffer_hold;
-   assign buff_out = ide_active ? ide_buffer_in : buffer_out;
    assign buff_rd = ide_active ? ide_buffer_rd : 1'b1;
    assign buff_wr = ide_active ? ide_buffer_wr : buffer_wr;
    
@@ -566,6 +570,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		     begin
 			io_data_out = 0;
 			dma_start = 1'b1;
+			$display("rf: go! disk_addr %o", disk_addr);
 		     end
 		   3'o3: // DMAW
 		     begin
@@ -586,9 +591,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			  io_data_out = 0;
 		       end
 		   3'o6: // DIMA
-		     io_data_out = { PCA,
-				     DRE,WLS,EIE,
-				     PIE,CIE,MEX, 
+		     io_data_out = { PCA, DRE,WLS,
+				     EIE, PIE,CIE,
+				     MEX, 
 				     DRL,NXD,PER };
 		   3'o5: // DIML
 		     io_data_out = 0;
@@ -637,10 +642,12 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	  is_read <= 1'b0;
 	  is_write <= 1'b0;
 
-	  EMA <= 0;
-	  DMA <= 0;
-	  PEF <= 0;
-	  CIE <= 0;
+	  EMA <= 1'b0;
+	  DMA <= 1'b0;
+	  PEF <= 1'b0;
+	  CIE <= 1'b0;
+	  DCF <= 1'b1;
+	  NXD <= 1'b0;
        end
      else
        case (state)
@@ -651,27 +658,27 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		   6'o60: // DCMA
 		     if (mb[2:0] == 3'b001)
 		       begin
+$display("rf: DCMA");
 			  DMA <= 0;
-			  PEF <= 0;
+			  PEF <= 1'b0;
+			  NXD <= 1'b0;
+			  DCF <= 1'b0;
 		       end
 		   6'o61:
 		     case (mb[2:0])
 		       3'o1: // DCIM
 			 begin
-			    MEX <= 0;
-			    CIE <= 0;
-			    PIE <= 0;
-			    EIE <= 0;
+			    EIE <= 1'b0;
+			    PIE <= 1'b0;
+			    CIE <= 1'b0;
+			    MEX <= 3'b0;
+$display("rf: DCIM");
 			 end
 		       3'o2: // DSAC
 			 begin
 			 end
 		       3'o5: // DIML
-			   begin
-			      EIE <= io_data_in[8];
-			      PIE <= io_data_in[7];
-			      CIE <= io_data_in[6];
-			      MEX <= io_data_in[5:3];
+			 begin
 			 end
 		     endcase // case(mb[2:0])
 		 endcase
@@ -680,10 +687,11 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	  F1:
 	    if (iot)
 	      begin
+`ifdef debug_rf
 		 if (io_select == 6'o60 || io_select == 6'o64)
 		 $display("iot2 %t, state %b, mb %o, io_select %o",
 			  $time, state, mb, io_select);
-
+`endif
 		 case (io_select)
 		   6'o60:
 		     case (mb[2:0])
@@ -692,6 +700,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			    // clear ac
 			    DMA <= io_data_in;
 			    is_read <= 1'b1;
+			    DCF <= 1'b0;
 			 end
 
 		       6'o03: // DMAW
@@ -699,9 +708,22 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			    // clear ac
 			    DMA <= io_data_in;
 			    is_write <= 1'b1;
+			    DCF <= 1'b0;
 			 end
 		     endcase // case(mb[2:0])
 
+		   6'o61:
+		     case (mb[2:0])
+		       3'o5: // DIML
+			   begin
+			      EIE <= io_data_in[8];
+			      PIE <= io_data_in[7];
+			      CIE <= io_data_in[6];
+			      MEX <= io_data_in[5:3];
+$display("rf: DIML %o", io_data_in);
+			 end
+		     endcase // case(mb[2:0])
+		   
 		   6'o64:
 		     case (mb[2:0])
 		       1: // DCXA
@@ -729,6 +751,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
   		DMA <= disk_addr[11:0];
 		is_read <= 1'b0;
 		is_write <= 1'b0;
+$display("rf: set DCF (CIE %b)", CIE);
+		DCF <= 1'b1;
 	     end
 
        endcase // case(state)
@@ -805,7 +829,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
      else
        db_state <= db_next_state;
 
-   assign dma_done = dma_wc == 12'o7777;
+      assign dma_done = dma_wc == 12'o0000;
 
    // general state
    always @(posedge clk)
@@ -813,7 +837,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
        begin
 	  db_done <= 1'b1;
 	  dma_wc <= 12'b0;
-	  dma_addr <= 15'b0;
+	  dma_addr <= 14'b0;
 
 	  disk_addr <= 20'b0;
 	  
@@ -827,17 +851,19 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	    DB_idle:
 	      begin
 		 disk_addr <= {EMA, DMA};
-		 db_done <= 0;
 	      end
 	    
 	    DB_start_xfer1:
 	      begin
-		 dma_wc <= ram_in;
+		 dma_wc <= ram_in + 12'o0001;
+		 db_done <= 0;
+		 if (ram_done) $display("rf: read wc %o", ram_in);
 	      end
 	    
 	    DB_start_xfer2:
 	      begin
-		 dma_addr <= ram_in;
+		 dma_addr <= { MEX, ram_in + 12'o0001 };
+		 if (ram_done) $display("rf: read ca %o", ram_in);
 	      end
 
 	    DB_start_xfer3:
@@ -853,15 +879,33 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	    DB_next_xfer_incr:
 	      begin
 		 disk_addr <= disk_addr + 20'b1;
-		 dma_addr <= dma_addr + 15'b1;
+		 dma_addr <= dma_addr + 14'o00001;
 		 dma_wc <= dma_wc + 12'b1;
+`ifdef debug_rf
+		 $display("dma_wc %o dma_addr %o MEX %o",dma_wc,dma_addr,MEX);
+`endif
 	      end
+
+`ifdef debug_rf
+	    DB_next_xfer_read:
+	      if (ram_done)
+		$display("rf: buffer read[%o] = %o", buff_addr, buff_out);
+`endif
 
 	    DB_check_xfer_write:
 	      buffer_dirty <= 1;
 
+	    DB_done_xfer:
+	      if (ram_done) $display("rf: write wc %o", dma_wc);
+
+	    DB_done_xfer1:
+	      if (ram_done) $display("rf: write ca %o", dma_addr);
+	    
 	    DB_done_xfer2:
-	      db_done <= 1;
+	      begin
+	      	 $display("rf: done");
+		 db_done <= 1;
+	      end
 
 	    DB_read_new_page:
 	      begin
@@ -900,10 +944,10 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			 (db_state == DB_done_xfer1);
 
    assign ram_out =
-		   db_state == DB_next_xfer_read ? buffer_hold :
+		   db_state == DB_next_xfer_read ? buff_out :
 		   db_state == DB_begin_xfer_write ? buffer_hold :
-		   db_state == DB_done_xfer ? dma_addr :
-		   db_state == DB_done_xfer1 ? dma_wc :
+		   db_state == DB_done_xfer ? dma_wc :
+		   db_state == DB_done_xfer1 ? dma_addr :
 		   12'b0;
 
    assign buffer_rd = db_state == DB_check_xfer_read && buffer_matches_DMA;
@@ -926,7 +970,6 @@ module pdp8_rf(clk, reset, iot, state, mb,
 
    assign PCA = photocell_counter == 0;
    assign DRE = PCA;
-   assign DCF = db_done;
 
    /* we don't support write lock */
    always @(posedge clk)

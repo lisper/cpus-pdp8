@@ -57,18 +57,20 @@ module ram_32kx12(A, DI, DO, CE_N, WE_N);
     begin
        if (WE_N == 0 && CE_N == 0)
         begin
-	   //$display("ram: write [%o] <- %o", A, DI);
+`ifdef debug_ram
+	   $display("ram: write [%o] <- %o", A, DI);
+`endif
            ram[ A ] = DI;
         end
+
+`ifdef debug_ram
+	if (WE_N == 1 && CE_N == 0)
+	  $display("ram: read [%o] -> %o", A, ram[A]);
+`endif
     end
 
-//always @(A)
-//  begin
-//    $display("ram: ce %b, we %b [%o] -> %o", CE_N, WE_N, A, ram[A]);
-//  end
-
-//  assign DO = ram[ A ];
-assign DO = (^A === 1'bX || A === 1'bz) ? ram[0] : ram[A];
+   assign DO = ram[ A ];
+//   assign DO = (^A === 1'bX || A === 1'bz) ? ram[0] : ram[A];
 
 endmodule
 

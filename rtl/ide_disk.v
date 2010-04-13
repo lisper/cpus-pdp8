@@ -20,10 +20,10 @@ module ide_disk(clk, reset,
    output 	ide_done;
    
    output reg [7:0] buffer_addr;
-   output reg	buffer_rd;
-   output reg 	buffer_wr;
+   output reg 	    buffer_rd;
+   output reg 	    buffer_wr;
    output reg [11:0] buffer_out;
-   output [11:0] buffer_in;
+   input [11:0]      buffer_in;
 
    parameter [4:0]
 		ready = 5'd0,
@@ -124,8 +124,8 @@ module ide_disk(clk, reset,
        begin
 	  err <= 1'b0;
 	  done <= 1'b0;
-	  offset <= 0;
-	  wc <= 0;
+	  offset <= 8'b0;
+	  wc <= 8'b0;
        end
      else
        begin
@@ -143,8 +143,8 @@ module ide_disk(clk, reset,
 
 	  if (inc_offset)
 	    begin
-	       offset <= offset + 1;
-	       wc <= wc + 1;
+	       offset <= offset + 8'h01;
+	       wc <= wc + 8'h01;
 	    end
        end
 
@@ -162,8 +162,7 @@ module ide_disk(clk, reset,
        end
 
    always @(ide_state or lba or start or
-            ata_done or ata_out or
-	    dma_data_in or dma_ack)
+            ata_done or ata_out)
      begin
 	ide_state_next = ide_state;
 
@@ -220,7 +219,6 @@ module ide_disk(clk, reset,
 	       // cnt = 1;
 	       // if (cnt_rdy)
 	       ide_state_next = init2;
-	       //$display("ide_disk: XXX wait0");
 	    end
 
 	  init2:
@@ -340,10 +338,7 @@ module ide_disk(clk, reset,
 	       ata_addr = ATA_DATA;
 
 	       if (ata_done)
-		 begin
-		    inc_offset = 1;
-		    ide_state_next = read1;
-		 end
+		 ide_state_next = read1;
 	    end
 	  
 	  read1:
@@ -352,11 +347,11 @@ module ide_disk(clk, reset,
 	       buffer_addr = offset;
 	       buffer_out = ata_out[11:0];
 	       
-	       if (0) $display("read1: XXX ata_out %o, buffer_addr %o",
-			       ata_out, buffer_addr);
+	       if (0) $display("ide_disk: buffer_addr %o, buffer_out %o",
+				 buffer_addr, buffer_out);
 			    
 	       buffer_wr = 1;
-//	       inc_offset = 1;
+	       inc_offset = 1;
 
 	       if (wc == 8'hff)
 		 ide_state_next = last0;
@@ -380,7 +375,7 @@ module ide_disk(clk, reset,
 
 	  write1:
 	    begin
-	       if (wc == 9'hff)
+	       if (wc == 8'hff)
 		 ide_state_next = last0;
 	       else
 //	       if (wc == 16'hff00)
