@@ -23,6 +23,8 @@ all: regress
 
 #cver +showpc +cycles=5000 +test=tss8_init.mem +pc=24200 +cycles=2000000 +loadvpi=../pli/ide/pli_ide.so:vpi_compat_bootstrap test_pdp8.v
 
+#cver +showpc +cycles=100000 +test=tss8_init.mem +pc=24200 +loadvpi=../pli/ide/pli_ide.so:vpi_compat_bootstrap test_pdp8.v > xx
+
 define runone_verilog_regression
 	cver $(CVER_FLAGS) $(1) >$(2);
 	@if grep -q ERROR $(2); then exit 1; fi;

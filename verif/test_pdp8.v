@@ -4,9 +4,14 @@
 
 `include "../rtl/pdp8_tt.v"
 `include "../rtl/pdp8_rf.v"
+`include "../rtl/pdp8_kw.v"
 `include "../rtl/pdp8_io.v"
 `include "../rtl/pdp8_ram.v"
 `include "../rtl/pdp8.v"
+
+`include "../verif/fake_uart.v"
+`include "../rtl/brg.v"
+
 `include "../rtl/ide_disk.v"
 `include "../rtl/ide.v"
 `include "../rtl/ram_32kx12.v"
@@ -115,7 +120,8 @@ module test;
       $timeformat(-9, 0, "ns", 7);
 
       $dumpfile("test_pdp8.vcd");
-      $dumpvars(0, test.cpu);
+//      $dumpvars(0, test.cpu);
+       $dumpvars(0, test);
     end
 
   initial
@@ -266,6 +272,7 @@ module test;
 	    $display("cpu.io_interrupt %b io.io_interrupt %b tt.io_interrupt %b",
 		     cpu.io_interrupt, 
 		     io.io_interrupt, io.tt.io_interrupt);
+	    $display("pc %o ir %o", cpu.pc, cpu.mb);
 	    $finish;
 	 end
 

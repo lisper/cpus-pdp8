@@ -1,4 +1,9 @@
 //
+// fake model of uart used for sim
+//
+
+//`define debug_fake_tx 1
+`define debug_fake_rx 1
 
 module fake_uart(clk, reset, 
 		 tx_clk, tx_req, tx_ack, tx_data, tx_empty,
@@ -53,7 +58,9 @@ module fake_uart(clk, reset,
 	     t_delay = t_delay - 1;
 	     if (t_delay == 0)
 	       t_done = 1;
-	     if (0) $display("t_state %d t_delay %d", t_state, t_delay);
+`ifdef debug_fake_tx
+	     $display("t_state %d t_delay %d", t_state, t_delay);
+`endif
 	  end
 	if (t_state == 0)
 	  t_done = 0;
@@ -77,11 +84,12 @@ module fake_uart(clk, reset,
    initial
      begin
 	r_index= 0;
-	r_count = 6;
+	r_count = 23;
      end
 
-   reg [7:0] rdata[5:0];
+   reg [7:0] rdata[23:0];
 
+   /* "START\r01:01:85\r10:10\r\r\r" */
    initial
      begin
 	rdata[0] = "S";
@@ -90,6 +98,23 @@ module fake_uart(clk, reset,
 	rdata[3] = "R";
 	rdata[4] = "T";
 	rdata[5] = "\015";
+	rdata[6] = "0";
+	rdata[7] = "1";
+	rdata[8] = ":";
+	rdata[9] = "0";
+	rdata[10] = "1";
+	rdata[11] = ":";
+	rdata[12] = "8";
+	rdata[13] = "5";
+	rdata[14] = "\015";
+	rdata[15] = "1";
+	rdata[16] = "0";
+	rdata[17] = ":";
+	rdata[18] = "1";
+	rdata[19] = "0";
+	rdata[20] = "\015";
+	rdata[21] = "\015";
+	rdata[22] = "\015";
 
 	rx_data = 0;
      end
@@ -99,7 +124,9 @@ module fake_uart(clk, reset,
      begin
 	if (r_state == 2)
 	  begin
+`ifdef debug_fake_rx
 	     $display("xxx dispense %0d %o", r_index, rdata[r_index]);
+`endif
 	     rx_data = rdata[r_index];
 	     r_index = r_index + 1;
 	  end
