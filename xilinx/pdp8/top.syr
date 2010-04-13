@@ -1,0 +1,666 @@
+Release 8.2.03i - xst I.34
+Copyright (c) 1995-2006 Xilinx, Inc.  All rights reserved.
+--> Parameter TMPDIR set to ./xst/projnav.tmp
+CPU : 0.00 / 0.41 s | Elapsed : 0.00 / 0.00 s
+ 
+--> Parameter xsthdpdir set to ./xst
+CPU : 0.00 / 0.41 s | Elapsed : 0.00 / 0.00 s
+ 
+--> Reading design: top.prj
+
+TABLE OF CONTENTS
+  1) Synthesis Options Summary
+  2) HDL Compilation
+  3) Design Hierarchy Analysis
+  4) HDL Analysis
+  5) HDL Synthesis
+     5.1) HDL Synthesis Report
+  6) Advanced HDL Synthesis
+     6.1) Advanced HDL Synthesis Report
+  7) Low Level Synthesis
+  8) Partition Report
+  9) Final Report
+     9.1) Device utilization summary
+     9.2) TIMING REPORT
+
+
+=========================================================================
+*                      Synthesis Options Summary                        *
+=========================================================================
+---- Source Parameters
+Input File Name                    : "top.prj"
+Input Format                       : mixed
+Ignore Synthesis Constraint File   : NO
+
+---- Target Parameters
+Output File Name                   : "top"
+Output Format                      : NGC
+Target Device                      : xc3s1000-5-ft256
+
+---- Source Options
+Top Module Name                    : top
+Automatic FSM Extraction           : YES
+FSM Encoding Algorithm             : Auto
+FSM Style                          : lut
+RAM Extraction                     : Yes
+RAM Style                          : Auto
+ROM Extraction                     : Yes
+Mux Style                          : Auto
+Decoder Extraction                 : YES
+Priority Encoder Extraction        : YES
+Shift Register Extraction          : YES
+Logical Shifter Extraction         : YES
+XOR Collapsing                     : YES
+ROM Style                          : Auto
+Mux Extraction                     : YES
+Resource Sharing                   : YES
+Multiplier Style                   : auto
+Automatic Register Balancing       : No
+
+---- Target Options
+Add IO Buffers                     : YES
+Global Maximum Fanout              : 500
+Add Generic Clock Buffer(BUFG)     : 8
+Register Duplication               : YES
+Slice Packing                      : YES
+Pack IO Registers into IOBs        : auto
+Equivalent register Removal        : YES
+
+---- General Options
+Optimization Goal                  : Speed
+Optimization Effort                : 1
+Keep Hierarchy                     : NO
+RTL Output                         : Yes
+Global Optimization                : AllClockNets
+Write Timing Constraints           : NO
+Hierarchy Separator                : /
+Bus Delimiter                      : <>
+Case Specifier                     : maintain
+Slice Utilization Ratio            : 100
+Slice Utilization Ratio Delta      : 5
+
+---- Other Options
+lso                                : top.lso
+Read Cores                         : YES
+cross_clock_analysis               : NO
+verilog2001                        : YES
+safe_implementation                : No
+Optimize Instantiated Primitives   : NO
+use_clock_enable                   : Yes
+use_sync_set                       : Yes
+use_sync_reset                     : Yes
+
+=========================================================================
+
+
+=========================================================================
+*                          HDL Compilation                              *
+=========================================================================
+Compiling verilog file "../../rtl/ide.v" in library work
+Compiling verilog file "../../rtl/uart.v" in library work
+Module <ide> compiled
+Compiling verilog file "../../rtl/ram_256x12.v" in library work
+Module <uart> compiled
+Compiling verilog file "../../rtl/ide_disk.v" in library work
+Module <ram_256x12> compiled
+Compiling verilog file "../../rtl/brg.v" in library work
+Module <ide_disk> compiled
+Compiling verilog file "../../rtl/ram_32kx12.v" in library work
+Module <brg> compiled
+Compiling verilog file "../../rtl/pdp8_tt.v" in library work
+Module <ram_32kx12> compiled
+Compiling verilog file "../../rtl/pdp8_rf.v" in library work
+Module <pdp8_tt> compiled
+Compiling verilog file "../../rtl/pdp8_kw.v" in library work
+Module <pdp8_rf> compiled
+Compiling verilog file "../../rtl/pdp8_ram.v" in library work
+Module <pdp8_kw> compiled
+Compiling verilog file "../../rtl/pdp8_io.v" in library work
+Module <pdp8_ram> compiled
+Compiling verilog file "../../rtl/pdp8.v" in library work
+Module <pdp8_io> compiled
+Compiling verilog file "../../rtl/debounce.v" in library work
+Module <pdp8> compiled
+Compiling verilog file "../../rtl/top.v" in library work
+Module <debounce> compiled
+Module <top> compiled
+No errors in compilation
+Analysis of file <"top.prj"> succeeded.
+ 
+
+=========================================================================
+*                     Design Hierarchy Analysis                         *
+=========================================================================
+Analyzing hierarchy for module <top> in library <work>.
+
+Analyzing hierarchy for module <debounce> in library <work>.
+
+Analyzing hierarchy for module <pdp8> in library <work> with parameters.
+	D0 = "0100"
+	D1 = "0101"
+	D2 = "0110"
+	D3 = "0111"
+	E0 = "1000"
+	E1 = "1001"
+	E2 = "1010"
+	E3 = "1011"
+	F0 = "0000"
+	F1 = "0001"
+	F2 = "0010"
+	F3 = "0011"
+	H0 = "1100"
+
+Analyzing hierarchy for module <pdp8_io> in library <work>.
+
+Analyzing hierarchy for module <pdp8_ram> in library <work>.
+
+Analyzing hierarchy for module <pdp8_kw> in library <work> with parameters.
+	F3 = "0011"
+	F2 = "0010"
+	F1 = "0001"
+	F0 = "0000"
+
+Analyzing hierarchy for module <pdp8_tt> in library <work> with parameters.
+	F3 = "0011"
+	F2 = "0010"
+	F1 = "0001"
+	F0 = "0000"
+
+Analyzing hierarchy for module <pdp8_rf> in library <work> with parameters.
+	CA_ADDR = "000111111101001"
+	CIE_bit = "000001000000"
+	DB_begin_xfer_write = "0111"
+	DB_check_xfer_read = "0100"
+	DB_check_xfer_write = "1000"
+	DB_done_xfer = "1001"
+	DB_done_xfer1 = "1010"
+	DB_done_xfer2 = "1011"
+	DB_done_xfer3 = "1100"
+	DB_idle = "0000"
+	DB_next_xfer_incr = "0110"
+	DB_next_xfer_read = "0101"
+	DB_read_new_page = "1101"
+	DB_start_xfer1 = "0001"
+	DB_start_xfer2 = "0010"
+	DB_start_xfer3 = "0011"
+	DB_write_old_page = "1111"
+	DRE_bit = "010000000000"
+	DRL_bit = "000000000100"
+	EIE_bit = "000100000000"
+	F0 = "0000"
+	F1 = "0001"
+	F2 = "0010"
+	F3 = "0011"
+	MEX_bit = "000000111000"
+	NXD_bit = "000000000010"
+	PCA_bit = "100000000000"
+	PER_bit = "000000000001"
+	PIE_bit = "000010000000"
+	WC_ADDR = "000111111101000"
+	WLS_bit = "001000000000"
+
+Analyzing hierarchy for module <ram_32kx12> in library <work>.
+
+Analyzing hierarchy for module <brg> in library <work> with parameters.
+	TX_CLK_DIV = "00000000000000000000101000101100"
+	SYS_CLK = "10111110101111000010000000"
+	RX_CLK_DIV = "00000000000000000000000010100010"
+	BAUD = "0010010110000000"
+
+Analyzing hierarchy for module <uart> in library <work>.
+
+Analyzing hierarchy for module <ram_256x12> in library <work>.
+
+Analyzing hierarchy for module <ide_disk> in library <work> with parameters.
+	ATA_ALTER = "01110"
+	ATA_CMD_READ = "0000000000100000"
+	ATA_CMD_WRITE = "0000000000110000"
+	ATA_COMMAND = "10111"
+	ATA_CYLHIGH = "10101"
+	ATA_CYLLOW = "10100"
+	ATA_DATA = "10000"
+	ATA_DEVCTRL = "01110"
+	ATA_DRVHEAD = "10110"
+	ATA_ERROR = "10001"
+	ATA_FEATURE = "10001"
+	ATA_SECCNT = "10010"
+	ATA_SECNUM = "10011"
+	ATA_STATUS = "10111"
+	IDE_STATUS_BSY = "00000000000000000000000000000111"
+	IDE_STATUS_CORR = "00000000000000000000000000000010"
+	IDE_STATUS_DRDY = "00000000000000000000000000000110"
+	IDE_STATUS_DRQ = "00000000000000000000000000000011"
+	IDE_STATUS_DSC = "00000000000000000000000000000100"
+	IDE_STATUS_DWF = "00000000000000000000000000000101"
+	IDE_STATUS_ERR = "00000000000000000000000000000000"
+	IDE_STATUS_IDX = "00000000000000000000000000000001"
+	init0 = "00001"
+	init1 = "00010"
+	init10 = "01011"
+	init11 = "01100"
+	init2 = "00011"
+	init3 = "00100"
+	init4 = "00101"
+	init5 = "00110"
+	init6 = "00111"
+	init7 = "01000"
+	init8 = "01001"
+	init9 = "01010"
+	last0 = "10001"
+	last1 = "10010"
+	last2 = "10011"
+	last3 = "10100"
+	read0 = "01101"
+	read1 = "01110"
+	ready = "00000"
+	wait0 = "10101"
+	wait1 = "10110"
+	write0 = "01111"
+	write1 = "10000"
+
+Analyzing hierarchy for module <ide> in library <work> with parameters.
+	s4 = "101"
+	s3 = "100"
+	s2 = "011"
+	s1 = "010"
+	s0 = "001"
+	idle = "000"
+
+Building hierarchy successfully finished.
+
+=========================================================================
+*                            HDL Analysis                               *
+=========================================================================
+Analyzing top module <top>.
+Module <top> is correct for synthesis.
+ 
+Analyzing module <debounce> in library <work>.
+Module <debounce> is correct for synthesis.
+ 
+Analyzing module <pdp8> in library <work>.
+	F0 = 4'b0000
+	F1 = 4'b0001
+	F2 = 4'b0010
+	F3 = 4'b0011
+	D0 = 4'b0100
+	D1 = 4'b0101
+	D2 = 4'b0110
+	D3 = 4'b0111
+	E0 = 4'b1000
+	E1 = 4'b1001
+	E2 = 4'b1010
+	E3 = 4'b1011
+	H0 = 4'b1100
+WARNING:Xst:883 - "../../rtl/pdp8.v" line 763: Ignored duplicate item in case statement. 
+WARNING:Xst:2323 - "../../rtl/pdp8.v" line 799: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8.v" line 799: $display : HLT! %o
+Module <pdp8> is correct for synthesis.
+ 
+Analyzing module <pdp8_io> in library <work>.
+Module <pdp8_io> is correct for synthesis.
+ 
+Analyzing module <pdp8_kw> in library <work>.
+	F0 = 4'b0000
+	F1 = 4'b0001
+	F2 = 4'b0010
+	F3 = 4'b0011
+"../../rtl/pdp8_kw.v" line 88: $display : kw8i: clocks on!
+"../../rtl/pdp8_kw.v" line 92: $display : CCFF
+"../../rtl/pdp8_kw.v" line 99: $display : CSCF
+"../../rtl/pdp8_kw.v" line 104: $display : CCEC
+"../../rtl/pdp8_kw.v" line 109: $display : CECI
+"../../rtl/pdp8_kw.v" line 121: $display : kw8i: set kw_flag!
+
+Module <pdp8_kw> is correct for synthesis.
+ 
+Analyzing module <pdp8_tt> in library <work>.
+	F0 = 4'b0000
+	F1 = 4'b0001
+	F2 = 4'b0010
+	F3 = 4'b0011
+WARNING:Xst:2323 - "../../rtl/pdp8_tt.v" line 142: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8_tt.v" line 142: $display : xxx rx_data %o
+WARNING:Xst:905 - "../../rtl/pdp8_tt.v" line 118: The signals <io_data_in, iot, io_select, mb, rx_data> are missing in the sensitivity list of always block.
+WARNING:Xst:2323 - "../../rtl/pdp8_tt.v" line 211: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8_tt.v" line 211: $display : xxx tx_data %o
+"../../rtl/pdp8_tt.v" line 222: $display : xxx set tx_int
+"../../rtl/pdp8_tt.v" line 264: $display : xxx assert_tx_int
+Module <pdp8_tt> is correct for synthesis.
+ 
+Analyzing module <brg> in library <work>.
+	SYS_CLK = 26'b10111110101111000010000000
+	BAUD = 16'b0010010110000000
+	RX_CLK_DIV = 32'b00000000000000000000000010100010
+	TX_CLK_DIV = 32'b00000000000000000000101000101100
+Module <brg> is correct for synthesis.
+ 
+Analyzing module <uart> in library <work>.
+Module <uart> is correct for synthesis.
+ 
+Analyzing module <pdp8_rf> in library <work>.
+	F0 = 4'b0000
+	F1 = 4'b0001
+	F2 = 4'b0010
+	F3 = 4'b0011
+	PCA_bit = 12'b100000000000
+	DRE_bit = 12'b010000000000
+	WLS_bit = 12'b001000000000
+	EIE_bit = 12'b000100000000
+	PIE_bit = 12'b000010000000
+	CIE_bit = 12'b000001000000
+	MEX_bit = 12'b000000111000
+	DRL_bit = 12'b000000000100
+	NXD_bit = 12'b000000000010
+	PER_bit = 12'b000000000001
+	WC_ADDR = 15'b000111111101000
+	CA_ADDR = 15'b000111111101001
+	DB_idle = 4'b0000
+	DB_start_xfer1 = 4'b0001
+	DB_start_xfer2 = 4'b0010
+	DB_start_xfer3 = 4'b0011
+	DB_check_xfer_read = 4'b0100
+	DB_next_xfer_read = 4'b0101
+	DB_next_xfer_incr = 4'b0110
+	DB_begin_xfer_write = 4'b0111
+	DB_check_xfer_write = 4'b1000
+	DB_done_xfer = 4'b1001
+	DB_done_xfer1 = 4'b1010
+	DB_done_xfer2 = 4'b1011
+	DB_done_xfer3 = 4'b1100
+	DB_read_new_page = 4'b1101
+	DB_write_old_page = 4'b1111
+WARNING:Xst:2323 - "../../rtl/pdp8_rf.v" line 575: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8_rf.v" line 575: $display : rf: go! disk_addr %o
+WARNING:Xst:905 - "../../rtl/pdp8_rf.v" line 557: The signals <io_data_in, iot, io_select, mb, disk_addr, PCA, DRE, EIE, PIE, CIE, MEX, DMA, EMA> are missing in the sensitivity list of always block.
+"../../rtl/pdp8_rf.v" line 663: $display : rf: DCMA
+"../../rtl/pdp8_rf.v" line 677: $display : rf: DCIM
+WARNING:Xst:883 - "../../rtl/pdp8_rf.v" line 708: Ignored duplicate item in case statement. 
+WARNING:Xst:2323 - "../../rtl/pdp8_rf.v" line 725: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8_rf.v" line 725: $display : rf: DIML %o
+WARNING:Xst:2323 - "../../rtl/pdp8_rf.v" line 756: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8_rf.v" line 756: $display : rf: set DCF (CIE %b)
+WARNING:Xst:2323 - "../../rtl/pdp8_rf.v" line 862: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8_rf.v" line 862: $display : rf: read wc %o
+WARNING:Xst:2323 - "../../rtl/pdp8_rf.v" line 868: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8_rf.v" line 868: $display : rf: read ca %o
+WARNING:Xst:2323 - "../../rtl/pdp8_rf.v" line 901: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8_rf.v" line 901: $display : rf: write wc %o
+WARNING:Xst:2323 - "../../rtl/pdp8_rf.v" line 904: Parameter 2 is not constant in call of system task $display.
+"../../rtl/pdp8_rf.v" line 904: $display : rf: write ca %o
+"../../rtl/pdp8_rf.v" line 908: $display : rf: done
+Module <pdp8_rf> is correct for synthesis.
+ 
+Analyzing module <ram_256x12> in library <work>.
+Module <ram_256x12> is correct for synthesis.
+ 
+Analyzing module <ide_disk> in library <work>.
+	ready = 5'b00000
+	init0 = 5'b00001
+	init1 = 5'b00010
+	init2 = 5'b00011
+	init3 = 5'b00100
+	init4 = 5'b00101
+	init5 = 5'b00110
+	init6 = 5'b00111
+	init7 = 5'b01000
+	init8 = 5'b01001
+	init9 = 5'b01010
+	init10 = 5'b01011
+	init11 = 5'b01100
+	read0 = 5'b01101
+	read1 = 5'b01110
+	write0 = 5'b01111
+	write1 = 5'b10000
+	last0 = 5'b10001
+	last1 = 5'b10010
+	last2 = 5'b10011
+	last3 = 5'b10100
+	wait0 = 5'b10101
+	wait1 = 5'b10110
+	ATA_ALTER = 5'b01110
+	ATA_DEVCTRL = 5'b01110
+	ATA_DATA = 5'b10000
+	ATA_ERROR = 5'b10001
+	ATA_FEATURE = 5'b10001
+	ATA_SECCNT = 5'b10010
+	ATA_SECNUM = 5'b10011
+	ATA_CYLLOW = 5'b10100
+	ATA_CYLHIGH = 5'b10101
+	ATA_DRVHEAD = 5'b10110
+	ATA_STATUS = 5'b10111
+	ATA_COMMAND = 5'b10111
+	IDE_STATUS_BSY = 32'sb00000000000000000000000000000111
+	IDE_STATUS_DRDY = 32'sb00000000000000000000000000000110
+	IDE_STATUS_DWF = 32'sb00000000000000000000000000000101
+	IDE_STATUS_DSC = 32'sb00000000000000000000000000000100
+	IDE_STATUS_DRQ = 32'sb00000000000000000000000000000011
+	IDE_STATUS_CORR = 32'sb00000000000000000000000000000010
+	IDE_STATUS_IDX = 32'sb00000000000000000000000000000001
+	IDE_STATUS_ERR = 32'sb00000000000000000000000000000000
+	ATA_CMD_READ = 16'b0000000000100000
+	ATA_CMD_WRITE = 16'b0000000000110000
+"../../rtl/ide_disk.v" line 196: $display : ide_disk: XXX go!
+"../../rtl/ide_disk.v" line 416: $display : ide_disk: XXX last3, done
+Module <ide_disk> is correct for synthesis.
+ 
+Analyzing module <ide> in library <work>.
+	idle = 3'b000
+	s0 = 3'b001
+	s1 = 3'b010
+	s2 = 3'b011
+	s3 = 3'b100
+	s4 = 3'b101
+Module <ide> is correct for synthesis.
+ 
+Analyzing module <pdp8_ram> in library <work>.
+Module <pdp8_ram> is correct for synthesis.
+ 
+Analyzing module <ram_32kx12> in library <work>.
+Module <ram_32kx12> is correct for synthesis.
+ 
+
+=========================================================================
+*                           HDL Synthesis                               *
+=========================================================================
+
+Performing bidirectional port resolution...
+INFO:Xst:1304 - Contents of register <is_write> in unit <pdp8_rf> never changes during circuit operation. The register is replaced by logic.
+INFO:Xst:1304 - Contents of register <PEF> in unit <pdp8_rf> never changes during circuit operation. The register is replaced by logic.
+INFO:Xst:1304 - Contents of register <NXD> in unit <pdp8_rf> never changes during circuit operation. The register is replaced by logic.
+INFO:Xst:1304 - Contents of register <WLS> in unit <pdp8_rf> never changes during circuit operation. The register is replaced by logic.
+
+Synthesizing Unit <debounce>.
+    Related source file is "../../rtl/debounce.v".
+    Found 15-bit up counter for signal <clkdiv>.
+    Found 10-bit register for signal <hold>.
+    Found 1-bit register for signal <onetime>.
+    Found 1-bit register for signal <slowclk>.
+    Summary:
+	inferred   1 Counter(s).
+	inferred  12 D-type flip-flop(s).
+Unit <debounce> synthesized.
+
+
+Synthesizing Unit <pdp8>.
+    Related source file is "../../rtl/pdp8.v".
+WARNING:Xst:646 - Signal <fetch> is assigned but never used.
+WARNING:Xst:646 - Signal <execute> is assigned but never used.
+WARNING:Xst:646 - Signal <deferred> is assigned but never used.
+    Found 8x8-bit ROM for signal <$AUX_15>.
+    Found 4x1-bit ROM for signal <$mux0005>.
+    Found 4-bit register for signal <state>.
+    Found 12-bit register for signal <mb>.
+    Found 12-bit adder for signal <$add0000> created at line 475.
+    Found 12-bit adder carry out for signal <$addsub0000> created at line 418.
+    Found 12-bit adder carry out for signal <$addsub0001> created at line 418.
+    Found 3-bit 4-to-1 multiplexer for signal <$mux0022>.
+    Found 12-bit adder for signal <$share0000> created at line 558.
+    Found 1-bit xor2 for signal <$xor0059> created at line 345.
+    Found 12-bit register for signal <ac>.
+    Found 3-bit register for signal <DF>.
+    Found 15-bit register for signal <ea>.
+    Found 3-bit register for signal <IB>.
+    Found 1-bit register for signal <IB_pending>.
+    Found 3-bit register for signal <IF>.
+    Found 1-bit register for signal <interrupt>.
+    Found 1-bit register for signal <interrupt_cycle>.
+    Found 1-bit register for signal <interrupt_enable>.
+    Found 1-bit register for signal <interrupt_inhibit_clear>.
+    Found 2-bit register for signal <interrupt_inhibit_delay>.
+    Found 1-bit register for signal <interrupt_inhibit_ib>.
+    Found 1-bit register for signal <interrupt_inhibit_ion>.
+    Found 1-bit register for signal <interrupt_inhibit_ub>.
+    Found 1-bit register for signal <interrupt_skip>.
+    Found 3-bit register for signal <ir>.
+    Found 1-bit register for signal <ir_i_flag>.
+    Found 1-bit register for signal <ir_z_flag>.
+    Found 1-bit register for signal <l>.
+    Found 12-bit register for signal <mq>.
+    Found 4-bit 4-to-1 multiplexer for signal <next_state>.
+    Found 12-bit register for signal <pc>.
+    Found 1-bit register for signal <run>.
+    Found 7-bit register for signal <SF>.
+    Found 1-bit register for signal <UB>.
+    Found 1-bit register for signal <UB_pending>.
+    Found 1-bit register for signal <UF>.
+    Found 1-bit register for signal <UI>.
+    Summary:
+	inferred   2 ROM(s).
+	inferred 105 D-type flip-flop(s).
+	inferred   6 Adder/Subtractor(s).
+	inferred   7 Multiplexer(s).
+Unit <pdp8> synthesized.
+
+
+Synthesizing Unit <pdp8_kw>.
+    Related source file is "../../rtl/pdp8_kw.v".
+WARNING:Xst:647 - Input <mb<11:3>> is never used.
+    Found 4x1-bit ROM for signal <io_selected>.
+    Found 1-bit register for signal <kw_clk_en>.
+    Found 12-bit up counter for signal <kw_ctr>.
+    Found 1-bit register for signal <kw_flag>.
+    Found 1-bit register for signal <kw_int_en>.
+    Found 1-bit register for signal <kw_src_clk>.
+    Found 2-bit up counter for signal <kw_src_ctr>.
+    Summary:
+	inferred   1 ROM(s).
+	inferred   2 Counter(s).
+	inferred   4 D-type flip-flop(s).
+Unit <pdp8_kw> synthesized.
+
+
+Synthesizing Unit <brg>.
+    Related source file is "../../rtl/brg.v".
+    Found 1-bit register for signal <tx_baud_clk>.
+    Found 1-bit register for signal <rx_baud_clk>.
+    Found 13-bit up counter for signal <rx_clk_div>.
+    Found 13-bit up counter for signal <tx_clk_div>.
+    Summary:
+	inferred   2 Counter(s).
+	inferred   2 D-type flip-flop(s).
+Unit <brg> synthesized.
+
+
+Synthesizing Unit <uart>.
+    Related source file is "../../rtl/uart.v".
+WARNING:Xst:647 - Input <clk> is never used.
+WARNING:Xst:646 - Signal <tx_over_run> is assigned but never used.
+WARNING:Xst:653 - Signal <rx_in> is used but never assigned. Tied to value 0.
+WARNING:Xst:646 - Signal <tx_out> is assigned but never used.
+WARNING:Xst:646 - Signal <rx_frame_err> is assigned but never used.
+WARNING:Xst:646 - Signal <rx_over_run> is assigned but never used.
+    Found finite state machine <FSM_0> for signal <rx_uld>.
+    -----------------------------------------------------------------------
+    | States             | 3                                              |
+    | Transitions        | 5                                              |
+    | Inputs             | 1                                              |
+    | Outputs            | 2                                              |
+    | Clock              | rx_clk (rising_edge)                           |
+    | Reset              | reset (positive)                               |
+    | Reset type         | asynchronous                                   |
+    | Reset State        | 00                                             |
+    | Encoding           | automatic                                      |
+    | Implementation     | LUT                                            |
+    -----------------------------------------------------------------------
+    Found finite state machine <FSM_1> for signal <tx_ld>.
+    -----------------------------------------------------------------------
+    | States             | 3                                              |
+    | Transitions        | 5                                              |
+    | Inputs             | 1                                              |
+    | Outputs            | 2                                              |
+    | Clock              | tx_clk (rising_edge)                           |
+    | Reset              | reset (positive)                               |
+    | Reset type         | asynchronous                                   |
+    | Reset State        | 00                                             |
+    | Encoding           | automatic                                      |
+    | Implementation     | LUT                                            |
+    -----------------------------------------------------------------------
+    Found 8-bit register for signal <rx_data>.
+    Found 1-bit register for signal <tx_empty>.
+    Found 1-bit register for signal <rx_empty>.
+    Found 4-bit adder for signal <$addsub0000> created at line 161.
+    Found 4-bit comparator greatequal for signal <$cmp_ge0000> created at line 164.
+    Found 4-bit comparator lessequal for signal <$cmp_le0000> created at line 164.
+    Found 1-bit register for signal <rx_busy>.
+    Found 4-bit register for signal <rx_cnt>.
+    Found 1-bit register for signal <rx_d1>.
+    Found 1-bit register for signal <rx_d2>.
+    Found 8-bit register for signal <rx_reg>.
+    Found 4-bit up counter for signal <rx_sample_cnt>.
+    Found 4-bit up counter for signal <tx_cnt>.
+    Summary:
+	inferred   2 Finite State Machine(s).
+	inferred   2 Counter(s).
+	inferred  25 D-type flip-flop(s).
+	inferred   1 Adder/Subtractor(s).
+	inferred   2 Comparator(s).
+Unit <uart> synthesized.
+
+
+Synthesizing Unit <ram_256x12>.
+    Related source file is "../../rtl/ram_256x12.v".
+WARNING:Xst:647 - Input <reset> is never used.
+    Found 256x12-bit single-port distributed RAM for signal <ram>.
+    -----------------------------------------------------------------------
+    | ram_style          | Auto                                |          |
+    -----------------------------------------------------------------------
+    | Port A                                                              |
+    |     aspect ratio   | 256-word x 12-bit                   |          |
+    |     clkA           | connected to signal <clk>           | rise     |
+    |     weA            | connected to internal node          | high     |
+    |     addrA          | connected to signal <a>             |          |
+    |     diA            | connected to signal <din>           |          |
+    |     doA            | connected to signal <dout>          |          |
+    -----------------------------------------------------------------------
+INFO:Xst:1442 - HDL ADVISOR - The RAM contents appears to be read asynchronously. A synchronous read would allow you to take advantage of available block RAM resources, for optimized device usage and improved timings. Please refer to your documentation for coding guidelines.
+    Summary:
+	inferred   1 RAM(s).
+Unit <ram_256x12> synthesized.
+
+
+Synthesizing Unit <ide>.
+    Related source file is "../../rtl/ide.v".
+    Found finite state machine <FSM_2> for signal <ata_state>.
+    -----------------------------------------------------------------------
+    | States             | 6                                              |
+    | Transitions        | 8                                              |
+    | Inputs             | 2                                              |
+    | Outputs            | 5                                              |
+    | Clock              | clk (rising_edge)                              |
+    | Reset              | reset (positive)                               |
+    | Reset type         | synchronous                                    |
+    | Reset State        | 000                                            |
+    | Encoding           | automatic                                      |
+    | Implementation     | LUT                                            |
+    -----------------------------------------------------------------------
+    Found 16-bit register for signal <ata_out>.
+    Found 16-bit tristate buffer for signal <ide_data_bus>.
+    Summary:
+	inferred   1 Finite State Machine(s).
+	inferred  16 D-type flip-flop(s).
+	inferred  16 Tristate(s).
+Unit <ide> synthesized.
+
+
+Synthesizing Unit <ram_32kx12>.
+    Related source file is "../../rtl/ram_32kx12.v".

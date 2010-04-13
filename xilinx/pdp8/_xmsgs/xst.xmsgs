@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- IMPORTANT: This is an internal file that has been generated
+     by the Xilinx ISE software.  Any direct editing or
+     changes made to this file may result in unpredictable
+     behavior or data corruption.  It is strongly advised that
+     users do not edit the contents of this file. -->
+<messages>
+<msg type="warning" file="Xst" num="883" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8.v</arg>&quot; line <arg fmt="%d" index="2">763</arg>: Ignored duplicate item in case statement. 
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8.v</arg>&quot; line <arg fmt="%d" index="2">799</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_tt.v</arg>&quot; line <arg fmt="%d" index="2">142</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="905" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_tt.v</arg>&quot; line <arg fmt="%d" index="2">118</arg>: The signals &lt;<arg fmt="%s" index="3">io_data_in, iot, io_select, mb, rx_data</arg>&gt; are missing in the sensitivity list of always block.
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_tt.v</arg>&quot; line <arg fmt="%d" index="2">211</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_rf.v</arg>&quot; line <arg fmt="%d" index="2">575</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="905" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_rf.v</arg>&quot; line <arg fmt="%d" index="2">557</arg>: The signals &lt;<arg fmt="%s" index="3">io_data_in, iot, io_select, mb, disk_addr, PCA, DRE, EIE, PIE, CIE, MEX, DMA, EMA</arg>&gt; are missing in the sensitivity list of always block.
+</msg>
+
+<msg type="warning" file="Xst" num="883" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_rf.v</arg>&quot; line <arg fmt="%d" index="2">708</arg>: Ignored duplicate item in case statement. 
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_rf.v</arg>&quot; line <arg fmt="%d" index="2">725</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_rf.v</arg>&quot; line <arg fmt="%d" index="2">756</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_rf.v</arg>&quot; line <arg fmt="%d" index="2">862</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_rf.v</arg>&quot; line <arg fmt="%d" index="2">868</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_rf.v</arg>&quot; line <arg fmt="%d" index="2">901</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="2323" delta="unknown" >&quot;<arg fmt="%s" index="1">../../rtl/pdp8_rf.v</arg>&quot; line <arg fmt="%d" index="2">904</arg>: Parameter <arg fmt="%d" index="3">2</arg> is not constant in call of system task <arg fmt="%s" index="4">$display</arg>.
+</msg>
+
+<msg type="info" file="Xst" num="1304" delta="unknown" >Contents of register &lt;<arg fmt="%s" index="1">is_write</arg>&gt; in unit &lt;<arg fmt="%s" index="2">pdp8_rf</arg>&gt; never changes during circuit operation. The register is replaced by logic.
+</msg>
+
+<msg type="info" file="Xst" num="1304" delta="unknown" >Contents of register &lt;<arg fmt="%s" index="1">PEF</arg>&gt; in unit &lt;<arg fmt="%s" index="2">pdp8_rf</arg>&gt; never changes during circuit operation. The register is replaced by logic.
+</msg>
+
+<msg type="info" file="Xst" num="1304" delta="unknown" >Contents of register &lt;<arg fmt="%s" index="1">NXD</arg>&gt; in unit &lt;<arg fmt="%s" index="2">pdp8_rf</arg>&gt; never changes during circuit operation. The register is replaced by logic.
+</msg>
+
+<msg type="info" file="Xst" num="1304" delta="unknown" >Contents of register &lt;<arg fmt="%s" index="1">WLS</arg>&gt; in unit &lt;<arg fmt="%s" index="2">pdp8_rf</arg>&gt; never changes during circuit operation. The register is replaced by logic.
+</msg>
+
+<msg type="warning" file="Xst" num="646" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">fetch</arg>&gt; is assigned but never used.
+</msg>
+
+<msg type="warning" file="Xst" num="646" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">execute</arg>&gt; is assigned but never used.
+</msg>
+
+<msg type="warning" file="Xst" num="646" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">deferred</arg>&gt; is assigned but never used.
+</msg>
+
+<msg type="warning" file="Xst" num="647" delta="unknown" >Input &lt;<arg fmt="%s" index="1">mb&lt;11:3&gt;</arg>&gt; is never used.
+</msg>
+
+<msg type="warning" file="Xst" num="647" delta="unknown" >Input &lt;<arg fmt="%s" index="1">clk</arg>&gt; is never used.
+</msg>
+
+<msg type="warning" file="Xst" num="646" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">tx_over_run</arg>&gt; is assigned but never used.
+</msg>
+
+<msg type="warning" file="Xst" num="653" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">rx_in</arg>&gt; is used but never assigned. Tied to value <arg fmt="%s" index="2">0</arg>.
+</msg>
+
+<msg type="warning" file="Xst" num="646" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">tx_out</arg>&gt; is assigned but never used.
+</msg>
+
+<msg type="warning" file="Xst" num="646" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">rx_frame_err</arg>&gt; is assigned but never used.
+</msg>
+
+<msg type="warning" file="Xst" num="646" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">rx_over_run</arg>&gt; is assigned but never used.
+</msg>
+
+<msg type="warning" file="Xst" num="647" delta="unknown" >Input &lt;<arg fmt="%s" index="1">reset</arg>&gt; is never used.
+</msg>
+
+<msg type="info" file="Xst" num="1442" delta="unknown" >HDL ADVISOR - The RAM contents appears to be read asynchronously. A synchronous read would allow you to take advantage of available block RAM resources, for optimized device usage and improved timings. Please refer to your documentation for coding guidelines.
+</msg>
+
