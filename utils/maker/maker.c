@@ -1,5 +1,6 @@
 /*
  * tss/8 rf08 disk maker
+ * merge .bin files into existing rf08 disk image using script
  * brad@heeltoe.com 3/2010
  */
 

@@ -1,4 +1,5 @@
 /*
+ * remove comment + ^Z from paper tape files
  * brad@heeltoe.com
  */
 

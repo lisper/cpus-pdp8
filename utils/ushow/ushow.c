@@ -1,3 +1,12 @@
+/*
+ * grab tt output from verilog simulator log file
+ * brad@heeltoe.com
+ *
+ * as in, "cat verilog.log | ./ushow"
+ *
+ * displays tt output in a rational manner
+ */
+
 #include <stdio.h>
 
 int c;
