@@ -2,8 +2,12 @@
 // test bench top end for pdp8.v
 //
 
+`ifdef __CVER__
+`define debug
 `define sim_time
-//`define use_sim_model
+`endif
+
+//`define use_sim_ram_model
 
 `include "../rtl/pdp8_tt.v"
 `include "../rtl/pdp8_rf.v"
@@ -19,7 +23,7 @@
 `include "../rtl/ide.v"
 `include "../rtl/ram_256x12.v"
 
-`ifdef use_sim_model
+`ifdef use_sim_ram_model
  `include "../rtl/ram_32kx12.v"
 `else
 `include "../verif/ram_s3board.v"
