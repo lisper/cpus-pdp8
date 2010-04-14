@@ -1,0 +1,57 @@
+--------------------------------------------------------------------------------
+Release 8.2i Trace 
+Copyright (c) 1995-2006 Xilinx, Inc.  All rights reserved.
+
+trce -ise /home/brad/pdp8/xilinx/pdp8/pdp8.ise -intstyle ise -e 3 -l 3 -s 5
+-xml top top.ncd -o top.twr top.pcf
+
+Design file:              top.ncd
+Physical constraint file: top.pcf
+Device,speed:             xc3s1000,-5 (PRODUCTION 1.38 2006-05-03)
+Report level:             error report
+
+Environment Variable      Effect 
+--------------------      ------ 
+NONE                      No environment variables were set
+--------------------------------------------------------------------------------
+
+INFO:Timing:2698 - No timing constraints found, doing default enumeration.
+INFO:Timing:2752 - To get complete path coverage, use the unconstrained paths 
+   option. All paths that are not constrained will be reported in the 
+   unconstrained paths section(s) of the report.
+
+
+
+Data Sheet report:
+-----------------
+All values displayed in nanoseconds (ns)
+
+Setup/Hold to clock sysclk
+--------------+------------+------------+------------------+--------+
+              |  Setup to  |  Hold to   |                  | Clock  |
+Source        | clk (edge) | clk (edge) |Internal Clock(s) | Phase  |
+--------------+------------+------------+------------------+--------+
+slideswitch<2>|    3.434(R)|   -1.155(R)|sysclk_BUFGP      |   0.000|
+slideswitch<3>|    3.664(R)|   -1.339(R)|sysclk_BUFGP      |   0.000|
+--------------+------------+------------+------------------+--------+
+
+Clock to Setup on destination clock sysclk
+---------------+---------+---------+---------+---------+
+               | Src:Rise| Src:Fall| Src:Rise| Src:Fall|
+Source Clock   |Dest:Rise|Dest:Rise|Dest:Fall|Dest:Fall|
+---------------+---------+---------+---------+---------+
+sysclk         |    4.365|         |         |         |
+---------------+---------+---------+---------+---------+
+
+
+Analysis completed Wed Apr 14 19:04:55 2010
+--------------------------------------------------------------------------------
+
+Trace Settings:
+-------------------------
+Trace Settings 
+
+Peak Memory Usage: 266 MB
+
+
+
