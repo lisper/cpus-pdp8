@@ -697,7 +697,7 @@ $display("rf: DCIM");
 		 case (io_select)
 		   6'o60:
 		     case (mb[2:0])
-		       6'o03: // DMAR
+		       3'o3: // DMAR
 			 begin
 			    // clear ac
 			    DMA <= io_data_in;
@@ -705,11 +705,13 @@ $display("rf: DCIM");
 			    DCF <= 1'b0;
 			 end
 
-		       6'o03: // DMAW
+		       3'o5: // DMAW
 			 begin
 			    // clear ac
 			    DMA <= io_data_in;
-			    is_write <= 1'b1;
+//			    is_write <= 1'b1;
+//debug
+is_read <= 1'b1;
 			    DCF <= 1'b0;
 			 end
 		     endcase // case(mb[2:0])

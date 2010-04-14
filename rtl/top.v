@@ -9,9 +9,9 @@ module top(rs232_txd, rs232_rxd,
 	   button, led, sysclk,
 	   sevenseg, sevenseg_an,
 	   slideswitch,
-	   ram_a, ram_oe_n, ram_we_n,
-	   ram1_io, ram1_ce_n, ram1_ub_n, ram1_lb_n,
-	   ram2_io, ram2_ce_n, ram2_ub_n, ram2_lb_n,
+	   sram_a, sram_oe_n, sram_we_n,
+	   sram1_io, sram1_ce_n, sram1_ub_n, sram1_lb_n,
+	   sram2_io, sram2_ce_n, sram2_ub_n, sram2_lb_n,
 	   ide_data_bus, ide_dior, ide_diow, ide_cs, ide_da);
 
    output	rs232_txd;
@@ -27,22 +27,23 @@ module top(rs232_txd, rs232_rxd,
 
    input [7:0] 	slideswitch;
 
-   output [17:0] ram_a;
-   output 	 ram_oe_n;
-   output 	 ram_we_n;
+   output [17:0] sram_a;
+   output 	 sram_oe_n;
+   output 	 sram_we_n;
 
-   inout [15:0]	 ram1_io;
-   output 	 ram1_ce_n;
-   output 	 ram1_ub_n;
-   output 	 ram1_lb_n;
+   inout [15:0]	 sram1_io;
+   output 	 sram1_ce_n;
+   output 	 sram1_ub_n;
+   output 	 sram1_lb_n;
 
-   inout [15:0]	 ram2_io;
-   output 	 ram2_ce_n;
-   output 	 ram2_ub_n;
-   output 	 ram2_lb_n;
+   inout [15:0]	 sram2_io;
+   output 	 sram2_ce_n;
+   output 	 sram2_ub_n;
+   output 	 sram2_lb_n;
    
    inout [15:0]  ide_data_bus;
-   output 	 ide_dior, ide_diow;
+   output 	 ide_dior;
+   output 	 ide_diow;
    output [1:0]  ide_cs;
    output [2:0]  ide_da;
 
@@ -170,12 +171,21 @@ module top(rs232_txd, rs232_rxd,
 	      .ide_data_bus(ide_data_bus));
 
    pdp8_ram ram(.clk(clk),
-	       .reset(reset), 
-	       .addr(ram_addr),
-	       .data_in(ram_data_in),
-	       .data_out(ram_data_out),
-	       .rd(ram_rd),
-   	       .wr(ram_wr));
+		.reset(reset), 
+		.addr(ram_addr),
+		.data_in(ram_data_in),
+		.data_out(ram_data_out),
+		.rd(ram_rd),
+   		.wr(ram_wr),
+
+   		.sram_a(sram_a),
+		.sram_oe_n(sram_oe_n), .sram_we_n(sram_we_n),
+
+		.sram1_io(sram1_io), .sram1_ce_n(sram1_ce_n),
+		.sram1_ub_n(sram1_ub_n), .sram1_lb_n(sram1_lb_n),
+		   
+		.sram2_io(sram2_io), .sram2_ce_n(sram2_ce_n), 
+		.sram2_ub_n(sram2_ub_n), .sram2_lb_n(sram2_lb_n));
 
 endmodule
 
