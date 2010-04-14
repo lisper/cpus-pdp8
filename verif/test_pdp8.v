@@ -2,6 +2,9 @@
 // test bench top end for pdp8.v
 //
 
+`define sim_time
+//`define use_sim_model
+
 `include "../rtl/pdp8_tt.v"
 `include "../rtl/pdp8_rf.v"
 `include "../rtl/pdp8_kw.v"
@@ -14,8 +17,13 @@
 
 `include "../rtl/ide_disk.v"
 `include "../rtl/ide.v"
-`include "../rtl/ram_32kx12.v"
 `include "../rtl/ram_256x12.v"
+
+`ifdef use_sim_model
+ `include "../rtl/ram_32kx12.v"
+`else
+`include "../verif/ram_s3board.v"
+`endif
 
 `timescale 1ns / 1ns
 
@@ -47,6 +55,18 @@ module test;
    wire [11:0] ext_ram_in;
    wire        ext_ram_done;
    wire [11:0] ext_ram_out;
+
+   wire [17:0] sram_a;
+   wire        sram_oe_n;
+   wire        sram_we_n;
+   wire [15:0] sram1_io;
+   wire        sram1_ce_n;
+   wire        sram1_ub_n;
+   wire        sram1_lb_n;
+   wire [15:0] sram2_io;
+   wire        sram2_ce_n;
+   wire        sram2_ub_n;
+   wire        sram2_lb_n;
 
    wire [15:0] ide_data_bus;
    wire        ide_dior, ide_diow;
@@ -103,13 +123,31 @@ module test;
 	      .ide_data_bus(ide_data_bus));
 
    pdp8_ram ram(.clk(clk),
-	       .reset(reset), 
-	       .addr(ram_addr),
-	       .data_in(ram_data_in),
-	       .data_out(ram_data_out),
-	       .rd(ram_rd),
-   	       .wr(ram_wr));
+		.reset(reset), 
+		.addr(ram_addr),
+		.data_in(ram_data_in),
+		.data_out(ram_data_out),
+		.rd(ram_rd),
+   		.wr(ram_wr),
+   		.sram_a(sram_a),
+		.sram_oe_n(sram_oe_n), .sram_we_n(sram_we_n),
+		.sram1_io(sram1_io), .sram1_ce_n(sram1_ce_n),
+		.sram1_ub_n(sram1_ub_n), .sram1_lb_n(sram1_lb_n),
+		.sram2_io(sram2_io), .sram2_ce_n(sram2_ce_n), 
+		.sram2_ub_n(sram2_ub_n), .sram2_lb_n(sram2_lb_n));
 
+`ifndef use_sim_model
+   ram_s3board sram(.ram_a(sram_a),
+		    .ram_oe_n(sram_oe_n),
+		    .ram_we_n(sram_we_n),
+		    .ram1_io(sram1_io),
+		    .ram1_ce_n(sram1_ce_n),
+		    .ram1_ub_n(sram1_ub_n), .ram1_lb_n(sram1_lb_n),
+		    .ram2_io(sram2_io),
+		    .ram2_ce_n(sram2_ce_n),
+		    .ram2_ub_n(sram2_ub_n), .ram2_lb_n(sram2_lb_n));
+`endif
+   
    reg [14:0]  starting_pc;
 
    reg [1023:0] arg;
@@ -117,10 +155,9 @@ module test;
 
   initial
     begin
-      $timeformat(-9, 0, "ns", 7);
+       $timeformat(-9, 0, "ns", 7);
 
-      $dumpfile("test_pdp8.vcd");
-//      $dumpvars(0, test.cpu);
+       $dumpfile("test_pdp8.vcd");
        $dumpvars(0, test);
     end
 
