@@ -193,7 +193,9 @@ module ide_disk(clk, reset,
 		 begin
 		    ide_state_next = init0;
 		    clear_done = 1;
+`ifdef debug
 		    $display("ide_disk: XXX go!");
+`endif
 		 end
 	    end
 	  
@@ -413,7 +415,9 @@ module ide_disk(clk, reset,
 	    begin
 	       clear_done = 1;
 	       ide_state_next = ready;
+`ifdef debug
 	       $display("ide_disk: XXX last3, done");
+`endif
 	    end
 		 
 	  default:

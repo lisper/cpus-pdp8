@@ -1,6 +1,8 @@
 // RF08 Emulation using IDE disk
 // brad@heeltoe.com
 
+//`define debug_rf
+
 /* 
   RF08 Sizes:
  
@@ -523,7 +525,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
    
    assign buff_addr = ide_active ? ide_buffer_addr : buffer_addr;
    assign buff_in = ide_active ? ide_buffer_out : buffer_hold;
-   assign buff_rd = ide_active ? ide_buffer_rd : 1'b1;
+   assign buff_rd = ide_active ? ide_buffer_rd : 1'b1/*buffer_rd?*/;
    assign buff_wr = ide_active ? ide_buffer_wr : buffer_wr;
    
    // ide disk
@@ -552,8 +554,10 @@ module pdp8_rf(clk, reset, iot, state, mb,
    //
    
    // combinatorial logic
-   always @(state or
-	    ADC or DRL or PER or WLS or NXD or DCF)
+   always @(state or iot or io_select or mb or io_data_in or
+	    ADC or DRL or PER or WLS or NXD or DCF or
+	    PCA or DRE or EIE or PIE or CIE or MEX or DMA or EMA or
+	    disk_addr)
      begin
 	// sampled during f1
 	io_skip = 0;
@@ -572,7 +576,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		     begin
 			io_data_out = 0;
 			dma_start = 1'b1;
+`ifdef debug
 			$display("rf: go! disk_addr %o", disk_addr);
+`endif
 		     end
 		   3'o5: // DMAW
 		     begin
@@ -660,7 +666,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		   6'o60: // DCMA
 		     if (mb[2:0] == 3'b001)
 		       begin
-$display("rf: DCMA");
+`ifdef debug
+			  $display("rf: DCMA");
+`endif
 			  DMA <= 0;
 			  PEF <= 1'b0;
 			  NXD <= 1'b0;
@@ -674,7 +682,9 @@ $display("rf: DCMA");
 			    PIE <= 1'b0;
 			    CIE <= 1'b0;
 			    MEX <= 3'b0;
-$display("rf: DCIM");
+`ifdef debug
+			 $display("rf: DCIM");
+`endif
 			 end
 		       3'o2: // DSAC
 			 begin
@@ -724,7 +734,9 @@ is_read <= 1'b1;
 			      PIE <= io_data_in[7];
 			      CIE <= io_data_in[6];
 			      MEX <= io_data_in[5:3];
-$display("rf: DIML %o", io_data_in);
+`ifdef debug
+			      $display("rf: DIML %o", io_data_in);
+`endif
 			 end
 		     endcase // case(mb[2:0])
 		   
@@ -755,7 +767,9 @@ $display("rf: DIML %o", io_data_in);
   		DMA <= disk_addr[11:0];
 		is_read <= 1'b0;
 		is_write <= 1'b0;
-$display("rf: set DCF (CIE %b)", CIE);
+`ifdef debug
+		$display("rf: set DCF (CIE %b)", CIE);
+`endif
 		DCF <= 1'b1;
 	     end
 
@@ -861,13 +875,18 @@ $display("rf: set DCF (CIE %b)", CIE);
 	      begin
 		 dma_wc <= ram_in + 12'o0001;
 		 db_done <= 0;
+`ifdef debug
 		 if (ram_done) $display("rf: read wc %o", ram_in);
+`endif
 	      end
 	    
 	    DB_start_xfer2:
 	      begin
 		 dma_addr <= { MEX, ram_in + 12'o0001 };
+`ifdef debug
+
 		 if (ram_done) $display("rf: read ca %o", ram_in);
+`endif
 	      end
 
 	    DB_start_xfer3:
@@ -899,15 +918,19 @@ $display("rf: set DCF (CIE %b)", CIE);
 	    DB_check_xfer_write:
 	      buffer_dirty <= 1;
 
+`ifdef debug
 	    DB_done_xfer:
 	      if (ram_done) $display("rf: write wc %o", dma_wc);
 
 	    DB_done_xfer1:
 	      if (ram_done) $display("rf: write ca %o", dma_addr);
+`endif
 	    
 	    DB_done_xfer2:
 	      begin
+`ifdef debug
 	      	 $display("rf: done");
+`endif
 		 db_done <= 1;
 	      end
 

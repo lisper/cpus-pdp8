@@ -4,8 +4,8 @@
 
 module uart(clk, reset,
 	    tx_clk, tx_req, tx_ack, tx_data, tx_empty,
-	    rx_clk, rx_req, rx_ack, rx_data, rx_empty/*,*/
-	    /*rx_in, tx_out*/);
+	    rx_clk, rx_req, rx_ack, rx_data, rx_empty,
+	    rx_in, tx_out);
    
    input        clk;
    input        reset;
@@ -13,17 +13,17 @@ module uart(clk, reset,
    input        tx_req;
    output 	tx_ack;
    input [7:0] 	tx_data;
-//   input        tx_enable;
-//   output       tx_out;
+   output       tx_out;
    output       tx_empty;
    input        rx_clk;
    input        rx_req;
    output 	rx_ack;
    output [7:0] rx_data;
-//   input        rx_enable;
-//   input        rx_in;
-wire        rx_in;
+   input        rx_in;
    output       rx_empty;
+
+//   input        tx_enable;
+//   input        rx_enable;
 
    reg 		tx_ack;
    reg 		rx_ack;

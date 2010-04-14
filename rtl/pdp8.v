@@ -758,9 +758,7 @@ module pdp8(clk, reset,
 			    mq <= ac;
 			    ac <= 0;
 			 end
-		       3'b100: ac <= ac | mq;
-		       //3'b101: tmq <= mq;
-		       3'b100: ac <= mq;	/* MQA */
+		       3'b100: ac <= ac | mq;	/* MQA */
 		       3'b101: ac <= mq;
 		     endcase
 		end
@@ -796,7 +794,9 @@ module pdp8(clk, reset,
 			       ac <= ac | switches;
 			     if (mb[1])
 			       begin
+`ifdef debug
 				  $display("HLT! %o", mb);
+`endif
 				  run <= 0;
 			       end
 			  end

@@ -85,28 +85,38 @@ module pdp8_kw(clk, reset, iot, state, mb,
 		     begin
 			kw_int_en <= 1'b1;
 			kw_clk_en <= 1'b1;
+`ifdef debug
 			$display("kw8i: clocks on!");
+`endif
 		     end
 		   3'o2:
 		     begin
+`ifdef debug
 			$display("CCFF");
+`endif
 			kw_flag <= 1'b0;
 			kw_clk_en <= 1'b0;
 			kw_int_en <= 1'b0;
 		     end
 		   3'o3:
 		     begin
+`ifdef debug
 			$display("CSCF");
+`endif
 			kw_flag <= 1'b0;
 		     end
 		   3'o6:
 		     begin
+`ifdef debug
 			$display("CCEC");
+`endif
 			kw_clk_en <= 1;
 		     end
 		   3'o7:
 		     begin
+`ifdef debug
 			$display("CECI");
+`endif
 			kw_clk_en <= 1;
 			kw_int_en <= 1;
 		     end
@@ -118,7 +128,9 @@ module pdp8_kw(clk, reset, iot, state, mb,
 	       if (assert_kw_flag)
 		 begin
 		    kw_flag <= 1;
+`ifdef debug
 		    if (kw_flag == 0) $display("kw8i: set kw_flag!\n");
+`endif
 		 end
 	    end
 

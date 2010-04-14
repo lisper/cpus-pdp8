@@ -35,8 +35,6 @@ module pdp8_ram(clk, reset, addr, data_in, data_out, rd, wr,
 		  .CE_N(1'b0),
 		  .WE_N(~wr));
 `else
-   wire [15:0]  ram1_io;
-
    //
    wire 	 sram1_ub, sram1_lb;
 

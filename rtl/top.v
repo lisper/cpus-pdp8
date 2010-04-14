@@ -14,8 +14,8 @@ module top(rs232_txd, rs232_rxd,
 	   sram2_io, sram2_ce_n, sram2_ub_n, sram2_lb_n,
 	   ide_data_bus, ide_dior, ide_diow, ide_cs, ide_da);
 
-   output	rs232_txd;
    input	rs232_rxd;
+   output	rs232_txd;
 
    input [3:0] 	button;
 
@@ -96,7 +96,6 @@ module top(rs232_txd, rs232_rxd,
    wire [14:0] ram_addr;
    wire [11:0] io_data_in;
    wire [11:0] io_data_out;
-   wire [11:0] io_addr;
    wire        io_data_avail;
    wire        io_interrupt;
    wire        io_skip;
@@ -147,6 +146,7 @@ module top(rs232_txd, rs232_rxd,
 	   .ext_ram_out(ext_ram_in));
    
    pdp8_io io(.clk(clk),
+	      .brgclk(clk),
 	      .reset(reset),
 	      .iot(iot),
 	      .state(state),
@@ -168,7 +168,9 @@ module top(rs232_txd, rs232_rxd,
 	      .ide_diow(ide_diow),
 	      .ide_cs(ide_cs),
 	      .ide_da(ide_da),
-	      .ide_data_bus(ide_data_bus));
+	      .ide_data_bus(ide_data_bus),
+	      .rs232_in(rs232_rxd),
+	      .rs232_out(rs232_txd));
 
    pdp8_ram ram(.clk(clk),
 		.reset(reset), 

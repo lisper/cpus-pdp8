@@ -1,17 +1,20 @@
 // PDP8 console emulation
 // brad@heeltoe.com
 
-//`define sim_time
-
+`ifdef debug
 `define debug_tt_int 1
 //`define debug_tt_reg 1
 //`define debug_tt_state 1
 `define debug_tt_data 1
+`endif
+
+//`define sim_time
 
 module pdp8_tt(clk, brgclk, reset,
 	       iot, state, mb,
 	       io_data_in, io_data_out, io_select, io_selected,
-	       io_data_avail, io_interrupt, io_skip);
+	       io_data_avail, io_interrupt, io_skip,
+	       uart_in, uart_out);
    
    input	clk;
    input 	brgclk;
@@ -22,15 +25,17 @@ module pdp8_tt(clk, brgclk, reset,
    input [11:0] mb;
    input [11:0] io_data_in;
    input [5:0] 	io_select;
+   input	uart_in;
 
    output reg [11:0] io_data_out;
    output reg	     io_selected;
    output  	     io_data_avail;
    output  	     io_interrupt;
    output reg 	     io_skip;
+   output	     uart_out;
    
    // internal state
-   reg [11:0] 	     tx_data;
+   reg [7:0] 	     tx_data;
    reg 		     tx_int;
    wire 	     tx_empty;
    wire 	     tx_ack;
@@ -80,7 +85,7 @@ module pdp8_tt(clk, brgclk, reset,
 		     .tx_clk(uart_tx_clk),
 		     .tx_req(tto_req),
 		     .tx_ack(tx_ack),
-		     .tx_data(tx_data[7:0]), 
+		     .tx_data(tx_data), 
 		     .tx_empty(tx_empty),
 		     
 		     .rx_clk(uart_rx_clk),
@@ -96,14 +101,17 @@ module pdp8_tt(clk, brgclk, reset,
 		.tx_clk(uart_tx_clk),
 		.tx_req(tto_req),
 		.tx_ack(tx_ack),
-		.tx_data(tx_data[7:0]), 
+		.tx_data(tx_data), 
 		.tx_empty(tx_empty),
 		     
 		.rx_clk(uart_rx_clk),
 		.rx_req(tti_req),
 		.rx_ack(rx_ack),
 		.rx_data(rx_data[7:0]),
-		.rx_empty(rx_empty));
+		.rx_empty(rx_empty),
+
+		.rx_in(uart_in),
+		.tx_out(uart_out));
 `endif
    
    // interrupt output
@@ -114,7 +122,8 @@ module pdp8_tt(clk, brgclk, reset,
    assign rx_data[11:8] = 4'b0;
    
    // combinatorial
-   always @(state or rx_int or tx_int)
+   always @(state or iot or io_select or mb or
+	    rx_int or tx_int or io_data_in or rx_data)
      begin
 	// sampled during f1
 	io_skip = 1'b0;
@@ -171,7 +180,7 @@ module pdp8_tt(clk, brgclk, reset,
 	  rx_int <= 0;
 	  tx_int <= 0;
 
-	  tx_data <= 0;
+	  tx_data <= 8'b0;
        end
      else
        begin
@@ -206,7 +215,7 @@ module pdp8_tt(clk, brgclk, reset,
 			end
 		      if (mb[2])
 			begin
-			   tx_data <= io_data_in;
+			   tx_data <= io_data_in[7:0];
 `ifdef debug_tt_data
 			   $display("xxx tx_data %o", io_data_in);
 `endif

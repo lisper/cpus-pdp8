@@ -3,14 +3,18 @@
 // Dev 2006 Brad Parker brad@heeltoe.com
 // Revamp 2009 Brad Parker brad@heeltoe.com
 
-module pdp8_io(clk, reset, iot, state, mb,
+module pdp8_io(clk, brgclk, reset, iot, state, mb,
 	       io_data_in, io_data_out, io_select,
 	       io_data_avail, io_interrupt, io_skip, io_clear_ac,
 	       io_ram_read_req, io_ram_write_req, io_ram_done,
 	       io_ram_ma, io_ram_in, io_ram_out,
-               ide_dior, ide_diow, ide_cs, ide_da, ide_data_bus);
+               ide_dior, ide_diow, ide_cs, ide_da, ide_data_bus,
+	       rs232_in, rs232_out);
    
-   input clk, reset, iot;
+   input clk;
+   input brgclk;
+   input reset;
+   input iot;
    input [11:0] io_data_in;
    input [11:0]      mb;
    input [3:0] 	     state;
@@ -28,6 +32,15 @@ module pdp8_io(clk, reset, iot, state, mb,
    output wire 	      io_ram_write_req;
    output wire [14:0] io_ram_ma;
    output wire [11:0] io_ram_out;
+
+   output 	     ide_dior;
+   output 	     ide_diow;
+   output [1:0]      ide_cs;
+   output [2:0]      ide_da;
+   inout [15:0]      ide_data_bus;
+
+   input	     rs232_in;
+   output	     rs232_out;
 
    wire 	     kw_io_selected;
    wire 	     kw_io_interrupt;
@@ -47,13 +60,6 @@ module pdp8_io(clk, reset, iot, state, mb,
    wire 	     rf_io_skip;
    wire 	     rf_io_clear_ac;
 
-   output 	     ide_dior;
-   output 	     ide_diow;
-   output [1:0]      ide_cs;
-   output [2:0]      ide_da;
-   inout [15:0]      ide_data_bus;
-
-
    pdp8_kw kw(.clk(clk),
 	      .reset(reset),
 	      .iot(iot),
@@ -66,7 +72,7 @@ module pdp8_io(clk, reset, iot, state, mb,
 	      .io_skip(kw_io_skip));
 	      
    pdp8_tt tt(.clk(clk),
-	      .brgclk(/*brgclk*/clk),
+	      .brgclk(brgclk),
 	      .reset(reset),
 	      .iot(iot),
 	      .state(state),
@@ -78,7 +84,10 @@ module pdp8_io(clk, reset, iot, state, mb,
 	      .io_data_out(tt_io_data_out),
 	      .io_data_avail(tt_io_data_avail),
 	      .io_interrupt(tt_io_interrupt),
-	      .io_skip(tt_io_skip));
+	      .io_skip(tt_io_skip),
+
+	      .uart_in(rs232_in),
+	      .uart_out(rs232_out));
 
    pdp8_rf tf(.clk(clk),
 	      .reset(reset),
@@ -106,6 +115,9 @@ module pdp8_io(clk, reset, iot, state, mb,
 	      .ide_cs(ide_cs),
 	      .ide_da(ide_da),
 	      .ide_data_bus(ide_data_bus));
+
+   assign tt_io_clear_ac = 1'b0;
+   assign rf_io_clear_ac = 1'b0;
 
    assign io_data_out =
 		       tt_io_selected ? tt_io_data_out :
