@@ -110,7 +110,7 @@ module ram_s3board(ram_a, ram_oe_n, ram_we_n,
 	  end
      end
 
-`ifdef debug_ram
+`ifdef debug_s3ram
    always @(ram_a or ram_oe_n or ram1_ce_n or ram_we_n or ram1_io)
      begin
 	if (0)

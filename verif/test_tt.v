@@ -2,6 +2,8 @@
 // testing top end for pdp8_tt.v
 //
 
+`define sim_time 1
+
 `include "../verif/fake_uart.v"
 `include "../rtl/brg.v"
 `include "../rtl/pdp8_tt.v"
@@ -23,6 +25,9 @@ module test_tt;
    reg 	       iot;
    reg [3:0]   state;
    reg [11:0]  mb_in;
+
+   reg 	       uin;
+   wire        uout;
    
    pdp8_tt tt(.clk(clk),
 	      .brgclk(brgclk),
@@ -39,7 +44,9 @@ module test_tt;
 
 	      .io_data_avail(io_data_avail),
 	      .io_interrupt(io_interrupt),
-	      .io_skip(io_skip));
+	      .io_skip(io_skip),
+	      .uart_in(uin),
+	      .uart_out(uout));
 
    reg [11:0]  data;
    reg 	       sample_skip;
@@ -52,6 +59,7 @@ module test_tt;
       begin
 	 @(posedge clk);
 	 begin
+	    uin = 0;
 	    state = 4'h0;
 	    mb_in = isn;
 	    io_select = isn[8:3];

@@ -5,6 +5,7 @@
 `ifdef __CVER__
 `define debug
 `define sim_time
+//`define debug_s3ram
 `endif
 
 //`define use_sim_ram_model
@@ -240,8 +241,8 @@ module test;
        n = $scan$plusargs("cycles=", arg);
 	if (n > 0)
 	  begin
-	     n = $sscanf(arg, "%o", max_cycles);
-	     $display("arg %s cycles %o", arg, max_cycles);
+	     n = $sscanf(arg, "%d", max_cycles);
+	     $display("arg %s cycles %d", arg, max_cycles);
 	  end
 `endif
        
