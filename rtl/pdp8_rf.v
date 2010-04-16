@@ -478,17 +478,27 @@ module pdp8_rf(clk, reset, iot, state, mb,
    reg 	      db_done;
    wire       dma_done;
 
+   reg       clear_db_done;
+   reg 	     set_db_done;
+   
    reg [14:0] dma_addr;
    reg [11:0] dma_wc;
 
    reg [19:0] disk_addr;
+
+   reg       load_disk_addr;
+   reg 	     incr_disk_addr;
 
    wire [7:0] buffer_addr;
    reg [19:8] buffer_disk_addr;
    reg 	      buffer_dirty;
 
    reg [11:0] buffer_hold;
-   
+
+   reg 	      load_buffer_hold;
+   reg 	      set_buffer_addr;
+   reg 	      set_buffer_dirty;
+
    wire       buffer_matches_DMA;
    wire       buffer_rd;
    wire       buffer_wr;
@@ -811,21 +821,32 @@ is_read <= 1'b1;
    // comb logic to create 'next state'
    always @(*)
      begin
-	db_next_state = DB_idle;
-//	       load_disk_addr = 0;
+	db_next_state = db_state;
+	load_disk_addr = 0;
+	incr_disk_addr = 0;
+	set_buffer_addr = 0;
+	set_buffer_dirty = 0;
+	load_buffer_hold = 0;
+	
 	case (db_state)
 	  DB_idle:
-	    begin
-	       if (dma_start)
-		 db_next_state = DB_start_xfer1;
-//	       if (ram_done) load_disk_addr = 1;
-	    end
+	    if (dma_start)
+	      db_next_state = DB_start_xfer1;
 
 	  DB_start_xfer1:
-	    db_next_state = ram_done ? DB_start_xfer2 : DB_start_xfer1;
+	    if (ram_done)
+	      begin
+		 clear_db_done = 1;
+		 load_disk_addr = 1;
+		 db_next_state = DB_start_xfer2;
+	      end
 	  
 	  DB_start_xfer2:
-	    db_next_state = ram_done ? DB_start_xfer3 : DB_start_xfer2;
+	    if (ram_done)
+	      begin
+		 set_db_done = 1;
+		 db_next_state = DB_start_xfer3;
+	      end
 	  
 	  DB_start_xfer3:
 	    db_next_state = is_read ? DB_check_xfer_read : DB_begin_xfer_write;
@@ -838,48 +859,67 @@ is_read <= 1'b1;
   		 db_next_state = buffer_dirty ?
 				 DB_write_old_page :
 				 DB_read_new_page;
-//	       if (ram_done) load_disk_addr = 1;
 	    end
 	  
 	  DB_next_xfer_read:
-	    db_next_state = ram_done ?
-			    (dma_done ? DB_done_xfer : DB_next_xfer_incr) :
-			    DB_next_xfer_read;
+	    if (ram_done)
+	      begin
+		 incr_disk_addr = 1;
+		 db_next_state = dma_done ? DB_done_xfer : DB_next_xfer_incr;
+	      end
 	  
 	  DB_next_xfer_incr:
-//	    if (dma_done)
-//  	      db_next_state = DB_done_xfer;
-//            else
 	      db_next_state = is_read ? DB_check_xfer_read:DB_begin_xfer_write;
 
 	  DB_begin_xfer_write:
- 	    db_next_state = ram_done ? DB_check_xfer_write:DB_begin_xfer_write;
-
+	    if (ram_done)
+	      begin
+		 load_buffer_hold = 1;
+ 		 db_next_state = DB_check_xfer_write;
+	      end
+	  
 	  DB_check_xfer_write:
-            if (buffer_matches_DMA)
-	      db_next_state = dma_done ? DB_done_xfer : DB_next_xfer_incr;
-            else
-  	      db_next_state = buffer_dirty ? DB_write_old_page:DB_read_new_page;
+	    if (buffer_matches_DMA)
+	      begin
+		 set_buffer_dirty = 1;
+		 incr_disk_addr = 1;
+		 db_next_state = dma_done ? DB_done_xfer : DB_next_xfer_incr;
+	      end
+	    else
+  	      db_next_state = buffer_dirty ?
+			      DB_write_old_page : 
+			      DB_read_new_page;
 
 	  DB_done_xfer:
-	    db_next_state = ram_done ? DB_done_xfer1 : DB_done_xfer;
+	    if (ram_done)
+	      db_next_state = DB_done_xfer1;
 
 	  DB_done_xfer1:
-	    db_next_state = ram_done ? DB_done_xfer2 : DB_done_xfer1;
+	    if (ram_done)
+	      db_next_state = DB_done_xfer2;
 
 	  DB_done_xfer2:
-	    db_next_state = state == F2 ? DB_done_xfer3 : DB_done_xfer2;
+	    if (state == F2)
+	      db_next_state = DB_done_xfer3;
 
 	  DB_done_xfer3:
             db_next_state = DB_idle;
 
 	  DB_read_new_page:
-	    db_next_state = ide_done ?
-			    (is_read ? DB_check_xfer_read:DB_check_xfer_write) :
-			    DB_read_new_page;
-
+	    if (ide_done)
+	      begin
+		 set_buffer_addr = 1;
+		 db_next_state = is_read ?
+				 DB_check_xfer_read :
+				 DB_check_xfer_write;
+	      end
+	  
 	  DB_write_old_page:
-	    db_next_state = ide_done ? DB_read_new_page : DB_write_old_page;
+	    if (ide_done)
+	      begin
+		 set_buffer_addr = 1;
+		 db_next_state = DB_read_new_page;
+	      end
 	  
 	endcase
      end
@@ -893,32 +933,20 @@ is_read <= 1'b1;
 
       assign dma_done = dma_wc == 12'o0000;
 
-   // general state
+   // general state - wc & ca
    always @(posedge clk)
      if (reset)
        begin
-	  db_done <= 1'b1;
 	  dma_wc <= 12'b0;
 	  dma_addr <= 14'b0;
-
-	  disk_addr <= 20'b0;
-	  
-	  buffer_disk_addr[19:8] <= 12'b111111111111;
-	  buffer_dirty <= 1'b0;
-	  buffer_hold <= 12'b0;
        end
      else
        begin
 	  case (db_state)
-	    DB_idle:
-	      begin
-	      end
 	    
 	    DB_start_xfer1:
 	      begin
-		 disk_addr <= {EMA, DMA};
 		 dma_wc <= ram_in + 12'o0001;
-		 db_done <= 0;
 `ifdef debug
 		 if (ram_done) $display("rf: read wc %o", ram_in);
 `endif
@@ -936,17 +964,14 @@ is_read <= 1'b1;
 	    DB_start_xfer3:
 	      begin
 		 // this state might be not be needed
-		 $display("rf: start! disk_addr %o (%o %o)", disk_addr, EMA, DMA);
+`ifdef debug
+		 $display("rf: start! disk_addr %o (%o %o)",
+			  disk_addr, EMA, DMA);
+`endif
 	      end
 
-	    DB_begin_xfer_write:
-	      begin
-		 buffer_hold <= ram_in;
-	      end
-	    
 	    DB_next_xfer_incr:
 	      begin
-//		 disk_addr <= disk_addr + 20'b1;
 		 dma_addr[11:0] <= dma_addr[11:0] + 12'o00001;
 		 dma_wc <= dma_wc + 12'b1;
 `ifdef debug_rf
@@ -956,9 +981,7 @@ is_read <= 1'b1;
 
 	    DB_next_xfer_read:
 	      begin
-		 if (ram_done)
-	      	   disk_addr <= disk_addr + 20'b1;
-
+		 /* snoop for our wc & ca */
  		 if (dma_addr == 12'o7750 && ram_done)
 		   begin
 		      dma_wc <= buff_out;
@@ -977,53 +1000,66 @@ is_read <= 1'b1;
 `endif
 	      end
 
-	    DB_check_xfer_write:
-	      begin
-		 buffer_dirty <= 1;
-		 if (buffer_matches_DMA)
-		   disk_addr <= disk_addr + 20'b1;
-	      end
-
 `ifdef debug
 	    DB_done_xfer:
 	      if (ram_done) $display("rf: write wc %o", dma_wc);
 
 	    DB_done_xfer1:
 	      if (ram_done) $display("rf: write ca %o", dma_addr);
-`endif
 	    
 	    DB_done_xfer2:
-	      begin
-`ifdef debug
-	      	 $display("rf: done");
+	      $display("rf: done");
 `endif
-		 db_done <= 1;
-	      end
 
-	    DB_read_new_page:
-	      begin
-		 buffer_dirty <= 0;
-		 buffer_disk_addr[19:8] <= disk_addr[19:8];
-	      end
- 
-	    DB_write_old_page:
-	      begin
-		 buffer_dirty <= 0;
-		 buffer_disk_addr[19:8] <= disk_addr[19:8];
-	      end
 	  endcase
        end
 
    //
-//   always @(posedge clk)
-//     if (reset)
-//       disk_addr <= 0;
-//     else
-//       if (load_disk_addr)
-//	 disk_addr <= {EMA, DMA};
-//       else
-//	 if (incr_disk_addr)
-//	   disk_addr <= disk_addr + 20'b1;
+   always @(posedge clk)
+     if (reset)
+       buffer_hold <= 12'b0;
+     else
+       if (load_buffer_hold)
+	 buffer_hold <= ram_in;
+
+   // done state
+   always @(posedge clk)
+     if (reset)
+       db_done <= 1'b1;
+     else
+       if (clear_db_done)
+	 db_done <= 1'b0;
+       else
+	 if (set_db_done)
+	   db_done <= 1'b1;
+   
+   // buffer address
+   always @(posedge clk)
+     if (reset)
+       begin
+	  buffer_disk_addr[19:8] <= 12'b111111111111;
+	  buffer_dirty <= 1'b0;
+       end
+     else
+       if (set_buffer_dirty)
+	 buffer_dirty <= 1'b1;
+       else
+	 if (set_buffer_addr)
+	   begin
+	      buffer_dirty <= 1'b0;
+	      buffer_disk_addr[19:8] <= disk_addr[19:8];
+	   end
+
+   // disk address
+   always @(posedge clk)
+     if (reset)
+       disk_addr <= 0;
+     else
+       if (load_disk_addr)
+	 disk_addr <= {EMA, DMA};
+       else
+	 if (incr_disk_addr)
+	   disk_addr <= disk_addr + 20'b1;
 
 		    
    //
