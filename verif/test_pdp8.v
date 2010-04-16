@@ -32,6 +32,8 @@
 `include "../rtl/ide.v"
 `include "../rtl/ram_256x12.v"
 
+`include "../rtl/bootrom.v"
+
 `ifdef use_sim_ram_model
  `include "../rtl/ram_32kx12.v"
 `else
@@ -45,6 +47,8 @@ module test;
    reg clk, reset;
    reg [11:0] switches;
 
+   wire [14:0] initial_pc;
+   
    wire [11:0] ram_data_in;
    wire        ram_rd;
    wire        ram_wr;
@@ -86,11 +90,12 @@ module test;
    wire [1:0]  ide_cs;
    wire [2:0]  ide_da;
 
-   reg        rs232_in;
+   reg 	       rs232_in;
    wire        rs232_out;
    
   pdp8 cpu(.clk(clk),
 	   .reset(reset),
+	   .initial_pc(initial_pc),
 	   .ram_addr(ram_addr),
 	   .ram_data_in(ram_data_out),
 	   .ram_data_out(ram_data_in),
@@ -172,6 +177,9 @@ module test;
    reg [1023:0] arg;
    integer 	n;
 
+   assign initial_pc = starting_pc;
+
+   
   initial
     begin
        $timeformat(-9, 0, "ns", 7);
@@ -268,11 +276,6 @@ module test;
        #60 begin
           reset = 0;
        end
-
-       cpu.pc = starting_pc[11:0];
-       cpu.IF = starting_pc[14:12];
-
-//      #5000000 $finish;
     end
 
   always

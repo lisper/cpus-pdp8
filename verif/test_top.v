@@ -15,6 +15,9 @@
 `include "../rtl/top.v"
 `include "../rtl/ram_256x12.v"
 `include "../rtl/debounce.v"
+`include "../rtl/bootrom.v"
+`include "../rtl/display.v"
+`include "../rtl/sevensegdecode.v"
 
 `timescale 1ns / 1ns
 
