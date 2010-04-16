@@ -195,7 +195,7 @@
 // 		(remember that on interrupt, sf <= {if,df})
 //
 
-module pdp8(clk, reset,
+module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 	    ram_addr, ram_data_out, ram_data_in, ram_rd, ram_wr,
 	    io_select, io_data_out, io_data_in,
 	    io_data_avail, io_interrupt, io_skip, io_clear_ac,
@@ -204,12 +204,15 @@ module pdp8(clk, reset,
 	    ext_ram_ma, ext_ram_in, ext_ram_out);
 
    input clk, reset;
+   input [14:0] initial_pc;
    input [11:0] ram_data_in;
    output 	ram_rd;
    output 	ram_wr;
    output [11:0] ram_data_out;
    output [14:0] ram_addr;
-
+   output [11:0] pc_out;
+   output [11:0] ac_out;
+   
    output [5:0]  io_select;
    input [11:0]  io_data_in;
    output [11:0] io_data_out;
@@ -365,6 +368,10 @@ module pdp8(clk, reset,
 
 		H0 = 4'b1100;
 
+   // for display
+   assign pc_out = pc;
+   assign ac_out = ac;
+
    //
    // cpu state state machine
    // 
@@ -409,7 +416,7 @@ module pdp8(clk, reset,
 
    always @(posedge clk)
      if (reset)
-       pc <= 0;
+       pc <= initial_pc[11:0];
      else
        begin
 	  pc <= pc_mux;
@@ -547,7 +554,7 @@ module pdp8(clk, reset,
 	  interrupt_skip <= 0;
 	  interrupt <= 0;
 	  UI <= 0;
-	  IF <= 0;
+	  IF <= initial_pc[14:12];
 	  DF <= 0;
 	  IB <= 0;
 	  SF <= 0;

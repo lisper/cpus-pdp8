@@ -35,6 +35,18 @@ module pdp8_ram(clk, reset, addr, data_in, data_out, rd, wr,
 		  .CE_N(1'b0),
 		  .WE_N(~wr));
 `else
+
+   //
+   wire 	 rom_decode;
+   wire [11:0] 	 rom_data;
+   
+   bootrom rom(.clk(clk),
+	       .reset(reset),
+	       .addr(addr),
+	       .data_out(rom_data),
+	       .rd(rd),
+	       .selected(rom_decode));
+   
    //
    wire 	 sram1_ub, sram1_lb;
 
@@ -51,7 +63,7 @@ module pdp8_ram(clk, reset, addr, data_in, data_out, rd, wr,
    assign sram1_ub_n = ~sram1_ub;
    assign sram1_lb_n = ~sram1_lb;
 
-   assign data_out = sram1_io[11:0];
+   assign data_out = rom_decode ? rom_data : sram1_io[11:0];
    assign sram1_io = ~sram_oe_n ? 16'bz : {4'b0, data_in};
 
    // sram2 not used

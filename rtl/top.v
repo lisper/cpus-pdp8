@@ -112,16 +112,22 @@ module top(rs232_txd, rs232_rxd,
    wire        ext_ram_done;
    wire [11:0] ext_ram_out;
 
+   wire [14:0] initial_pc;
+   wire [11:0] pc;
+   wire [11:0] ac;
+   
    debounce reset_sw(.clk(sysclk), .in(button[3]), .out(reset));
 
-//   display show_pc(.clk(sysclk), .reset(reset),
-//		   .pc(pc), .dots(pc[15:12]),
-//		   .led(oled[3:0]),
-//		   .sevenseg(sevenseg), .sevenseg_an(sevenseg_an));
-//   assign led = {rk_state, trapped, waited, halted};
+   display show_pc(.clk(sysclk), .reset(reset),
+		   .pc(pc), .dots(ac[3:0]),
+		   .sevenseg(sevenseg), .sevenseg_an(sevenseg_an));
+   assign led = ac[11:4];
    
   pdp8 cpu(.clk(clk),
 	   .reset(reset),
+	   .initial_pc(initial_pc),
+	   .pc_out(pc),
+	   .ac_out(ac),
 	   .ram_addr(ram_addr),
 	   .ram_data_in(ram_data_out),
 	   .ram_data_out(ram_data_in),
@@ -188,6 +194,8 @@ module top(rs232_txd, rs232_rxd,
 		   
 		.sram2_io(sram2_io), .sram2_ce_n(sram2_ce_n), 
 		.sram2_ub_n(sram2_ub_n), .sram2_lb_n(sram2_lb_n));
+
+   assign initial_pc = 15'o07400;
 
 endmodule
 
