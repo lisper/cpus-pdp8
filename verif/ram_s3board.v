@@ -82,24 +82,28 @@ module ram_s3board(ram_a, ram_oe_n, ram_we_n,
 	     ram1.ram_l[i] = 7'b0;
 	  end
 
-`ifdef __ICARUS__
- `define no_scan
-`endif
 `ifdef verilator
  `define no_scan
 `endif
 
+`ifdef __ICARUS__
+       n = $value$plusargs("test=%s", testfilename);
+`endif
+       
+`ifdef __CVER__
+       n = $scan$plusargs("test=", testfilename);
+`endif
+
+
 `ifdef no_scan
 	n = 0;
-`else
- 	n = $scan$plusargs("test=", testfilename);
 `endif
 	if (n > 0)
 	  begin
 	     $display("ram_s3board: code filename: %s", testfilename);
 	     file = $fopen(testfilename, "r");
 
-	     while ($fscanf(file, "%o %o", i, v) > 0)
+	     while ($fscanf(file, "%o %o\n", i, v) > 0)
 	       begin
 		  //$display("ram_s3board[%0o] <- %o", i, v);
 		  ram1.ram_h[i] = v[15:8];

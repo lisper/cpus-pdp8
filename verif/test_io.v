@@ -2,8 +2,12 @@
 // testing top end for pdp8_io.v
 //
 
+`define debug
+`define sim_time
+
 `include "../rtl/pdp8_tt.v"
 `include "../rtl/pdp8_rf.v"
+`include "../rtl/pdp8_kw.v"
 `include "../rtl/pdp8_io.v"
 
 `include "../verif/fake_uart.v"
@@ -44,7 +48,11 @@ module test;
    wire [1:0]  ide_cs;
    wire [2:0]  ide_da;
 
+   reg 	       rs232_in;
+   wire        rs232_out;
+   
    pdp8_io io(.clk(clk),
+	      .brgclk(clk),
 	      .reset(reset),
 	      .iot(iot),
 	      .state(state),
@@ -66,7 +74,9 @@ module test;
 	      .ide_diow(ide_diow),
 	      .ide_cs(ide_cs),
 	      .ide_da(ide_da),
-	      .ide_data_bus(ide_data_bus));
+	      .ide_data_bus(ide_data_bus),
+	      .rs232_in(rs232_in),
+	      .rs232_out(rs232_out));
 
   initial
     begin
@@ -76,38 +86,39 @@ module test;
       $dumpvars(0, test.io);
     end
 
-  initial
-    begin
-      clk = 0;
-      reset = 0;
+   initial
+     begin
+	clk = 0;
+	reset = 0;
+	rs232_in = 0;
+	
+	#1 begin
+           reset = 1;
+	end
 
-    #1 begin
-         reset = 1;
-       end
+	#50 begin
+           reset = 0;
+	end
+	
+	#3000 $finish;
+     end
 
-    #50 begin
-         reset = 0;
-       end
-  
-      #3000 $finish;
-    end
+   always
+     begin
+	#10 clk = 0;
+	#10 clk = 1;
+     end
 
-  always
-    begin
-      #10 clk = 0;
-      #10 clk = 1;
-    end
+   //----
+   integer cycle;
 
-  //----
-  integer cycle;
+   initial
+     cycle = 0;
 
-  initial
-    cycle = 0;
-
-  always @(posedge io.clk)
-    begin
-      cycle = cycle + 1;
-    end
+   always @(posedge io.clk)
+     begin
+	cycle = cycle + 1;
+     end
 
 endmodule
 

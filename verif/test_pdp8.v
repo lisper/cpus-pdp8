@@ -2,9 +2,17 @@
 // test bench top end for pdp8.v
 //
 
+`ifdef __ICARUS__
+ `define sim
+`endif
+
 `ifdef __CVER__
-`define debug
-`define sim_time
+ `define sim
+`endif
+
+`ifdef sim
+ `define debug
+ `define sim_time
 //`define debug_s3ram
 `endif
 
@@ -78,6 +86,9 @@ module test;
    wire [1:0]  ide_cs;
    wire [2:0]  ide_da;
 
+   reg        rs232_in;
+   wire        rs232_out;
+   
   pdp8 cpu(.clk(clk),
 	   .reset(reset),
 	   .ram_addr(ram_addr),
@@ -104,6 +115,7 @@ module test;
 	   .ext_ram_out(ext_ram_in));
    
    pdp8_io io(.clk(clk),
+	      .brgclk(clk),
 	      .reset(reset),
 	      .iot(iot),
 	      .state(state),
@@ -125,7 +137,9 @@ module test;
 	      .ide_diow(ide_diow),
 	      .ide_cs(ide_cs),
 	      .ide_da(ide_da),
-	      .ide_data_bus(ide_data_bus));
+	      .ide_data_bus(ide_data_bus),
+	      .rs232_in(rs232_in),
+	      .rs232_out(rs232_out));
 
    pdp8_ram ram(.clk(clk),
 		.reset(reset), 
@@ -172,8 +186,9 @@ module test;
        clk = 0;
        reset = 0;
        switches = 0;
-       max_cycles = 0;
+       rs232_in = 0;
 
+       max_cycles = 0;
        max_cycles = 100;
        starting_pc = 15'o00200;
 
