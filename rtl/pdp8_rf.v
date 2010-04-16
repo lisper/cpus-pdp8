@@ -827,6 +827,8 @@ is_read <= 1'b1;
 	set_buffer_addr = 0;
 	set_buffer_dirty = 0;
 	load_buffer_hold = 0;
+	set_db_done = 0;
+	clear_db_done = 0;
 	
 	case (db_state)
 	  DB_idle:
@@ -972,7 +974,7 @@ is_read <= 1'b1;
 
 	    DB_next_xfer_incr:
 	      begin
-		 dma_addr[11:0] <= dma_addr[11:0] + 12'o00001;
+		 dma_addr[11:0] <= dma_addr[11:0] + 12'o0001;
 		 dma_wc <= dma_wc + 12'b1;
 `ifdef debug_rf
 		 $display("dma_wc %o dma_addr %o MEX %o",dma_wc,dma_addr,MEX);
@@ -985,13 +987,17 @@ is_read <= 1'b1;
  		 if (dma_addr == 12'o7750 && ram_done)
 		   begin
 		      dma_wc <= buff_out;
+`ifdef debug
 		      $display("rf: snoop update wc %o", buff_out);
+`endif	
 		   end
 
 		 if (dma_addr == 12'o7751 && ram_done)
 		   begin
 		      dma_addr[11:0] <= buff_out;
+`ifdef debug
 		      $display("rf: snoop update ca %o", buff_out);
+`endif
 		   end
 
 `ifdef debug_rf

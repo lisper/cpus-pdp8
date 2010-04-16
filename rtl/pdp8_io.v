@@ -102,7 +102,7 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 	      .io_data_avail(rf_io_data_avail),
 	      .io_interrupt(rf_io_interrupt),
 	      .io_skip(rf_io_skip),
-	      .io_clear_ac(rf_io_cleac_ac),
+	      .io_clear_ac(rf_io_clear_ac),
 
 	      .ram_read_req(io_ram_read_req),
 	      .ram_write_req(io_ram_write_req),
