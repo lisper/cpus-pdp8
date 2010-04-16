@@ -102,6 +102,7 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 	      .io_data_avail(rf_io_data_avail),
 	      .io_interrupt(rf_io_interrupt),
 	      .io_skip(rf_io_skip),
+	      .io_clear_ac(rf_io_cleac_ac),
 
 	      .ram_read_req(io_ram_read_req),
 	      .ram_write_req(io_ram_write_req),
@@ -117,7 +118,6 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 	      .ide_data_bus(ide_data_bus));
 
    assign tt_io_clear_ac = 1'b0;
-   assign rf_io_clear_ac = 1'b0;
 
    assign io_data_out =
 		       tt_io_selected ? tt_io_data_out :
