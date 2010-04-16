@@ -37,7 +37,13 @@ BUFGP symbol &quot;sysclk_BUFGP&quot; (output signal=sysclk_BUFGP)</arg>
 <arg fmt="%s" index="2">Pin D of io/tt/baud_rate_generator/rx_baud_clk</arg>
 </msg>
 
-<msg type="warning" file="Pack" num="266" delta="unknown" >The function generator <arg fmt="%s" index="1">cpu/_mux0009&lt;0&gt;711</arg> failed to merge with F5 multiplexer <arg fmt="%s" index="2">cpu/_mux0009&lt;4&gt;199_SW1</arg>.  <arg fmt="%z" index="3">There is a conflict for the FXMUX.</arg>  The design will exhibit suboptimal timing.
+<msg type="warning" file="Pack" num="266" delta="unknown" >The function generator <arg fmt="%s" index="1">cpu/_mux0009&lt;4&gt;129</arg> failed to merge with F5 multiplexer <arg fmt="%s" index="2">cpu/_mux0009&lt;7&gt;73_SW11_f5</arg>.  <arg fmt="%z" index="3">There is a conflict for the FXMUX.</arg>  The design will exhibit suboptimal timing.
+</msg>
+
+<msg type="warning" file="Pack" num="266" delta="unknown" >The function generator <arg fmt="%s" index="1">cpu/_mux0009&lt;4&gt;129</arg> failed to merge with F5 multiplexer <arg fmt="%s" index="2">cpu/_mux0009&lt;8&gt;73_SW11_f5</arg>.  <arg fmt="%z" index="3">There is a conflict for the FXMUX.</arg>  The design will exhibit suboptimal timing.
+</msg>
+
+<msg type="warning" file="Pack" num="266" delta="unknown" >The function generator <arg fmt="%s" index="1">cpu/_mux0009&lt;4&gt;129</arg> failed to merge with F5 multiplexer <arg fmt="%s" index="2">cpu/_mux0009&lt;6&gt;73_SW1</arg>.  <arg fmt="%z" index="3">There is a conflict for the FXMUX.</arg>  The design will exhibit suboptimal timing.
 </msg>
 
 </messages>

@@ -71,9 +71,6 @@
 <msg type="warning" file="Xst" num="647" delta="unknown" >Input &lt;<arg fmt="%s" index="1">mb&lt;11:3&gt;</arg>&gt; is never used.
 </msg>
 
-<msg type="warning" file="Xst" num="646" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">db_done</arg>&gt; is assigned but never used.
-</msg>
-
 <msg type="warning" file="Xst" num="646" delta="unknown" >Signal &lt;<arg fmt="%s" index="1">ide_error</arg>&gt; is assigned but never used.
 </msg>
 

@@ -1,7 +1,7 @@
 Release 8.2i par I.31
 Copyright (c) 1995-2006 Xilinx, Inc.  All rights reserved.
 
-wide::  Wed Apr 14 19:03:38 2010
+wide::  Fri Apr 16 08:16:15 2010
 
 par -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf 
 
@@ -28,7 +28,7 @@ Device Utilization Summary:
    Number of External IOBs            89 out of 173    51%
       Number of LOCed IOBs             0 out of 89      0%
 
-   Number of Slices                 1045 out of 7680   13%
+   Number of Slices                 1135 out of 7680   14%
       Number of SLICEMs               96 out of 3840    2%
 
 
@@ -42,7 +42,7 @@ Router effort level (-rl):    Standard
 Starting Placer
 
 Phase 1.1
-Phase 1.1 (Checksum:98c64f) REAL time: 7 secs 
+Phase 1.1 (Checksum:98cab7) REAL time: 7 secs 
 
 Phase 2.31
 Phase 2.31 (Checksum:1312cfe) REAL time: 7 secs 
@@ -51,58 +51,64 @@ Phase 3.2
 .
 
 
-Phase 3.2 (Checksum:1c9c37d) REAL time: 11 secs 
+Phase 3.2 (Checksum:1c9c37d) REAL time: 12 secs 
 
 Phase 4.3
-Phase 4.3 (Checksum:26259fc) REAL time: 11 secs 
+Phase 4.3 (Checksum:26259fc) REAL time: 12 secs 
 
 Phase 5.5
-Phase 5.5 (Checksum:2faf07b) REAL time: 11 secs 
+Phase 5.5 (Checksum:2faf07b) REAL time: 12 secs 
 
 Phase 6.8
-.........
-.........
+.............
 ........
+.................................
 ........
-...............................
 .....
-Phase 6.8 (Checksum:c43eff) REAL time: 28 secs 
+.....
+Phase 6.8 (Checksum:c1aa4b) REAL time: 30 secs 
 
 Phase 7.5
-Phase 7.5 (Checksum:42c1d79) REAL time: 28 secs 
+Phase 7.5 (Checksum:42c1d79) REAL time: 30 secs 
 
 Phase 8.18
-Phase 8.18 (Checksum:4c4b3f8) REAL time: 47 secs 
+Phase 8.18 (Checksum:4c4b3f8) REAL time: 51 secs 
 
 Phase 9.5
-Phase 9.5 (Checksum:55d4a77) REAL time: 47 secs 
+Phase 9.5 (Checksum:55d4a77) REAL time: 51 secs 
 
 Writing design to file top.ncd
 
 
-Total REAL time to Placer completion: 49 secs 
-Total CPU time to Placer completion: 49 secs 
+Total REAL time to Placer completion: 54 secs 
+Total CPU time to Placer completion: 54 secs 
 
 Starting Router
 
-Phase 1: 7815 unrouted;       REAL time: 49 secs 
+Phase 1: 8419 unrouted;       REAL time: 54 secs 
 
-Phase 2: 7293 unrouted;       REAL time: 51 secs 
+Phase 2: 7883 unrouted;       REAL time: 55 secs 
 
-Phase 3: 1774 unrouted;       REAL time: 52 secs 
+Phase 3: 1987 unrouted;       REAL time: 57 secs 
 
-Phase 4: 1774 unrouted; (40393)      REAL time: 53 secs 
+Phase 4: 1987 unrouted; (77716)      REAL time: 58 secs 
 
-Phase 5: 1822 unrouted; (0)      REAL time: 54 secs 
+Phase 5: 2030 unrouted; (0)      REAL time: 59 secs 
 
-Phase 6: 0 unrouted; (0)      REAL time: 59 secs 
+Phase 6: 0 unrouted; (229)      REAL time: 1 mins 5 secs 
 
-Phase 7: 0 unrouted; (0)      REAL time: 1 mins 1 secs 
+Phase 7: 0 unrouted; (229)      REAL time: 1 mins 6 secs 
 
+Phase 8: 0 unrouted; (204)      REAL time: 1 mins 12 secs 
+
+Phase 9: 0 unrouted; (121)      REAL time: 1 mins 20 secs 
+
+Phase 10: 0 unrouted; (121)      REAL time: 1 mins 21 secs 
+
+WARNING:Route:447 - CLK Net:io/tt/baud_rate_generator/tx_baud_clk may have excessive skew because 
+   2 CLK pins and 1 NON_CLK pins failed to route using a CLK template.
 WARNING:Route:447 - CLK Net:io/kw/kw_src_clk may have excessive skew because 
    6 CLK pins and 1 NON_CLK pins failed to route using a CLK template.
-WARNING:Route:447 - CLK Net:io/tt/baud_rate_generator/tx_baud_clk may have excessive skew because 
-   1 NON-CLK pins failed to route using a CLK template.
 WARNING:Route:447 - CLK Net:io/tt/baud_rate_generator/rx_baud_clk may have excessive skew because 
    1 NON-CLK pins failed to route using a CLK template.
 WARNING:Route:447 - CLK Net:reset_sw/slowclk may have excessive skew because 
@@ -110,8 +116,8 @@ WARNING:Route:447 - CLK Net:reset_sw/slowclk may have excessive skew because
 WARNING:Route:447 - CLK Net:clk may have excessive skew because 
    1 NON-CLK pins failed to route using a CLK template.
 
-Total REAL time to Router completion: 1 mins 1 secs 
-Total CPU time to Router completion: 1 mins 1 secs 
+Total REAL time to Router completion: 1 mins 21 secs 
+Total CPU time to Router completion: 1 mins 21 secs 
 
 Partition Implementation Status
 -------------------------------
@@ -129,19 +135,19 @@ Generating Clock Report
 +---------------------+--------------+------+------+------------+-------------+
 |        Clock Net    |   Resource   |Locked|Fanout|Net Skew(ns)|Max Delay(ns)|
 +---------------------+--------------+------+------+------------+-------------+
-|                 clk |      BUFGMUX7| No   |  429 |  0.390     |  1.006      |
-+---------------------+--------------+------+------+------------+-------------+
-|        sysclk_BUFGP |      BUFGMUX5| No   |   23 |  0.126     |  0.737      |
+|        sysclk_BUFGP |      BUFGMUX5| No   |   23 |  0.107     |  0.729      |
 +---------------------+--------------+------+------+------------+-------------+
 |io/tt/baud_rate_gene |              |      |      |            |             |
-|   rator/rx_baud_clk |      BUFGMUX1| No   |   24 |  0.182     |  0.841      |
+|   rator/rx_baud_clk |      BUFGMUX1| No   |   24 |  0.208     |  0.861      |
 +---------------------+--------------+------+------+------------+-------------+
-|    io/kw/kw_src_clk |         Local|      |    7 |  0.601     |  1.529      |
+|                 clk |      BUFGMUX7| No   |  445 |  0.402     |  1.013      |
 +---------------------+--------------+------+------+------------+-------------+
-|    reset_sw/slowclk |         Local|      |    8 |  0.242     |  2.907      |
+|    io/kw/kw_src_clk |         Local|      |    7 |  0.334     |  1.254      |
++---------------------+--------------+------+------+------------+-------------+
+|    reset_sw/slowclk |         Local|      |    8 |  0.475     |  3.214      |
 +---------------------+--------------+------+------+------------+-------------+
 |io/tt/baud_rate_gene |              |      |      |            |             |
-|   rator/tx_baud_clk |         Local|      |   10 |  0.038     |  2.019      |
+|   rator/tx_baud_clk |         Local|      |   10 |  1.260     |  2.212      |
 +---------------------+--------------+------+------+------------+-------------+
 
 * Net Skew is the difference between the minimum and maximum routing
@@ -155,15 +161,15 @@ the minimum and maximum path delays which includes logic delays.
 
 The NUMBER OF SIGNALS NOT COMPLETELY ROUTED for this design is: 0
 
-   The AVERAGE CONNECTION DELAY for this design is:        1.201
-   The MAXIMUM PIN DELAY IS:                               5.419
-   The AVERAGE CONNECTION DELAY on the 10 WORST NETS is:   4.145
+   The AVERAGE CONNECTION DELAY for this design is:        1.193
+   The MAXIMUM PIN DELAY IS:                               6.943
+   The AVERAGE CONNECTION DELAY on the 10 WORST NETS is:   5.121
 
    Listing Pin Delays by value: (nsec)
 
-    d < 1.00   < d < 2.00  < d < 3.00  < d < 4.00  < d < 6.00  d >= 6.00
+    d < 1.00   < d < 2.00  < d < 3.00  < d < 4.00  < d < 7.00  d >= 7.00
    ---------   ---------   ---------   ---------   ---------   ---------
-        3887        2667         988         229           7           0
+        4218        2975         763         395          31           0
 
 Timing Score: 0
 
@@ -174,21 +180,21 @@ Asterisk (*) preceding a constraint indicates it was not met.
   Constraint                                | Requested  | Actual     | Logic  | Absolute   |Number of
                                             |            |            | Levels | Slack      |errors   
 ------------------------------------------------------------------------------------------------------
-  Autotimespec constraint for clock net clk | N/A        | 11.175ns   | 7      | N/A        | N/A     
+  Autotimespec constraint for clock net clk | N/A        | 11.634ns   | 8      | N/A        | N/A     
 ------------------------------------------------------------------------------------------------------
-  Autotimespec constraint for clock net io/ | N/A        | 3.775ns    | 3      | N/A        | N/A     
+  Autotimespec constraint for clock net io/ | N/A        | 3.636ns    | 3      | N/A        | N/A     
   kw/kw_src_clk                             |            |            |        |            |         
 ------------------------------------------------------------------------------------------------------
-  Autotimespec constraint for clock net sys | N/A        | 4.365ns    | 2      | N/A        | N/A     
+  Autotimespec constraint for clock net sys | N/A        | 4.081ns    | 13     | N/A        | N/A     
   clk_BUFGP                                 |            |            |        |            |         
 ------------------------------------------------------------------------------------------------------
-  Autotimespec constraint for clock net io/ | N/A        | 5.099ns    | 3      | N/A        | N/A     
+  Autotimespec constraint for clock net io/ | N/A        | 5.078ns    | 3      | N/A        | N/A     
   tt/baud_rate_generator/rx_baud_clk        |            |            |        |            |         
 ------------------------------------------------------------------------------------------------------
-  Autotimespec constraint for clock net res | N/A        | 3.096ns    | 0      | N/A        | N/A     
+  Autotimespec constraint for clock net res | N/A        | 2.808ns    | 0      | N/A        | N/A     
   et_sw/slowclk                             |            |            |        |            |         
 ------------------------------------------------------------------------------------------------------
-  Autotimespec constraint for clock net io/ | N/A        | 3.583ns    | 3      | N/A        | N/A     
+  Autotimespec constraint for clock net io/ | N/A        | 4.548ns    | 1      | N/A        | N/A     
   tt/baud_rate_generator/tx_baud_clk        |            |            |        |            |         
 ------------------------------------------------------------------------------------------------------
 
@@ -202,10 +208,10 @@ Generating Pad Report.
 
 All signals are completely routed.
 
-Total REAL time to PAR completion: 1 mins 6 secs 
-Total CPU time to PAR completion: 1 mins 6 secs 
+Total REAL time to PAR completion: 1 mins 25 secs 
+Total CPU time to PAR completion: 1 mins 25 secs 
 
-Peak Memory Usage:  414 MB
+Peak Memory Usage:  427 MB
 
 Placement: Completed - No errors found.
 Routing: Completed - No errors found.

@@ -1,24 +1,8 @@
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "C:/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
 xst -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
 ngdbuild -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -dd _ngo -nt timestamp -i -p xc3s1000-ft256-5 "top.ngc" top.ngd
 map -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -p xc3s1000-ft256-5 -cm area -pr b -k 4 -c 100 -o top_map.ncd top.ngd top.pcf
 par -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -w -intstyle ise -ol std -t 1 top_map.ncd top.ncd top.pcf
 trce -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -e 3 -l 3 -s 5 -xml top top.ncd -o top.twr top.pcf
-xst -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-xst -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
-ngdbuild -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -dd _ngo -nt timestamp -i -p xc3s1000-ft256-5 "top.ngc" top.ngd
-map -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -p xc3s1000-ft256-5 -cm area -pr b -k 4 -c 100 -o top_map.ncd top.ngd top.pcf
 xst -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -ifn top.xst -ofn top.syr
 ngdbuild -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -dd _ngo -nt timestamp -i -p xc3s1000-ft256-5 "top.ngc" top.ngd
 map -ise "/home/brad/pdp8/xilinx/pdp8/pdp8.ise" -intstyle ise -p xc3s1000-ft256-5 -cm area -pr b -k 4 -c 100 -o top_map.ncd top.ngd top.pcf

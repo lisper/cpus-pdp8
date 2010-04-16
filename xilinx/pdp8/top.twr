@@ -31,8 +31,8 @@ Setup/Hold to clock sysclk
               |  Setup to  |  Hold to   |                  | Clock  |
 Source        | clk (edge) | clk (edge) |Internal Clock(s) | Phase  |
 --------------+------------+------------+------------------+--------+
-slideswitch<2>|    3.434(R)|   -1.155(R)|sysclk_BUFGP      |   0.000|
-slideswitch<3>|    3.664(R)|   -1.339(R)|sysclk_BUFGP      |   0.000|
+slideswitch<2>|    3.851(R)|   -1.343(R)|sysclk_BUFGP      |   0.000|
+slideswitch<3>|    3.548(R)|   -1.100(R)|sysclk_BUFGP      |   0.000|
 --------------+------------+------------+------------------+--------+
 
 Clock to Setup on destination clock sysclk
@@ -40,18 +40,18 @@ Clock to Setup on destination clock sysclk
                | Src:Rise| Src:Fall| Src:Rise| Src:Fall|
 Source Clock   |Dest:Rise|Dest:Rise|Dest:Fall|Dest:Fall|
 ---------------+---------+---------+---------+---------+
-sysclk         |    4.365|         |         |         |
+sysclk         |    4.081|         |         |         |
 ---------------+---------+---------+---------+---------+
 
 
-Analysis completed Wed Apr 14 19:04:55 2010
+Analysis completed Fri Apr 16 08:17:51 2010
 --------------------------------------------------------------------------------
 
 Trace Settings:
 -------------------------
 Trace Settings 
 
-Peak Memory Usage: 266 MB
+Peak Memory Usage: 267 MB
 
 
 

@@ -2,11 +2,11 @@ Release 8.2i - xst I.31
 Copyright (c) 1995-2006 Xilinx, Inc.  All rights reserved.
 --> 
 Parameter TMPDIR set to ./xst/projnav.tmp
-CPU : 0.00 / 0.09 s | Elapsed : 0.00 / 0.00 s
+CPU : 0.00 / 0.08 s | Elapsed : 0.00 / 0.00 s
  
 --> 
 Parameter xsthdpdir set to ./xst
-CPU : 0.00 / 0.09 s | Elapsed : 0.00 / 0.00 s
+CPU : 0.00 / 0.08 s | Elapsed : 0.00 / 0.00 s
  
 --> 
 Reading design: top.prj
@@ -137,59 +137,37 @@ Analyzing hierarchy for module <top> in library <work>.
 Analyzing hierarchy for module <debounce> in library <work>.
 
 Analyzing hierarchy for module <pdp8> in library <work> with parameters.
-	E3 = "1011"
 	E2 = "1010"
 	E1 = "1001"
+	E0 = "1000"
 	F1 = "0001"
 	F0 = "0000"
+	E3 = "1011"
+	D2 = "0110"
 	D1 = "0101"
 	D0 = "0100"
-	F2 = "0010"
-	E0 = "1000"
 	D3 = "0111"
-	D2 = "0110"
 	H0 = "1100"
 	F3 = "0011"
+	F2 = "0010"
 
 Analyzing hierarchy for module <pdp8_io> in library <work>.
 
 Analyzing hierarchy for module <pdp8_ram> in library <work>.
 
 Analyzing hierarchy for module <pdp8_kw> in library <work> with parameters.
+	F2 = "0010"
 	F1 = "0001"
 	F0 = "0000"
 	F3 = "0011"
-	F2 = "0010"
 
 Analyzing hierarchy for module <pdp8_tt> in library <work> with parameters.
 	F0 = "0000"
-	F2 = "0010"
-	F3 = "0011"
 	F1 = "0001"
+	F3 = "0011"
+	F2 = "0010"
 
 Analyzing hierarchy for module <pdp8_rf> in library <work> with parameters.
-	DB_next_xfer_read = "0101"
-	DB_next_xfer_incr = "0110"
-	DB_idle = "0000"
-	DB_start_xfer2 = "0010"
-	DB_start_xfer1 = "0001"
-	DB_read_new_page = "1101"
-	DRE_bit = "010000000000"
-	DB_write_old_page = "1111"
-	DB_start_xfer3 = "0011"
-	F0 = "0000"
-	EIE_bit = "000100000000"
-	DRL_bit = "000000000100"
-	F3 = "0011"
-	F2 = "0010"
-	F1 = "0001"
-	PCA_bit = "100000000000"
-	NXD_bit = "000000000010"
-	MEX_bit = "000000111000"
-	WC_ADDR = "000111111101000"
-	PIE_bit = "000010000000"
-	PER_bit = "000000000001"
-	WLS_bit = "001000000000"
 	DB_begin_xfer_write = "0111"
 	CIE_bit = "000001000000"
 	CA_ADDR = "000111111101001"
@@ -199,6 +177,28 @@ Analyzing hierarchy for module <pdp8_rf> in library <work> with parameters.
 	DB_done_xfer3 = "1100"
 	DB_done_xfer2 = "1011"
 	DB_done_xfer1 = "1010"
+	DB_next_xfer_read = "0101"
+	DB_next_xfer_incr = "0110"
+	DB_idle = "0000"
+	DB_read_new_page = "1101"
+	DB_start_xfer1 = "0001"
+	DB_write_old_page = "1110"
+	DB_start_xfer3 = "0011"
+	DB_start_xfer2 = "0010"
+	DRE_bit = "010000000000"
+	DRL_bit = "000000000100"
+	F1 = "0001"
+	F0 = "0000"
+	EIE_bit = "000100000000"
+	MEX_bit = "000000111000"
+	F3 = "0011"
+	F2 = "0010"
+	PER_bit = "000000000001"
+	PCA_bit = "100000000000"
+	NXD_bit = "000000000010"
+	WLS_bit = "001000000000"
+	WC_ADDR = "000111111101000"
+	PIE_bit = "000010000000"
 
 Analyzing hierarchy for module <brg> in library <work> with parameters.
 	SYS_CLK = "10111110101111000010000000"
@@ -211,51 +211,51 @@ Analyzing hierarchy for module <uart> in library <work>.
 Analyzing hierarchy for module <ram_256x12> in library <work>.
 
 Analyzing hierarchy for module <ide_disk> in library <work> with parameters.
-	IDE_STATUS_IDX = "00000000000000000000000000000001"
+	ATA_FEATURE = "10001"
 	ATA_ALTER = "01110"
+	ATA_COMMAND = "10111"
 	ATA_CMD_WRITE = "0000000000110000"
 	ATA_CMD_READ = "0000000000100000"
+	ATA_DATA = "10000"
 	ATA_CYLLOW = "10100"
 	ATA_CYLHIGH = "10101"
-	ATA_COMMAND = "10111"
-	ATA_DEVCTRL = "01110"
-	ATA_DATA = "10000"
-	ATA_FEATURE = "10001"
 	ATA_ERROR = "10001"
 	ATA_DRVHEAD = "10110"
-	ATA_SECNUM = "10011"
+	ATA_DEVCTRL = "01110"
 	ATA_SECCNT = "10010"
-	IDE_STATUS_CORR = "00000000000000000000000000000010"
 	IDE_STATUS_BSY = "00000000000000000000000000000111"
 	ATA_STATUS = "10111"
+	ATA_SECNUM = "10011"
 	IDE_STATUS_DRQ = "00000000000000000000000000000011"
 	IDE_STATUS_DRDY = "00000000000000000000000000000110"
+	IDE_STATUS_CORR = "00000000000000000000000000000010"
 	IDE_STATUS_ERR = "00000000000000000000000000000000"
 	IDE_STATUS_DWF = "00000000000000000000000000000101"
 	IDE_STATUS_DSC = "00000000000000000000000000000100"
+	init1 = "00010"
 	init0 = "00001"
+	IDE_STATUS_IDX = "00000000000000000000000000000001"
+	init2 = "00011"
 	init11 = "01100"
 	init10 = "01011"
-	init1 = "00010"
-	init3 = "00100"
-	init2 = "00011"
-	init6 = "00111"
 	init5 = "00110"
 	init4 = "00101"
+	init3 = "00100"
 	init8 = "01001"
 	init7 = "01000"
+	init6 = "00111"
 	last1 = "10010"
 	last0 = "10001"
 	init9 = "01010"
+	read0 = "01101"
 	last3 = "10100"
 	last2 = "10011"
+	wait0 = "10101"
 	ready = "00000"
 	read1 = "01110"
-	read0 = "01101"
-	wait1 = "10110"
-	wait0 = "10101"
 	write1 = "10000"
 	write0 = "01111"
+	wait1 = "10110"
 
 Analyzing hierarchy for module <ide> in library <work> with parameters.
 	idle = "000"
@@ -350,7 +350,7 @@ Analyzing module <pdp8_rf> in library <work>.
 	DB_done_xfer2 = 4'b1011
 	DB_done_xfer3 = 4'b1100
 	DB_read_new_page = 4'b1101
-	DB_write_old_page = 4'b1111
+	DB_write_old_page = 4'b1110
 Module <pdp8_rf> is correct for synthesis.
  
 Analyzing module <ram_256x12> in library <work>.
@@ -706,7 +706,6 @@ Unit <ide_disk> synthesized.
 Synthesizing Unit <pdp8_rf>.
     Related source file is "../../rtl/pdp8_rf.v".
 WARNING:Xst:647 - Input <mb<11:3>> is never used.
-WARNING:Xst:646 - Signal <db_done> is assigned but never used.
 WARNING:Xst:646 - Signal <ide_error> is assigned but never used.
 WARNING:Xst:646 - Signal <PEF> is assigned but never used.
 WARNING:Xst:646 - Signal <buffer_rd> is assigned but never used.
@@ -714,9 +713,9 @@ WARNING:Xst:646 - Signal <active> is assigned but never used.
     Found finite state machine <FSM_6> for signal <db_state>.
     -----------------------------------------------------------------------
     | States             | 15                                             |
-    | Transitions        | 33                                             |
+    | Transitions        | 34                                             |
     | Inputs             | 8                                              |
-    | Outputs            | 12                                             |
+    | Outputs            | 11                                             |
     | Clock              | clk (rising_edge)                              |
     | Reset              | reset (positive)                               |
     | Reset type         | synchronous                                    |
@@ -724,22 +723,27 @@ WARNING:Xst:646 - Signal <active> is assigned but never used.
     | Encoding           | automatic                                      |
     | Implementation     | LUT                                            |
     -----------------------------------------------------------------------
-    Found 4x1-bit ROM for signal <$mux0018> created at line 594.
+    Found 4x2-bit ROM for signal <$rom0000>.
+    Found 4x1-bit ROM for signal <set_db_done>.
+    Found 4x1-bit ROM for signal <load_buffer_hold>.
+    Found 4x1-bit ROM for signal <set_buffer_dirty>.
+    Found 4x1-bit ROM for signal <$mux0029> created at line 622.
+    Found 1-bit 4-to-1 multiplexer for signal <io_clear_ac>.
     Found 12-bit 4-to-1 multiplexer for signal <io_data_out>.
     Found 1-bit 4-to-1 multiplexer for signal <io_skip>.
-    Found 12-bit adder for signal <$add0001> created at line 885.
-    Found 12-bit adder for signal <$addsub0000> created at line 906.
-    Found 15-bit adder for signal <$addsub0001> created at line 905.
-    Found 20-bit adder for signal <$addsub0002> created at line 904.
-    Found 1-bit 4-to-1 multiplexer for signal <$mux0015>.
-    Found 1-bit 4-to-1 multiplexer for signal <$mux0016>.
+    Found 12-bit adder for signal <$add0001> created at line 977.
+    Found 12-bit adder for signal <$add0002> created at line 959.
+    Found 12-bit adder for signal <$addsub0000> created at line 978.
+    Found 1-bit 4-to-1 multiplexer for signal <$mux0026>.
+    Found 1-bit 4-to-1 multiplexer for signal <$mux0027>.
     Found 1-bit register for signal <buffer_dirty>.
     Found 12-bit register for signal <buffer_disk_addr>.
     Found 12-bit register for signal <buffer_hold>.
     Found 12-bit comparator equal for signal <buffer_matches_DMA>.
     Found 1-bit register for signal <CIE>.
+    Found 1-bit register for signal <db_done>.
     Found 1-bit register for signal <DCF>.
-    Found 20-bit register for signal <disk_addr>.
+    Found 20-bit up counter for signal <disk_addr>.
     Found 12-bit register for signal <DMA>.
     Found 15-bit register for signal <dma_addr>.
     Found 12-bit register for signal <dma_wc>.
@@ -747,25 +751,27 @@ WARNING:Xst:646 - Signal <active> is assigned but never used.
     Found 8-bit register for signal <EMA>.
     Found 1-bit register for signal <is_read>.
     Found 3-bit register for signal <MEX>.
-    Found 11-bit up counter for signal <photocell_counter>.
+    Found 8-bit comparator less for signal <PCA>.
+    Found 8-bit up counter for signal <photocell_counter>.
     Found 1-bit register for signal <PIE>.
     Summary:
 	inferred   1 Finite State Machine(s).
-	inferred   1 ROM(s).
-	inferred   1 Counter(s).
-	inferred 100 D-type flip-flop(s).
-	inferred   4 Adder/Subtractor(s).
-	inferred   1 Comparator(s).
-	inferred  15 Multiplexer(s).
+	inferred   5 ROM(s).
+	inferred   2 Counter(s).
+	inferred  81 D-type flip-flop(s).
+	inferred   3 Adder/Subtractor(s).
+	inferred   2 Comparator(s).
+	inferred  16 Multiplexer(s).
 Unit <pdp8_rf> synthesized.
 
 
 Synthesizing Unit <pdp8_io>.
     Related source file is "../../rtl/pdp8_io.v".
+    Found 1-bit 4-to-1 multiplexer for signal <io_clear_ac>.
     Found 12-bit 4-to-1 multiplexer for signal <io_data_out>.
     Found 1-bit 4-to-1 multiplexer for signal <io_data_avail>.
     Summary:
-	inferred  13 Multiplexer(s).
+	inferred  14 Multiplexer(s).
 Unit <pdp8_io> synthesized.
 
 
@@ -796,44 +802,43 @@ HDL Synthesis Report
 Macro Statistics
 # RAMs                                                 : 1
  256x12-bit single-port distributed RAM                : 1
-# ROMs                                                 : 6
+# ROMs                                                 : 10
  16x25-bit ROM                                         : 1
- 4x1-bit ROM                                           : 4
+ 4x1-bit ROM                                           : 7
+ 4x2-bit ROM                                           : 1
  8x8-bit ROM                                           : 1
-# Adders/Subtractors                                   : 11
- 12-bit adder                                          : 4
+# Adders/Subtractors                                   : 10
+ 12-bit adder                                          : 5
  12-bit adder carry out                                : 2
  13-bit adder                                          : 2
- 15-bit adder                                          : 1
- 20-bit adder                                          : 1
  4-bit adder                                           : 1
-# Counters                                             : 11
- 11-bit up counter                                     : 1
+# Counters                                             : 12
  12-bit up counter                                     : 1
  13-bit up counter                                     : 2
  15-bit up counter                                     : 1
  2-bit up counter                                      : 1
+ 20-bit up counter                                     : 1
  25-bit up counter                                     : 1
  4-bit up counter                                      : 2
- 8-bit up counter                                      : 2
-# Registers                                            : 76
- 1-bit register                                        : 51
+ 8-bit up counter                                      : 3
+# Registers                                            : 90
+ 1-bit register                                        : 67
  10-bit register                                       : 1
  12-bit register                                       : 8
- 15-bit register                                       : 2
+ 15-bit register                                       : 1
  16-bit register                                       : 1
- 20-bit register                                       : 1
  3-bit register                                        : 5
  4-bit register                                        : 2
  7-bit register                                        : 1
  8-bit register                                        : 4
-# Comparators                                          : 4
+# Comparators                                          : 5
  12-bit comparator equal                               : 1
  25-bit comparator equal                               : 1
  4-bit comparator greatequal                           : 1
  4-bit comparator lessequal                            : 1
-# Multiplexers                                         : 9
- 1-bit 4-to-1 multiplexer                              : 5
+ 8-bit comparator less                                 : 1
+# Multiplexers                                         : 11
+ 1-bit 4-to-1 multiplexer                              : 7
  12-bit 4-to-1 multiplexer                             : 2
  3-bit 4-to-1 multiplexer                              : 1
  4-bit 4-to-1 multiplexer                              : 1
@@ -859,15 +864,15 @@ Optimizing FSM <io/tf/db_state> on signal <db_state[1:15]> with one-hot encoding
  0011  | 000000000001000
  0100  | 000000000010000
  0101  | 000000001000000
- 0110  | 000001000000000
+ 0110  | 000010000000000
  0111  | 000000000100000
  1000  | 000100000000000
- 1001  | 000010000000000
+ 1001  | 000001000000000
  1010  | 001000000000000
  1011  | 010000000000000
  1100  | 100000000000000
  1101  | 000000100000000
- 1111  | 000000010000000
+ 1110  | 000000010000000
 --------------------------
 Analyzing FSM <FSM_5> for best encoding.
 Optimizing FSM <io/tf/disk/ide_state> on signal <ide_state[1:23]> with one-hot encoding.
@@ -969,35 +974,35 @@ Macro Statistics
 # FSMs                                                 : 7
 # RAMs                                                 : 1
  256x12-bit single-port distributed RAM                : 1
-# ROMs                                                 : 6
+# ROMs                                                 : 10
  16x25-bit ROM                                         : 1
- 4x1-bit ROM                                           : 4
+ 4x1-bit ROM                                           : 7
+ 4x2-bit ROM                                           : 1
  8x8-bit ROM                                           : 1
-# Adders/Subtractors                                   : 11
- 12-bit adder                                          : 4
+# Adders/Subtractors                                   : 10
+ 12-bit adder                                          : 5
  12-bit adder carry out                                : 2
  13-bit adder                                          : 2
- 15-bit adder                                          : 1
- 20-bit adder                                          : 1
  4-bit adder                                           : 1
-# Counters                                             : 11
- 11-bit up counter                                     : 1
+# Counters                                             : 12
  12-bit up counter                                     : 1
  13-bit up counter                                     : 2
  15-bit up counter                                     : 1
  2-bit up counter                                      : 1
+ 20-bit up counter                                     : 1
  25-bit up counter                                     : 1
  4-bit up counter                                      : 2
- 8-bit up counter                                      : 2
-# Registers                                            : 334
- Flip-Flops                                            : 334
-# Comparators                                          : 4
+ 8-bit up counter                                      : 3
+# Registers                                            : 315
+ Flip-Flops                                            : 315
+# Comparators                                          : 5
  12-bit comparator equal                               : 1
  25-bit comparator equal                               : 1
  4-bit comparator greatequal                           : 1
  4-bit comparator lessequal                            : 1
-# Multiplexers                                         : 9
- 1-bit 4-to-1 multiplexer                              : 5
+ 8-bit comparator less                                 : 1
+# Multiplexers                                         : 11
+ 1-bit 4-to-1 multiplexer                              : 7
  12-bit 4-to-1 multiplexer                             : 2
  3-bit 4-to-1 multiplexer                              : 1
  4-bit 4-to-1 multiplexer                              : 1
@@ -1028,26 +1033,28 @@ Optimizing unit <pdp8_kw> ...
 Mapping all equations...
 Building and optimizing final netlist ...
 Found area constraint ratio of 100 (+ 5) on block top, actual ratio is 12.
-FlipFlop cpu/ac_0 has been replicated 2 time(s)
-FlipFlop cpu/ac_1 has been replicated 1 time(s)
-FlipFlop cpu/ac_2 has been replicated 1 time(s)
-FlipFlop cpu/ac_6 has been replicated 1 time(s)
-FlipFlop cpu/ir_0 has been replicated 5 time(s)
+FlipFlop cpu/ac_0 has been replicated 1 time(s)
+FlipFlop cpu/ir_0 has been replicated 4 time(s)
 FlipFlop cpu/ir_1 has been replicated 5 time(s)
 FlipFlop cpu/ir_2 has been replicated 5 time(s)
 FlipFlop cpu/mb_0 has been replicated 4 time(s)
-FlipFlop cpu/mb_1 has been replicated 3 time(s)
-FlipFlop cpu/mb_2 has been replicated 2 time(s)
-FlipFlop cpu/mb_3 has been replicated 5 time(s)
-FlipFlop cpu/mb_4 has been replicated 4 time(s)
-FlipFlop cpu/mb_5 has been replicated 4 time(s)
-FlipFlop cpu/mb_6 has been replicated 3 time(s)
-FlipFlop cpu/mb_7 has been replicated 3 time(s)
+FlipFlop cpu/mb_1 has been replicated 4 time(s)
+FlipFlop cpu/mb_2 has been replicated 5 time(s)
+FlipFlop cpu/mb_3 has been replicated 6 time(s)
+FlipFlop cpu/mb_4 has been replicated 5 time(s)
+FlipFlop cpu/mb_5 has been replicated 5 time(s)
+FlipFlop cpu/mb_6 has been replicated 5 time(s)
+FlipFlop cpu/mb_7 has been replicated 4 time(s)
 FlipFlop cpu/mb_8 has been replicated 4 time(s)
 FlipFlop cpu/state_0 has been replicated 5 time(s)
 FlipFlop cpu/state_1 has been replicated 5 time(s)
-FlipFlop cpu/state_2 has been replicated 3 time(s)
-FlipFlop cpu/state_3 has been replicated 4 time(s)
+FlipFlop cpu/state_2 has been replicated 5 time(s)
+FlipFlop cpu/state_3 has been replicated 5 time(s)
+FlipFlop io/tf/db_state_FFd7 has been replicated 9 time(s)
+FlipFlop io/tf/db_state_FFd8 has been replicated 9 time(s)
+FlipFlop io/tf/db_state_FFd9 has been replicated 1 time(s)
+FlipFlop io/tf/disk/ide_state_FFd6 has been replicated 1 time(s)
+FlipFlop io/tf/disk/ide_state_FFd8 has been replicated 1 time(s)
 
 Final Macro Processing ...
 
@@ -1059,8 +1066,8 @@ Unit <top> processed.
 Final Register Report
 
 Macro Statistics
-# Registers                                            : 506
- Flip-Flops                                            : 506
+# Registers                                            : 533
+ Flip-Flops                                            : 533
 
 =========================================================================
 
@@ -1089,37 +1096,38 @@ Design Statistics
 # IOs                              : 116
 
 Cell Usage :
-# BELS                             : 2133
+# BELS                             : 2231
 #      GND                         : 1
-#      INV                         : 23
-#      LUT1                        : 180
-#      LUT2                        : 132
-#      LUT2_D                      : 5
-#      LUT2_L                      : 4
-#      LUT3                        : 226
-#      LUT3_D                      : 22
-#      LUT3_L                      : 8
-#      LUT4                        : 809
-#      LUT4_D                      : 45
-#      LUT4_L                      : 109
-#      MUXCY                       : 221
-#      MUXF5                       : 133
+#      INV                         : 22
+#      LUT1                        : 155
+#      LUT2                        : 140
+#      LUT2_D                      : 10
+#      LUT2_L                      : 10
+#      LUT3                        : 249
+#      LUT3_D                      : 32
+#      LUT3_L                      : 27
+#      LUT4                        : 879
+#      LUT4_D                      : 46
+#      LUT4_L                      : 126
+#      MULT_AND                    : 19
+#      MUXCY                       : 215
+#      MUXF5                       : 91
 #      MUXF6                       : 12
 #      VCC                         : 1
-#      XORCY                       : 202
-# FlipFlops/Latches                : 506
+#      XORCY                       : 196
+# FlipFlops/Latches                : 533
 #      FD                          : 26
 #      FDC                         : 30
 #      FDCE                        : 51
-#      FDE                         : 11
+#      FDE                         : 8
 #      FDP                         : 2
 #      FDPE                        : 3
-#      FDR                         : 164
-#      FDRE                        : 90
-#      FDRS                        : 109
+#      FDR                         : 117
+#      FDRE                        : 112
+#      FDRS                        : 163
 #      FDRSE                       : 4
 #      FDS                         : 3
-#      FDSE                        : 13
+#      FDSE                        : 14
 # RAMS                             : 96
 #      RAM32X1S                    : 96
 # Clock Buffers                    : 3
@@ -1137,10 +1145,10 @@ Device utilization summary:
 
 Selected Device : 3s1000ft256-5 
 
- Number of Slices:                     922  out of   7680    12%  
- Number of Slice Flip Flops:           506  out of  15360     3%  
- Number of 4 input LUTs:              1755  out of  15360    11%  
-    Number used as logic:             1563
+ Number of Slices:                     990  out of   7680    12%  
+ Number of Slice Flip Flops:           533  out of  15360     3%  
+ Number of 4 input LUTs:              1888  out of  15360    12%  
+    Number used as logic:             1696
     Number used as RAMs:               192
  Number of IOs:                        116
  Number of bonded IOBs:                 89  out of    173    51%  
@@ -1156,33 +1164,33 @@ NOTE: THESE TIMING NUMBERS ARE ONLY A SYNTHESIS ESTIMATE.
 
 Clock Information:
 ------------------
---------------------------------------+-----------------------------+-------+
-Clock Signal                          | Clock buffer(FF name)       | Load  |
---------------------------------------+-----------------------------+-------+
-sysclk                                | BUFGP                       | 42    |
-reset_sw/slowclk                      | NONE(reset_sw/hold_9)       | 11    |
-clk1                                  | BUFG                        | 491   |
-io/tt/baud_rate_generator/rx_baud_clk1| BUFG                        | 30    |
-io/tt/baud_rate_generator/tx_baud_clk | NONE(io/tt/tt_uart/tx_cnt_0)| 16    |
-io/kw/kw_src_clk                      | NONE(io/kw/kw_ctr_7)        | 12    |
---------------------------------------+-----------------------------+-------+
+--------------------------------------+---------------------------+-------+
+Clock Signal                          | Clock buffer(FF name)     | Load  |
+--------------------------------------+---------------------------+-------+
+sysclk                                | BUFGP                     | 42    |
+reset_sw/slowclk                      | NONE(reset_sw/hold_2)     | 11    |
+clk1                                  | BUFG                      | 518   |
+io/tt/baud_rate_generator/rx_baud_clk1| BUFG                      | 30    |
+io/tt/baud_rate_generator/tx_baud_clk | NONE(io/tt/tt_uart/tx_out)| 16    |
+io/kw/kw_src_clk                      | NONE(io/kw/kw_ctr_4)      | 12    |
+--------------------------------------+---------------------------+-------+
 INFO:Xst:2169 - HDL ADVISOR - Some clock signals were not automatically buffered by XST with BUFG/BUFR resources. Please use the buffer_type constraint in order to insert these buffers to the clock signals to help prevent skew problems.
 
 Asynchronous Control Signals Information:
 ----------------------------------------
------------------------------------+---------------------------------------------+-------+
-Control Signal                     | Buffer(FF name)                             | Load  |
------------------------------------+---------------------------------------------+-------+
-reset(reset_sw/out28:O)            | NONE(io/tt/baud_rate_generator/tx_clk_div_9)| 86    |
------------------------------------+---------------------------------------------+-------+
+-----------------------------------+--------------------------------------------+-------+
+Control Signal                     | Buffer(FF name)                            | Load  |
+-----------------------------------+--------------------------------------------+-------+
+reset(reset_sw/out28:O)            | NONE(io/tt/baud_rate_generator/tx_baud_clk)| 86    |
+-----------------------------------+--------------------------------------------+-------+
 
 Timing Summary:
 ---------------
 Speed Grade: -5
 
-   Minimum period: 12.757ns (Maximum Frequency: 78.388MHz)
+   Minimum period: 11.549ns (Maximum Frequency: 86.585MHz)
    Minimum input arrival time before clock: 7.558ns
-   Maximum output required time after clock: 18.769ns
+   Maximum output required time after clock: 15.972ns
    Maximum combinational path delay: No path found
 
 Timing Detail:
@@ -1191,10 +1199,10 @@ All values displayed in nanoseconds (ns)
 
 =========================================================================
 Timing constraint: Default period analysis for Clock 'sysclk'
-  Clock period: 6.815ns (frequency: 146.743MHz)
+  Clock period: 6.854ns (frequency: 145.909MHz)
   Total number of paths / destination ports: 1112 / 69
 -------------------------------------------------------------------------
-Delay:               6.815ns (Levels of Logic = 2)
+Delay:               6.854ns (Levels of Logic = 2)
   Source:            clk (FF)
   Destination:       clk (FF)
   Source Clock:      sysclk rising
@@ -1205,12 +1213,12 @@ Delay:               6.815ns (Levels of Logic = 2)
     Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
     ----------------------------------------  ------------
      FDE:C->Q              1   0.626   0.681  clk (clk1)
-     BUFG:I->O           492   0.357   3.815  clk_BUFG (clk)
+     BUFG:I->O           519   0.357   3.854  clk_BUFG (clk)
      INV:I->O              1   0.479   0.681  _not00011_INV_0 (_not0001)
      FDE:D                     0.176          clk
     ----------------------------------------
-    Total                      6.815ns (1.638ns logic, 5.177ns route)
-                                       (24.0% logic, 76.0% route)
+    Total                      6.854ns (1.638ns logic, 5.216ns route)
+                                       (23.9% logic, 76.1% route)
 
 =========================================================================
 Timing constraint: Default period analysis for Clock 'reset_sw/slowclk'
@@ -1235,32 +1243,30 @@ Delay:               1.547ns (Levels of Logic = 0)
 
 =========================================================================
 Timing constraint: Default period analysis for Clock 'clk1'
-  Clock period: 12.757ns (frequency: 78.388MHz)
-  Total number of paths / destination ports: 51556 / 1278
+  Clock period: 11.549ns (frequency: 86.585MHz)
+  Total number of paths / destination ports: 51473 / 1382
 -------------------------------------------------------------------------
-Delay:               12.757ns (Levels of Logic = 8)
-  Source:            cpu/ir_0_1 (FF)
-  Destination:       cpu/pc_11 (FF)
+Delay:               11.549ns (Levels of Logic = 6)
+  Source:            cpu/ir_2_1 (FF)
+  Destination:       cpu/ac_3 (FF)
   Source Clock:      clk1 rising
   Destination Clock: clk1 rising
 
-  Data Path: cpu/ir_0_1 to cpu/pc_11
+  Data Path: cpu/ir_2_1 to cpu/ac_3
                                 Gate     Net
     Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
     ----------------------------------------  ------------
-     FDRE:C->Q             1   0.626   0.976  cpu/ir_0_1 (cpu/ir_0_1)
-     LUT4_D:I0->O          3   0.479   0.794  io/tt/_not00041_SW1 (N5714)
-     LUT4:I3->O           18   0.479   1.227  io/tt/io_data_out<1>1 (io/tt/N0)
-     LUT4_L:I3->LO         1   0.479   0.159  io/tt/io_selected1_1 (io/tt/io_selected1)
-     LUT4:I2->O            1   0.479   0.681  cpu/_xor002153 (cpu/_xor0021_map2064)
-     MUXF5:S->O           13   0.540   1.054  cpu/_xor0021140_SW0 (N5695)
-     LUT4:I2->O           15   0.479   1.010  cpu/_xor0021193 (cpu/_xor0021_map2091)
-     MUXF5:S->O            1   0.540   0.704  cpu/pc_mux<11>72_SW0 (N5783)
-     LUT4:I3->O            1   0.479   0.681  cpu/pc_mux<11>103 (cpu/pc_mux<11>_map1780)
-     FDRS:S                    0.892          cpu/pc_11
+     FDRE:C->Q             5   0.626   1.078  cpu/ir_2_1 (cpu/ir_2_1)
+     LUT4:I0->O            1   0.479   0.740  io/tt/_not00041_SW0 (N6803)
+     LUT4:I2->O           17   0.479   1.166  io/tt/io_data_out<1>1 (io/tt/N0)
+     LUT4:I3->O           24   0.479   1.586  io/tt/io_selected1 (io/tt_io_selected)
+     LUT3:I2->O            3   0.479   0.830  io_data_avail1 (io_data_avail)
+     LUT4_D:I2->O          7   0.479   1.076  cpu/_mux0009<0>101 (cpu/N164)
+     LUT4:I1->O            1   0.479   0.681  cpu/_mux0009<7>170 (cpu/_mux0009<7>_map1750)
+     FDRS:S                    0.892          cpu/ac_4
     ----------------------------------------
-    Total                     12.757ns (5.472ns logic, 7.285ns route)
-                                       (42.9% logic, 57.1% route)
+    Total                     11.549ns (4.392ns logic, 7.157ns route)
+                                       (38.0% logic, 62.0% route)
 
 =========================================================================
 Timing constraint: Default period analysis for Clock 'io/tt/baud_rate_generator/rx_baud_clk1'
@@ -1279,7 +1285,7 @@ Delay:               6.319ns (Levels of Logic = 3)
     ----------------------------------------  ------------
      FDCE:C->Q            12   0.626   1.245  io/tt/tt_uart/rx_cnt_2 (io/tt/tt_uart/rx_cnt_2)
      LUT4:I0->O            3   0.479   1.066  io/tt/tt_uart/_cmp_eq00031 (io/tt/tt_uart/_cmp_eq0003)
-     LUT4:I0->O            1   0.479   0.740  io/tt/tt_uart/_not0028_SW0 (N769)
+     LUT4:I0->O            1   0.479   0.740  io/tt/tt_uart/_not0028_SW0 (N797)
      LUT4:I2->O            1   0.479   0.681  io/tt/tt_uart/_not0028 (io/tt/tt_uart/_not0028)
      FDCE:CE                   0.524          io/tt/tt_uart/rx_busy
     ----------------------------------------
@@ -1288,27 +1294,28 @@ Delay:               6.319ns (Levels of Logic = 3)
 
 =========================================================================
 Timing constraint: Default period analysis for Clock 'io/tt/baud_rate_generator/tx_baud_clk'
-  Clock period: 5.009ns (frequency: 199.631MHz)
-  Total number of paths / destination ports: 77 / 22
+  Clock period: 4.443ns (frequency: 225.081MHz)
+  Total number of paths / destination ports: 84 / 22
 -------------------------------------------------------------------------
-Delay:               5.009ns (Levels of Logic = 3)
-  Source:            io/tt/tt_uart/tx_cnt_1 (FF)
+Delay:               4.443ns (Levels of Logic = 4)
+  Source:            io/tt/tt_uart/tx_cnt_0 (FF)
   Destination:       io/tt/tt_uart/tx_out (FF)
   Source Clock:      io/tt/baud_rate_generator/tx_baud_clk rising
   Destination Clock: io/tt/baud_rate_generator/tx_baud_clk rising
 
-  Data Path: io/tt/tt_uart/tx_cnt_1 to io/tt/tt_uart/tx_out
+  Data Path: io/tt/tt_uart/tx_cnt_0 to io/tt/tt_uart/tx_out
                                 Gate     Net
     Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
     ----------------------------------------  ------------
-     FDCE:C->Q             8   0.626   1.216  io/tt/tt_uart/tx_cnt_1 (io/tt/tt_uart/tx_cnt_1)
-     LUT4:I0->O            1   0.479   0.851  io/tt/tt_uart/_mux000649_SW0 (N6201)
-     LUT4:I1->O            1   0.479   0.704  io/tt/tt_uart/_mux000649 (io/tt/tt_uart/_mux0006_map385)
-     LUT4:I3->O            1   0.479   0.000  io/tt/tt_uart/_mux0006161 (io/tt/tt_uart/_mux0006)
+     FDCE:C->Q             9   0.626   1.250  io/tt/tt_uart/tx_cnt_0 (io/tt/tt_uart/tx_cnt_0)
+     LUT4:I0->O            1   0.479   0.000  io/tt/tt_uart/_mux0006129_G (N7342)
+     MUXF5:I1->O           2   0.314   0.804  io/tt/tt_uart/_mux0006129 (io/tt/tt_uart/_mux0006_map419)
+     LUT4:I2->O            1   0.479   0.000  io/tt/tt_uart/_mux0006161_F (N7343)
+     MUXF5:I0->O           1   0.314   0.000  io/tt/tt_uart/_mux0006161 (io/tt/tt_uart/_mux0006)
      FDPE:D                    0.176          io/tt/tt_uart/tx_out
     ----------------------------------------
-    Total                      5.009ns (2.239ns logic, 2.770ns route)
-                                       (44.7% logic, 55.3% route)
+    Total                      4.443ns (2.388ns logic, 2.055ns route)
+                                       (53.7% logic, 46.3% route)
 
 =========================================================================
 Timing constraint: Default period analysis for Clock 'io/kw/kw_src_clk'
@@ -1397,35 +1404,36 @@ Offset:              1.572ns (Levels of Logic = 1)
 
 =========================================================================
 Timing constraint: Default OFFSET IN BEFORE for Clock 'clk1'
-  Total number of paths / destination ports: 244 / 112
+  Total number of paths / destination ports: 254 / 121
 -------------------------------------------------------------------------
-Offset:              5.442ns (Levels of Logic = 14)
-  Source:            sram1_io<1> (PAD)
+Offset:              5.740ns (Levels of Logic = 15)
+  Source:            sram1_io<0> (PAD)
   Destination:       io/tf/dma_wc_11 (FF)
   Destination Clock: clk1 rising
 
-  Data Path: sram1_io<1> to io/tf/dma_wc_11
+  Data Path: sram1_io<0> to io/tf/dma_wc_11
                                 Gate     Net
     Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
     ----------------------------------------  ------------
-     IOBUF:IO->O           3   0.715   1.066  sram1_io_1_IOBUF (N5468)
-     LUT3:I0->O            1   0.479   0.000  cpu/ext_ram_out<1>11 (N5565)
-     MUXCY:S->O            1   0.435   0.000  io/tf/Madd__add0001_cy<1> (io/tf/Madd__add0001_cy<1>)
-     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0001_cy<2> (io/tf/Madd__add0001_cy<2>)
-     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0001_cy<3> (io/tf/Madd__add0001_cy<3>)
-     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0001_cy<4> (io/tf/Madd__add0001_cy<4>)
-     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0001_cy<5> (io/tf/Madd__add0001_cy<5>)
-     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0001_cy<6> (io/tf/Madd__add0001_cy<6>)
-     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0001_cy<7> (io/tf/Madd__add0001_cy<7>)
-     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0001_cy<8> (io/tf/Madd__add0001_cy<8>)
-     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0001_cy<9> (io/tf/Madd__add0001_cy<9>)
-     MUXCY:CI->O           0   0.056   0.000  io/tf/Madd__add0001_cy<10> (io/tf/Madd__add0001_cy<10>)
-     XORCY:CI->O           2   0.786   0.745  io/tf/Madd__add0001_xor<11> (io/tf/_add0001<11>)
-     MUXF5:S->O            1   0.540   0.000  io/tf/_mux0009<11> (io/tf/_mux0009<11>)
-     FDR:D                     0.176          io/tf/dma_addr_11
+     IOBUF:IO->O           4   0.715   1.074  sram1_io_0_IOBUF (N6517)
+     LUT2:I0->O            2   0.479   0.000  io/tf/Madd__add0002_lut<0> (io/tf/N222)
+     MUXCY:S->O            1   0.435   0.000  io/tf/Madd__add0002_cy<0> (io/tf/Madd__add0002_cy<0>)
+     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0002_cy<1> (io/tf/Madd__add0002_cy<1>)
+     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0002_cy<2> (io/tf/Madd__add0002_cy<2>)
+     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0002_cy<3> (io/tf/Madd__add0002_cy<3>)
+     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0002_cy<4> (io/tf/Madd__add0002_cy<4>)
+     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0002_cy<5> (io/tf/Madd__add0002_cy<5>)
+     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0002_cy<6> (io/tf/Madd__add0002_cy<6>)
+     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0002_cy<7> (io/tf/Madd__add0002_cy<7>)
+     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0002_cy<8> (io/tf/Madd__add0002_cy<8>)
+     MUXCY:CI->O           1   0.056   0.000  io/tf/Madd__add0002_cy<9> (io/tf/Madd__add0002_cy<9>)
+     MUXCY:CI->O           0   0.056   0.000  io/tf/Madd__add0002_cy<10> (io/tf/Madd__add0002_cy<10>)
+     XORCY:CI->O           2   0.786   1.040  io/tf/Madd__add0002_xor<11> (io/tf/_add0002<11>)
+     LUT4:I0->O            1   0.479   0.000  io/tf/_mux0009591 (N6574)
+     FDRS:D                    0.176          io/tf/dma_addr_11
     ----------------------------------------
-    Total                      5.442ns (3.631ns logic, 1.811ns route)
-                                       (66.7% logic, 33.3% route)
+    Total                      5.740ns (3.625ns logic, 2.115ns route)
+                                       (63.2% logic, 36.8% route)
 
 =========================================================================
 Timing constraint: Default OFFSET IN BEFORE for Clock 'io/tt/baud_rate_generator/rx_baud_clk1'
@@ -1448,30 +1456,30 @@ Offset:              1.572ns (Levels of Logic = 1)
 
 =========================================================================
 Timing constraint: Default OFFSET OUT AFTER for Clock 'clk1'
-  Total number of paths / destination ports: 9225 / 56
+  Total number of paths / destination ports: 8901 / 56
 -------------------------------------------------------------------------
-Offset:              18.769ns (Levels of Logic = 9)
-  Source:            io/tf/db_state_FFd7 (FF)
+Offset:              15.972ns (Levels of Logic = 9)
+  Source:            io/tf/disk/ide_state_FFd8 (FF)
   Destination:       sram1_io<0> (PAD)
   Source Clock:      clk1 rising
 
-  Data Path: io/tf/db_state_FFd7 to sram1_io<0>
+  Data Path: io/tf/disk/ide_state_FFd8 to sram1_io<0>
                                 Gate     Net
     Cell:in->out      fanout   Delay   Delay  Logical Name (Net Name)
     ----------------------------------------  ------------
-     FDRS:C->Q             8   0.626   1.216  io/tf/db_state_FFd7 (io/tf/db_state_FFd7)
-     LUT2:I0->O           36   0.479   1.890  io/tf/ide_active1 (io/tf/ide_active)
-     LUT4:I0->O          384   0.479   3.289  io/tf/buff_addr<3>1 (io/tf/buff_addr<3>)
-     RAM32X1S:A3->O        1   0.793   0.851  io/tf/inst_Mram_mem96 (io/tf/N18)
-     LUT3:I1->O            1   0.479   0.000  io/tf/buff_addr<5>31 (io/tf/N512)
-     MUXF5:I0->O           1   0.314   0.000  io/tf/buff_addr<6>_f5_01 (io/tf/buff_addr<6>_f511)
-     MUXF6:I0->O           2   0.298   0.804  io/tf/inst_LPM_MUX_f6 (io/tf/buff_out<0>)
-     LUT4:I2->O            1   0.479   0.704  cpu/ram_data_out<0>32_SW1 (N6331)
+     FDR:C->Q             18   0.626   1.374  io/tf/disk/ide_state_FFd8 (io/tf/disk/ide_state_FFd8)
+     LUT2:I1->O           19   0.479   1.255  io/tf/disk/ide_state_Out201 (io/tf/disk/inc_offset)
+     LUT4:I3->O           12   0.479   0.950  io/tf/buff_addr<4>1_7 (io/tf/buff_addr<4>16)
+     RAM32X1S:A4->O        1   0.540   0.851  io/tf/inst_Mram_mem710 (io/tf/N34)
+     LUT3:I1->O            1   0.479   0.000  io/tf/buff_addr<5>1 (io/tf/N21)
+     MUXF5:I1->O           1   0.314   0.000  io/tf/buff_addr<6>_f5 (io/tf/buff_addr<6>_f5)
+     MUXF6:I1->O           4   0.298   1.074  io/tf/inst_LPM_MUX_f6 (io/tf/buff_out<0>)
+     LUT4:I0->O            1   0.479   0.704  cpu/ram_data_out<0>32_SW1 (N7303)
      LUT4:I3->O            1   0.479   0.681  cpu/ram_data_out<0>32 (ram_data_in<0>)
      IOBUF:I->IO               4.909          sram1_io_0_IOBUF (sram1_io<0>)
     ----------------------------------------
-    Total                     18.769ns (9.335ns logic, 9.434ns route)
-                                       (49.7% logic, 50.3% route)
+    Total                     15.972ns (9.082ns logic, 6.890ns route)
+                                       (56.9% logic, 43.1% route)
 
 =========================================================================
 Timing constraint: Default OFFSET OUT AFTER for Clock 'io/tt/baud_rate_generator/tx_baud_clk'
@@ -1493,14 +1501,14 @@ Offset:              6.280ns (Levels of Logic = 1)
                                        (88.1% logic, 11.9% route)
 
 =========================================================================
-CPU : 80.38 / 80.49 s | Elapsed : 81.00 / 82.00 s
+CPU : 85.55 / 85.65 s | Elapsed : 87.00 / 87.00 s
  
 --> 
 
 
-Total memory usage is 312076 kilobytes
+Total memory usage is 318424 kilobytes
 
 Number of errors   :    0 (   0 filtered)
-Number of warnings :   37 (   0 filtered)
+Number of warnings :   36 (   0 filtered)
 Number of infos    :   15 (   0 filtered)
 

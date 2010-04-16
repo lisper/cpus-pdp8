@@ -9,32 +9,32 @@ Target Device  : xc3s1000
 Target Package : ft256
 Target Speed   : -5
 Mapper Version : spartan3 -- $Revision: 1.34.32.1 $
-Mapped Date    : Wed Apr 14 19:03:24 2010
+Mapped Date    : Fri Apr 16 08:15:59 2010
 
 Design Summary
 --------------
 Number of errors:      0
-Number of warnings:    5
+Number of warnings:    7
 Logic Utilization:
-  Number of Slice Flip Flops:         492 out of  15,360    3%
-  Number of 4 input LUTs:           1,374 out of  15,360    8%
+  Number of Slice Flip Flops:         519 out of  15,360    3%
+  Number of 4 input LUTs:           1,532 out of  15,360    9%
 Logic Distribution:
-  Number of occupied Slices:                        1,045 out of   7,680   13%
-    Number of Slices containing only related logic:   1,045 out of   1,045  100%
-    Number of Slices containing unrelated logic:          0 out of   1,045    0%
+  Number of occupied Slices:                        1,135 out of   7,680   14%
+    Number of Slices containing only related logic:   1,135 out of   1,135  100%
+    Number of Slices containing unrelated logic:          0 out of   1,135    0%
       *See NOTES below for an explanation of the effects of unrelated logic
-Total Number 4 input LUTs:          1,749 out of  15,360   11%
-  Number used as logic:              1,374
-  Number used as a route-thru:         183
+Total Number 4 input LUTs:          1,884 out of  15,360   12%
+  Number used as logic:              1,532
+  Number used as a route-thru:         160
   Number used for 32x1 RAMs:           192
     (Two LUTs used per 32x1 RAM)
   Number of bonded IOBs:               89 out of     173   51%
     IOB Flip Flops:                    14
   Number of GCLKs:                     3 out of       8   37%
 
-Total equivalent gate count for design:  38,965
+Total equivalent gate count for design:  40,005
 Additional JTAG gate count for IOBs:  4,272
-Peak Memory Usage:  439 MB
+Peak Memory Usage:  441 MB
 
 NOTES:
 
@@ -93,8 +93,14 @@ WARNING:LIT:176 - Clock buffer is designated to drive clock loads. BUFGMUX
    or/rx_baud_clk_BUFG" (output signal=io/tt/baud_rate_generator/rx_baud_clk)
    has a mix of clock and non-clock loads. The non-clock loads are:
    Pin D of io/tt/baud_rate_generator/rx_baud_clk
-WARNING:Pack:266 - The function generator cpu/_mux0009<0>711 failed to merge
-   with F5 multiplexer cpu/_mux0009<4>199_SW1.  There is a conflict for the
+WARNING:Pack:266 - The function generator cpu/_mux0009<4>129 failed to merge
+   with F5 multiplexer cpu/_mux0009<7>73_SW11_f5.  There is a conflict for the
+   FXMUX.  The design will exhibit suboptimal timing.
+WARNING:Pack:266 - The function generator cpu/_mux0009<4>129 failed to merge
+   with F5 multiplexer cpu/_mux0009<8>73_SW11_f5.  There is a conflict for the
+   FXMUX.  The design will exhibit suboptimal timing.
+WARNING:Pack:266 - The function generator cpu/_mux0009<4>129 failed to merge
+   with F5 multiplexer cpu/_mux0009<6>73_SW1.  There is a conflict for the
    FXMUX.  The design will exhibit suboptimal timing.
 
 Section 3 - Informational
