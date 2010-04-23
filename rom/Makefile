@@ -1,11 +1,11 @@
 
-all: rom.mem
+all: rom.mem uart.mem
 
-rom.bin: rom.pal
-	../utils/macro/macro8x rom.pal
+%.bin: %.pal
+	../utils/macro/macro8x $<
 
-rom.mem: rom.bin
-	../utils/showbin/showbin rom.bin >rom.mem
+%.mem: %.bin
+	../utils/showbin/showbin $< >$@
 
 clean:
 	rm -rf *.lst *.bin *.mem
