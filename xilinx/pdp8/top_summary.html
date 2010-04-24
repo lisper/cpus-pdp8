@@ -19,13 +19,13 @@
 <TD BGCOLOR='#FFFF99'><B>Target Device:</B></TD>
 <TD>xc3s1000-5ft256</TD>
 <TD BGCOLOR='#FFFF99'><UL><LI><B>Warnings:</B></LI></UL></TD>
-<TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/*.xmsgs'>48 Warnings</A></TD>
+<TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/*.xmsgs'>68 Warnings</A></TD>
 </TR>
 <TR ALIGN=LEFT>
 <TD BGCOLOR='#FFFF99'><B>Product Version:</B></TD>
-<TD>ISE 8.2i</TD>
+<TD>ISE 8.2.03i</TD>
 <TD BGCOLOR='#FFFF99'><UL><LI><B>Updated:</B></LI></UL></TD>
-<TD>Fri Apr 16 08:19:50 2010</TD>
+<TD>Fri Apr 23 22:48:46 2010</TD>
 </TR>
 </TABLE>
 &nbsp;<BR><TABLE BORDER CELLSPACING=0 WIDTH='100%'>
@@ -37,53 +37,65 @@
 <TR ALIGN=CENTER BGCOLOR='#FFFF99'>
 <TD ALIGN=LEFT><B>Logic Utilization</B></TD><TD><B>Used</B></TD><TD><B>Available</B></TD><TD><B>Utilization</B></TD><TD><B>Note(s)</B></TD>
 </TR>
-<TR ALIGN=RIGHT><TD ALIGN=LEFT>Number of Slice Flip Flops</TD>
-<TD ALIGN=RIGHT>519</TD>
+<TR ALIGN=RIGHT BGCOLOR='#FFFF99'><TD ALIGN=LEFT><B>Total Number Slice Registers</B></TD>
+<TD ALIGN=RIGHT>493</TD>
 <TD ALIGN=RIGHT>15,360</TD>
 <TD ALIGN=RIGHT>3%</TD>
 <TD>&nbsp;</TD>
 </TR>
+<TR ALIGN=RIGHT><TD ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp;Number used as Flip Flops</TD>
+<TD ALIGN=RIGHT>481</TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+</TR>
+<TR ALIGN=RIGHT><TD ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp;Number used as Latches</TD>
+<TD ALIGN=RIGHT>12</TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+<TD>&nbsp;</TD>
+</TR>
 <TR ALIGN=RIGHT><TD ALIGN=LEFT>Number of 4 input LUTs</TD>
-<TD ALIGN=RIGHT>1,532</TD>
+<TD ALIGN=RIGHT>1,605</TD>
 <TD ALIGN=RIGHT>15,360</TD>
-<TD ALIGN=RIGHT>9%</TD>
+<TD ALIGN=RIGHT>10%</TD>
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=CENTER BGCOLOR='#FFFF99'>
 <TD ALIGN=LEFT><B>Logic Distribution </B></TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>&nbsp;</TD><TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT><TD ALIGN=LEFT>Number of occupied Slices</TD>
-<TD ALIGN=RIGHT>1,135</TD>
+<TD ALIGN=RIGHT>1,120</TD>
 <TD ALIGN=RIGHT>7,680</TD>
 <TD ALIGN=RIGHT>14%</TD>
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT><TD ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp;Number of Slices containing only related logic</TD>
-<TD ALIGN=RIGHT>1,135</TD>
-<TD ALIGN=RIGHT>1,135</TD>
+<TD ALIGN=RIGHT>1,120</TD>
+<TD ALIGN=RIGHT>1,120</TD>
 <TD ALIGN=RIGHT>100%</TD>
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT><TD ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp;Number of Slices containing unrelated logic</TD>
 <TD ALIGN=RIGHT>0</TD>
-<TD ALIGN=RIGHT>1,135</TD>
+<TD ALIGN=RIGHT>1,120</TD>
 <TD ALIGN=RIGHT>0%</TD>
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT BGCOLOR='#FFFF99'><TD ALIGN=LEFT><B>Total Number 4 input LUTs</B></TD>
-<TD ALIGN=RIGHT>1,884</TD>
+<TD ALIGN=RIGHT>1,964</TD>
 <TD ALIGN=RIGHT>15,360</TD>
 <TD ALIGN=RIGHT>12%</TD>
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT><TD ALIGN=LEFT>Number used as logic</TD>
-<TD ALIGN=RIGHT>1,532</TD>
+<TD ALIGN=RIGHT>1,605</TD>
 <TD>&nbsp;</TD>
 <TD>&nbsp;</TD>
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT><TD ALIGN=LEFT>Number used as a route-thru</TD>
-<TD ALIGN=RIGHT>160</TD>
+<TD ALIGN=RIGHT>167</TD>
 <TD>&nbsp;</TD>
 <TD>&nbsp;</TD>
 <TD>&nbsp;</TD>
@@ -95,9 +107,9 @@
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT><TD ALIGN=LEFT>Number of bonded <A HREF_DISABLED='top_map.mrp?&DataKey=IOBProperties'>IOBs</A></TD>
-<TD ALIGN=RIGHT>89</TD>
+<TD ALIGN=RIGHT>116</TD>
 <TD ALIGN=RIGHT>173</TD>
-<TD ALIGN=RIGHT>51%</TD>
+<TD ALIGN=RIGHT>67%</TD>
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT><TD ALIGN=LEFT>&nbsp;&nbsp;&nbsp;&nbsp;IOB Flip Flops</TD>
@@ -113,13 +125,13 @@
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT BGCOLOR='#FFFF99'><TD ALIGN=LEFT><B>Total equivalent gate count for design</B></TD>
-<TD ALIGN=RIGHT>40,005</TD>
+<TD ALIGN=RIGHT>40,343</TD>
 <TD>&nbsp;</TD>
 <TD>&nbsp;</TD>
 <TD>&nbsp;</TD>
 </TR>
 <TR ALIGN=RIGHT><TD ALIGN=LEFT>Additional JTAG gate count for IOBs</TD>
-<TD ALIGN=RIGHT>4,272</TD>
+<TD ALIGN=RIGHT>5,568</TD>
 <TD>&nbsp;</TD>
 <TD>&nbsp;</TD>
 <TD>&nbsp;</TD>
@@ -150,12 +162,12 @@
 <TR ALIGN=CENTER BGCOLOR='#99CCFF'><TD COLSPAN='6'><B>Detailed Reports</B></TD></TR>
 <TR BGCOLOR='#FFFF99'><TD><B>Report Name</B></TD><TD><B>Status</B></TD><TD><B>Generated</B></TD>
 <TD ALIGN=LEFT><B>Errors</B></TD><TD ALIGN=LEFT><B>Warnings</B></TD><TD ALIGN=LEFT><B>Infos</B></TD></TR>
-<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.syr'>Synthesis Report</A></TD><TD>Current</TD><TD>Fri Apr 16 08:15:48 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/xst.xmsgs'>36 Warnings</A></TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/xst.xmsgs'>15 Infos</A></TD></TR>
-<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.bld'>Translation Report</A></TD><TD>Current</TD><TD>Fri Apr 16 08:15:54 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT>0</TD></TR>
-<TR ALIGN=LEFT><TD><A HREF_DISABLED='top_map.mrp'>Map Report</A></TD><TD>Current</TD><TD>Fri Apr 16 08:16:11 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/map.xmsgs'>7 Warnings</A></TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/map.xmsgs'>3 Infos</A></TD></TR>
-<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.par'>Place and Route Report</A></TD><TD>Current</TD><TD>Fri Apr 16 08:17:42 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/par.xmsgs'>5 Warnings</A></TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/par.xmsgs'>2 Infos</A></TD></TR>
-<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.twr'>Static Timing Report</A></TD><TD>Current</TD><TD>Fri Apr 16 08:17:51 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/trce.xmsgs'>2 Infos</A></TD></TR>
-<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.bgn'>Bitgen Report</A></TD><TD>Current</TD><TD>Fri Apr 16 08:19:47 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT>0</TD></TR>
+<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.syr'>Synthesis Report</A></TD><TD>Current</TD><TD>Fri Apr 23 22:47:31 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/xst.xmsgs'>33 Warnings</A></TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/xst.xmsgs'>13 Infos</A></TD></TR>
+<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.bld'>Translation Report</A></TD><TD>Current</TD><TD>Fri Apr 23 22:47:39 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT>0</TD></TR>
+<TR ALIGN=LEFT><TD><A HREF_DISABLED='top_map.mrp'>Map Report</A></TD><TD>Current</TD><TD>Fri Apr 23 22:47:49 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/map.xmsgs'>12 Warnings</A></TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/map.xmsgs'>2 Infos</A></TD></TR>
+<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.par'>Place and Route Report</A></TD><TD>Current</TD><TD>Fri Apr 23 22:48:27 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/par.xmsgs'>15 Warnings</A></TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/par.xmsgs'>2 Infos</A></TD></TR>
+<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.twr'>Static Timing Report</A></TD><TD>Current</TD><TD>Fri Apr 23 22:48:33 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/trce.xmsgs'>2 Infos</A></TD></TR>
+<TR ALIGN=LEFT><TD><A HREF_DISABLED='top.bgn'>Bitgen Report</A></TD><TD>Current</TD><TD>Fri Apr 23 22:48:45 2010</TD><TD ALIGN=LEFT>0</TD><TD ALIGN=LEFT><A HREF_DISABLED='_xmsgs/bitgen.xmsgs'>8 Warnings</A></TD><TD ALIGN=LEFT>0</TD></TR>
 </TABLE>
 &nbsp;<BR><TABLE BORDER CELLSPACING=0 WIDTH='100%'>
 <TR ALIGN=CENTER BGCOLOR='#99CCFF'><TD COLSPAN='3'><B>Secondary Reports</B></TD></TR>

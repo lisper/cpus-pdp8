@@ -1,10 +1,13 @@
-Release 8.2i ngdbuild I.31
+Release 8.2.03i ngdbuild I.34
 Copyright (c) 1995-2006 Xilinx, Inc.  All rights reserved.
 
-Command Line: ngdbuild -ise /home/brad/pdp8/xilinx/pdp8/pdp8.ise -intstyle ise
--dd _ngo -nt timestamp -i -p xc3s1000-ft256-5 top.ngc top.ngd
+Command Line: C:\Xilinx\bin\nt\ngdbuild.exe -ise
+C:/brad/pdp8/xilinx/pdp8/pdp8.ise -intstyle ise -dd _ngo -nt timestamp -uc
+C:/brad/pdp8/synth/s3board.ucf -p xc3s1000-ft256-5 top.ngc top.ngd
 
-Reading NGO file '/home/brad/pdp8/xilinx/pdp8/top.ngc' ...
+Reading NGO file 'C:/brad/pdp8/xilinx/pdp8/top.ngc' ...
+
+Applying constraints in "C:/brad/pdp8/synth/s3board.ucf" to the design...
 
 Checking timing specifications ...
 Checking Partitions ...
@@ -21,7 +24,7 @@ NGDBUILD Design Results Summary:
   Number of errors:     0
   Number of warnings:   0
 
-Total memory usage is 247480 kilobytes
+Total memory usage is 73504 kilobytes
 
 Writing NGD file "top.ngd" ...
 
