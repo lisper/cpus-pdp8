@@ -212,6 +212,9 @@ module uart(clk, reset,
 		  tx_over_run <= 1;
 		else
 		  begin
+`ifdef sim_time
+		     $display("uart: tx_data %o", tx_data);
+`endif
 		     tx_reg <= tx_data;
 		     tx_empty <= 0;
 		  end
@@ -221,6 +224,21 @@ module uart(clk, reset,
 	    begin
 	       tx_cnt <= tx_cnt + 4'b1;
 
+`ifdef sim_time
+	       case (tx_cnt)
+		 4'd0: $display("tx: start");
+		 4'd1: $display("tx: %b", tx_reg[0]);
+		 4'd2: $display("tx: %b", tx_reg[1]);
+		 4'd3: $display("tx: %b", tx_reg[2]);
+		 4'd4: $display("tx: %b", tx_reg[3]);
+		 4'd5: $display("tx: %b", tx_reg[4]);
+		 4'd6: $display("tx: %b", tx_reg[5]);
+		 4'd7: $display("tx: %b", tx_reg[6]);
+		 4'd8: $display("tx: %b", tx_reg[7]);
+		 4'd9: $display("tx: done");
+	       endcase
+`endif
+	       
 	       case (tx_cnt)
 		 4'd0: tx_out <= 0;
 		 4'd1: tx_out <= tx_reg[0];

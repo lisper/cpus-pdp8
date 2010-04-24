@@ -8,8 +8,6 @@
 `define debug_tt_data 1
 `endif
 
-//`define sim_time
-
 module pdp8_tt(clk, brgclk, reset,
 	       iot, state, mb,
 	       io_data_in, io_data_out, io_select, io_selected,
@@ -77,7 +75,7 @@ module pdp8_tt(clk, brgclk, reset,
 			   .tx_baud_clk(uart_tx_clk),
 			   .rx_baud_clk(uart_rx_clk));
 
-`ifdef sim_time
+`ifdef use_fake_uart
    //
    fake_uart tt_uart(.clk(clk),
 		     .reset(reset),
@@ -184,6 +182,20 @@ module pdp8_tt(clk, brgclk, reset,
        end
      else
        begin
+//
+	  if (assert_tx_int)
+	    begin
+`ifdef debug_tt_int
+	       $display("xxx set tx_int");
+`endif
+	       tx_int <= 1;
+	    end
+	  if (assert_rx_int)
+	    begin
+	       //$display("xxx set rx_int");
+	       rx_int <= 1;
+	    end
+//
 	  if (iot && state == F1)
 	    begin
 `ifdef debug_tt_reg
@@ -194,7 +206,7 @@ module pdp8_tt(clk, brgclk, reset,
 	       case (io_select)
 		 6'o03:
 		   begin
-		      if (mb[1])
+		      if (mb[1] && ~assert_rx_int)
 			rx_int <= 1'b0;
 		   end
 
@@ -203,12 +215,9 @@ module pdp8_tt(clk, brgclk, reset,
 		      if (mb[0])
 			begin
 			end
-		      if (mb[1])
+		      if (mb[1] && ~assert_tx_int)
 			begin
-			   if (assert_tx_int)
-			     tx_int <= 1'b1;
-			   else
-			     tx_int <= 1'b0;
+			   tx_int <= 1'b0;
 `ifdef debug_tt_in
 			   $display("xxx reset tx_int");
 `endif
@@ -223,21 +232,21 @@ module pdp8_tt(clk, brgclk, reset,
 		   end // case: 6'o04
                endcase
 	    end // if (iot && state == F1)
-	  else
-	    begin
-	       if (assert_tx_int)
-		 begin
-`ifdef debug_tt_int
-		    $display("xxx set tx_int");
-`endif
-		    tx_int <= 1;
-		 end
-	       if (assert_rx_int)
-		 begin
-		    //$display("xxx set rx_int");
-		    rx_int <= 1;
-		 end
-	    end
+//	  else
+//	    begin
+//	       if (assert_tx_int)
+//		 begin
+//`ifdef debug_tt_int
+//		    $display("xxx set tx_int");
+//`endif
+//		    tx_int <= 1;
+//		 end
+//	       if (assert_rx_int)
+//		 begin
+//		    //$display("xxx set rx_int");
+//		    rx_int <= 1;
+//		 end
+//	    end
        end // else: !if(reset)
    
 

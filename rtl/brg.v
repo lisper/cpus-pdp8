@@ -12,8 +12,8 @@ module brg(clk, reset, tx_baud_clk, rx_baud_clk);
    parameter BAUD = 16'd9600;
 
 `ifdef sim_time
-   parameter RX_CLK_DIV = 13'd2;
-   parameter TX_CLK_DIV = 13'd2;
+   parameter RX_CLK_DIV = 13'd5;
+   parameter TX_CLK_DIV = 13'd5;
 `else
    parameter RX_CLK_DIV = SYS_CLK / (BAUD * 16 * 2);
    parameter TX_CLK_DIV = SYS_CLK / (BAUD * 2);

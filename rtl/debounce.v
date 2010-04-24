@@ -5,7 +5,11 @@ module debounce(clk, in, out);
    input in;
    output out;
 
+`ifdef sim_time
+   reg [1:0] clkdiv;
+`else
    reg [14:0] clkdiv;
+`endif
    reg 	      slowclk;
    reg [9:0]  hold;
    reg 	      onetime;

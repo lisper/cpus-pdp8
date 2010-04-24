@@ -49,7 +49,10 @@ module top(rs232_txd, rs232_rxd,
 
    // -----------------------------------------------------------------
 
-`define slower
+`ifndef sim_time
+ `define slower
+`endif
+
 `ifdef slower
    reg clk;
    reg [24:0] clkdiv;
@@ -152,7 +155,7 @@ module top(rs232_txd, rs232_rxd,
 	   .ext_ram_out(ext_ram_in));
    
    pdp8_io io(.clk(clk),
-	      .brgclk(clk),
+	      .brgclk(sysclk),
 	      .reset(reset),
 	      .iot(iot),
 	      .state(state),
