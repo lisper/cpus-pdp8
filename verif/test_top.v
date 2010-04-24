@@ -2,6 +2,8 @@
 // testing top end for pdp8.v
 //
 
+`define sim_time 1
+
 `include "../rtl/ide.v"
 `include "../rtl/ide_disk.v"
 `include "../rtl/brg.v"
@@ -18,6 +20,7 @@
 `include "../rtl/bootrom.v"
 `include "../rtl/display.v"
 `include "../rtl/sevensegdecode.v"
+`include "../verif/ram_s3board.v"
 
 `timescale 1ns / 1ns
 
@@ -82,6 +85,16 @@ module test;
 	   .ide_diow(ide_diow),
 	   .ide_cs(ide_cs),
 	   .ide_da(ide_da));
+
+    ram_s3board ram2(.ram_a(sram_a),
+		    .ram_oe_n(sram_oe_n),
+		    .ram_we_n(sram_we_n),
+		    .ram1_io(sram1_io),
+		    .ram1_ce_n(sram1_ce_n),
+		    .ram1_ub_n(sram1_ub_n), .ram1_lb_n(sram1_lb_n),
+		    .ram2_io(sram2_io),
+		    .ram2_ce_n(sram2_ce_n),
+		    .ram2_ub_n(sram2_ub_n), .ram2_lb_n(sram2_lb_n));
 
   initial
     begin

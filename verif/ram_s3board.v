@@ -82,6 +82,8 @@ module ram_s3board(ram_a, ram_oe_n, ram_we_n,
 	     ram1.ram_l[i] = 7'b0;
 	  end
 
+	n = 0;
+
 `ifdef verilator
  `define no_scan
 `endif
@@ -94,10 +96,13 @@ module ram_s3board(ram_a, ram_oe_n, ram_we_n,
        n = $scan$plusargs("test=", testfilename);
 `endif
 
-
-`ifdef no_scan
-	n = 0;
-`endif
+	if (n == 0)
+	  begin
+	     testfilename = "default.mem";
+	     $display("using default file");
+	     n = 1;
+	  end
+	
 	if (n > 0)
 	  begin
 	     $display("ram_s3board: code filename: %s", testfilename);
