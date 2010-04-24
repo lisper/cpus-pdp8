@@ -1,4 +1,4 @@
-// PDP8 console emulation
+// PDP-8 console emulation
 // brad@heeltoe.com
 
 `ifdef debug
@@ -182,7 +182,7 @@ module pdp8_tt(clk, brgclk, reset,
        end
      else
        begin
-//
+
 	  if (assert_tx_int)
 	    begin
 `ifdef debug_tt_int
@@ -190,12 +190,13 @@ module pdp8_tt(clk, brgclk, reset,
 `endif
 	       tx_int <= 1;
 	    end
+
 	  if (assert_rx_int)
 	    begin
 	       //$display("xxx set rx_int");
 	       rx_int <= 1;
 	    end
-//
+
 	  if (iot && state == F1)
 	    begin
 `ifdef debug_tt_reg
@@ -232,21 +233,6 @@ module pdp8_tt(clk, brgclk, reset,
 		   end // case: 6'o04
                endcase
 	    end // if (iot && state == F1)
-//	  else
-//	    begin
-//	       if (assert_tx_int)
-//		 begin
-//`ifdef debug_tt_int
-//		    $display("xxx set tx_int");
-//`endif
-//		    tx_int <= 1;
-//		 end
-//	       if (assert_rx_int)
-//		 begin
-//		    //$display("xxx set rx_int");
-//		    rx_int <= 1;
-//		 end
-//	    end
        end // else: !if(reset)
    
 

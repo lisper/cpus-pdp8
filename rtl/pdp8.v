@@ -596,7 +596,9 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 		begin
 		   interrupt_cycle <= 0;
 
-		   if (0) $display("read ram [%o] -> %o", ram_addr, ram_data_in);
+		   if (0)
+		     $display("read ram [%o] -> %o", ram_addr, ram_data_in);
+		   
 		   mb <= ram_data_in;
 		   ir <= ram_data_in[11:9];
 		   ir_i_flag <= ram_data_in[8];
@@ -721,7 +723,7 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 
 		   if (io_data_avail)
 		     begin
-			//$display("io_data clock %o", io_data_in);
+			if (0) $display("io_data clock %o", io_data_in);
 			ac <= io_data_in;
 		     end
 
