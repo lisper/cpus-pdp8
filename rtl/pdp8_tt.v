@@ -46,6 +46,8 @@ module pdp8_tt(clk, brgclk, reset,
    wire 	     assert_tx_int;
    wire 	     assert_rx_int;
 
+   wire		     tx_busy;
+ 	     
    // interface to uart
    reg [1:0] 	     tto_state;
    wire [1:0] 	     tto_state_next;
@@ -159,8 +161,9 @@ module pdp8_tt(clk, brgclk, reset,
 		 io_selected = 1'b1;
 		 if (mb[0])
 		   begin
-		      io_skip = tx_int;
-		      //$display("xxx io_skip %b", tx_int);
+//		      io_skip = tx_int;
+//		      $display("xxx io_skip %b", tx_int);
+		      io_skip = ~tx_busy;
 		   end
 		 if (mb[2])
 		   tto_write = 1;
@@ -183,19 +186,11 @@ module pdp8_tt(clk, brgclk, reset,
      else
        begin
 
-	  if (assert_tx_int)
-	    begin
-`ifdef debug_tt_int
-	       $display("xxx set tx_int");
-`endif
-	       tx_int <= 1;
-	    end
-
-	  if (assert_rx_int)
-	    begin
-	       //$display("xxx set rx_int");
-	       rx_int <= 1;
-	    end
+//	  if (assert_rx_int)
+//	    begin
+//	       //$display("xxx set rx_int");
+//	       rx_int <= 1;
+//	    end
 
 	  if (iot && state == F1)
 	    begin
@@ -207,7 +202,7 @@ module pdp8_tt(clk, brgclk, reset,
 	       case (io_select)
 		 6'o03:
 		   begin
-		      if (mb[1] && ~assert_rx_int)
+		      if (mb[1] /*&& ~assert_rx_int*/)
 			rx_int <= 1'b0;
 		   end
 
@@ -225,6 +220,7 @@ module pdp8_tt(clk, brgclk, reset,
 			end
 		      if (mb[2])
 			begin
+tx_int <= 1'b0;
 			   tx_data <= io_data_in[7:0];
 `ifdef debug_tt_data
 			   $display("xxx tx_data %o", io_data_in);
@@ -233,6 +229,26 @@ module pdp8_tt(clk, brgclk, reset,
 		   end // case: 6'o04
                endcase
 	    end // if (iot && state == F1)
+	  else
+	    begin
+	       if (assert_rx_int)
+		 begin
+		    //$display("xxx set rx_int");
+		    rx_int <= 1;
+		 end
+
+	       if (assert_tx_int)
+		 tx_int <= 1;
+
+//	       if (assert_tx_int)
+//		 begin
+//`ifdef debug_tt_int
+//		    $display("xxx set tx_int");
+//`endif
+//		    tx_int <= 1;
+//		 end
+	    end // else: !if(iot && state == F1)
+	  
        end // else: !if(reset)
    
 
@@ -252,6 +268,7 @@ module pdp8_tt(clk, brgclk, reset,
 
    assign tto_req = tto_state == 1;
    assign tto_empty = tto_state == 0;
+   assign tx_busy = ~tto_empty;
    
    assign tto_state_next = (tto_state == 0 && tto_write) ? 1 :
 			   (tto_state == 1 && tx_ack) ? 2 :
@@ -259,9 +276,10 @@ module pdp8_tt(clk, brgclk, reset,
 			   (tto_state == 3 && tx_empty) ? 0 :
 			   tto_state;
 
-   assign assert_tx_int = tto_state == 3 && tto_state_next == 0;
+   assign assert_tx_int = tto_state == 3 && tx_empty;
 //   assign assert_tx_int = tto_empty;
 
+   
 `ifdef debug_tt_int
    always @(posedge clk)
      if (assert_tx_int)

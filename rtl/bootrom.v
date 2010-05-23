@@ -2,8 +2,8 @@
 // boot rom occupies one page from 7400 - 7577
 //
 
-//`define bootrom_tss8
-`define bootrom_uart
+`define bootrom_tss8
+//`define bootrom_uart
 
 module bootrom(clk, reset, addr, data_out, rd, selected);
 

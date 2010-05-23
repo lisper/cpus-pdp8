@@ -62,16 +62,20 @@ module uart(clk, reset,
 	rx_uld_next = rx_uld;
 	rx_ack = 0;
 	case (rx_uld)
-	  2'b00: if (rx_req) rx_uld_next = 2'b01;
+	  2'b00:
+	    if (rx_req)
+	      rx_uld_next = 2'b01;
 	  2'b01: begin
 	     rx_ack = 1;
 	     rx_uld_next = 2'b10;
 	    end
 	  2'b10: begin
 	     rx_ack = 1;
-	     if (~rx_req) rx_uld_next = 2'b00;
+	     if (~rx_req)
+	       rx_uld_next = 2'b00;
 	    end
-	  default: rx_uld_next = 2'b00;
+	  default:
+	    rx_uld_next = 2'b00;
 	endcase
      end
 
@@ -90,7 +94,9 @@ module uart(clk, reset,
 	tx_ld_next = tx_ld;
 	tx_ack = 0;
 	case (tx_ld)
-	  2'b00: if (tx_req) tx_ld_next = 2'b01;
+	  2'b00:
+	    if (tx_req)
+	      tx_ld_next = 2'b01;
 	  2'b01: begin
 	     tx_ack = 1;
 	     tx_ld_next = 2'b10;
@@ -99,7 +105,8 @@ module uart(clk, reset,
 	     tx_ack = 1;
 	     if (~tx_req) tx_ld_next = 2'b00;
 	    end
-	  default: tx_ld_next = 2'b00;
+	  default:
+	    tx_ld_next = 2'b00;
 	endcase
      end
    
