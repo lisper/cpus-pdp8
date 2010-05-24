@@ -15,7 +15,7 @@ module bootrom(clk, reset, addr, data_out, rd, selected);
    output 	 selected;
 
    //
-   reg 		 deactivate;
+   reg		 deactivate;
    reg [2:0] 	 delay;
    reg [11:0] 	 data;
    wire 	 active;
@@ -31,7 +31,7 @@ module bootrom(clk, reset, addr, data_out, rd, selected);
     assign selected = active && (addr >= 12'o7400 && addr <= 12'o7577);
 		
     assign data_out = data;
-   
+
    always @(*)
      begin
 	deactivate = 0;
@@ -68,7 +68,7 @@ module bootrom(clk, reset, addr, data_out, rd, selected);
 	    12'o7423: data = 12'o7750;
 	  endcase // case(addr)
 
-	if (rd && addr == 12'o7415)
+	if (rd && active && addr == 12'o7415)
 	  deactivate = 1;
 `endif
 `ifdef bootrom_uart

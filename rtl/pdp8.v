@@ -348,7 +348,7 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
    assign 	pc_skip =
 		  (opr && (mb[8] && !mb[0]) && (skip_condition ^ mb[3])) ||
 		  (iot && (io_skip || interrupt_skip));
-   
+
    // cpu states
    parameter [3:0]
 		F0 = 4'b0000,
@@ -456,7 +456,7 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
    assign ram_addr = ext_ram_grant ? ext_ram_ma : ma;
    assign ram_data_out = ext_ram_grant ? ext_ram_in : mb;
 
-   assign io_select = mb[8:3];
+   assign io_select = UF ? 6'b0 : mb[8:3];
    assign io_data_out = ac;
 
    //
@@ -515,16 +515,13 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 	    UB_pending <= 1'b0;
 	 end
        else
-	 if (interrupt_inhibit_ib)
+	 if (interrupt_inhibit_ib || interrupt_inhibit_ub)
 	   begin
-	      IB_pending <= 1;
    	      interrupt_inhibit_delay <= 2'b10;
-	   end
-	 else
-	 if (interrupt_inhibit_ub)
-	   begin
-	      UB_pending <= 1;
-   	      interrupt_inhibit_delay <= 2'b10;
+	      if (interrupt_inhibit_ib)
+		IB_pending <= 1;
+	      if (interrupt_inhibit_ub)
+		UB_pending <= 1;
 	   end
 	 else
 	   if (~IB_pending && ~UB_pending)
@@ -532,7 +529,90 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 		interrupt_inhibit_delay[1] <= interrupt_inhibit_delay[0];
 		interrupt_inhibit_delay[0] <= interrupt_inhibit_ion;
 	     end
+
+   //
+   // combinatorial
+   //
+   always @(*)
+     begin
+	/* defaults - these should be comb logic */
+//	interrupt_inhibit_clear = 1'b0;
+//	interrupt_inhibit_ion = 1'b0;
+//	interrupt_inhibit_ib = 1'b0;
+//	interrupt_inhibit_ub = 1'b0;
+
+	interrupt_skip = 0;
+	
+	case (state)
+	  F1:
+	    begin
+
+//	      if ((jmp || jms) && IB_pending)
+//		begin
+//		   interrupt_inhibit_clear = 1'b1;
+//		end
+
+//	      if ((jmp || jms) && UB_pending)
+//		begin
+//		   interrupt_inhibit_clear = 1'b1;
+//		end
+	       
+	       if (iot && ~UF)
+		 begin
+		    casex (io_select)
+		      6'b000000:	// ION, IOF
+			case (mb[2:0])
+//			  3'b001:
+//			   interrupt_inhibit_ion = 1'b1;
+			  3'b011:
+			    if (interrupt_enable)
+			      interrupt_skip = 1;
+			endcase
+		      
+		      6'b010xxx:	// CDF..RMF
+			begin
+//			  if (mb[1])
+//			    begin		// CIF
+//			       interrupt_inhibit_ib = 1'b1;
+//			    end
+
+			  if (mb[2:0] == 3'b100)
+			    begin
+			      case (io_select[2:0])
+//				3'b100: begin				// RMF
+//				   interrupt_inhibit_ib = 1'b1;
+//				   interrupt_inhibit_ub = 1'b1;
+//				end
+
+				3'b101:					// SINT
+				  begin
+$display("SINT: UI %b, state %b", UI, state);
+				     if (UI)
+				       interrupt_skip = 1;
+				  end
+
+//				3'b110:					// CUF
+//				  begin
+//				     interrupt_inhibit_ub = 1'b1;
+//				  end
+				
+//				3'b111:					// SUF
+//				  begin
+//				     interrupt_inhibit_ub = 1'b1;
+//				  end
+			      endcase
+			    end
+			  
+			end
+		    endcase // casex(io_select)
+		    
+		 end // if (iot && ~UF)
+	    end
+
+	endcase
+     end
    
+     
    //
    // registers
    //
@@ -551,7 +631,6 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 	  run <= 1;
 	  interrupt_enable <= 0;
 	  interrupt_cycle <= 0;
-	  interrupt_skip <= 0;
 	  interrupt <= 0;
 	  UI <= 0;
 	  IF <= initial_pc[14:12];
@@ -568,7 +647,7 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 	 //
 	 F0:
 	   begin
-	      interrupt_skip <= 0;
+//	      interrupt_skip = 0;
 	      interrupt_inhibit_ion = 1'b0;
 	      
 	      if (interrupt && interrupt_enable &&
@@ -591,6 +670,7 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 		   SF <= {UF,IF,DF};
 		   IF <= 3'b000;
 		   DF <= 3'b000;
+		   UF <= 1'b0;
 		end
 	      else
 		begin
@@ -613,6 +693,8 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 	      interrupt_inhibit_ion = 1'b0;
 	      interrupt_inhibit_ib = 1'b0;
 	      interrupt_inhibit_ub = 1'b0;
+
+//	      interrupt_skip = 0;
 	      
    	      /* defered loading of IF from IB at next jmp/jms */
 	      if ((jmp || jms) && IB_pending)
@@ -661,7 +743,13 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 		    ;
 		endcase
 
-	      if (iot)
+	      if (iot && UF)
+		begin
+		   UI <= 1;
+$display("user iot: set UI");
+		end
+
+	      if (iot && ~UF)
 		begin
 		   casex (io_select)
 		     6'b000000:	// ION, IOF
@@ -672,8 +760,8 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 			      interrupt_inhibit_ion = 1'b1;
 			   end
 			 3'b010: interrupt_enable <= 0;
-			 3'b011: if (interrupt_enable)
-				       interrupt_skip <= 1;
+//			 3'b011: if (interrupt_enable)
+//				       interrupt_skip = 1;
 		       endcase
 
 		     6'b010xxx:	// CDF..RMF
@@ -699,11 +787,16 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 				   UB <= SF[6];
 				   IB <= SF[5:3];
 				   DF <= SF[2:0];
+				   interrupt_inhibit_ib = 1'b1;
+				   interrupt_inhibit_ub = 1'b1;
 			  	end
 
 				3'b101:					// SINT
-				  if (UI)
-				    interrupt_skip <= 1;
+				  begin
+$display("SINT: UI %b, state %b", UI, state);
+//				     if (UI)
+//				       interrupt_skip = 1;
+				  end
 
 				3'b110:					// CUF
 				  begin
@@ -734,13 +827,14 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 
 		end // if (iot)
 	      
-	      if (io_interrupt)
+	      if (io_interrupt || (iot && UF))
 		begin
 		   if (0)
-		   $display("F1 - set interrupt; (%b %b %b, %b %b %b)",
+		   $display("F1 - set interrupt; (%b %b %b; %b %b; %b %b %b)",
 			    interrupt_enable, 
 			    interrupt_inhibit,
 			    interrupt_cycle,
+			    io_interrupt, iot && UF,
 			    IB_pending, UB_pending,
 			    interrupt_inhibit_delay);
 

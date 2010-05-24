@@ -128,6 +128,13 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 			 tt_io_selected ? tt_io_data_avail :
 			 rf_io_selected ? rf_io_data_avail :
 			 1'b0;
+
+//`ifdef debug_ints
+   always @(*)
+     if (io_interrupt)
+       $display("io: io_interrupt: %b %b %b", 
+		kw_io_interrupt, tt_io_interrupt, rf_io_interrupt);
+//`endif
    
    assign io_interrupt = kw_io_interrupt |
 			 tt_io_interrupt |

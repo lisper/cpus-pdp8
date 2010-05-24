@@ -692,6 +692,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	  MEX <= 3'b0;
 	  PEF <= 1'b0;
 	  CIE <= 1'b0;
+	  PIE <= 1'b0;
+	  EIE <= 1'b0;
 	  DCF <= 1'b1;
 	  NXD <= 1'b0;
        end

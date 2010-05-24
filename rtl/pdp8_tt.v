@@ -171,7 +171,6 @@ module pdp8_tt(clk, brgclk, reset,
 	  endcase // case(io_select)
      end
    
-
    //
    // registers
    //
@@ -223,7 +222,7 @@ module pdp8_tt(clk, brgclk, reset,
 tx_int <= 1'b0;
 			   tx_data <= io_data_in[7:0];
 `ifdef debug_tt_data
-			   $display("xxx tx_data %o", io_data_in);
+			   $display("xxx tx_data %o %t", io_data_in, $time);
 `endif
 			end
 		   end // case: 6'o04
