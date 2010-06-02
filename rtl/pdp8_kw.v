@@ -23,17 +23,29 @@ module pdp8_kw(clk, reset, iot, state, mb,
        F2 = 4'b0010,
        F3 = 4'b0011;
 
-   // state
-//   reg [7:0] kw_src_ctr;
-   reg [1:0] kw_src_ctr;
-   reg 	     kw_src_clk;
+`ifdef sim_time
+// `define sim_time_kw 1
+`endif
+   
+`ifdef sim_time
+   parameter CLK_DIV = 96000;
+`else
+   parameter SYS_CLK = 26'd50000000;
+   parameter CLK_RATE = 26'd60;
+   parameter CLK_DIV = SYS_CLK / CLK_RATE;
+`endif
 
-   reg [11:0] kw_ctr;
+   wire [25:0] kw_clk_div;
+   assign      kw_clk_div = CLK_DIV;
+   
+   // state
+   reg [19:0] kw_ctr;
    reg 	      kw_int_en;
    reg 	      kw_clk_en;
    reg 	      kw_flag;
    
-   wire     assert_kw_flag;
+   reg 	      assert_kw_flag;
+   wire	      assert_kw_ctr_zero;
    
    assign   io_interrupt = kw_int_en && kw_flag;
 
@@ -53,13 +65,18 @@ module pdp8_kw(clk, reset, iot, state, mb,
 		 case (mb[2:0] )
 		 3'o3:
 		   if (kw_flag)
-		     io_skip = 1;
+		     io_skip = 1'b1;
 		 endcase
 		 
 	      end
 	  endcase // case(io_select)
      end
    
+`ifdef sim_time_kw
+   integer c_cycles;
+   initial
+     c_cycles = 1;
+`endif
 
    //
    // registers
@@ -75,6 +92,17 @@ module pdp8_kw(clk, reset, iot, state, mb,
        case (state)
 	  F0:
 	    begin
+`ifdef sim_time_kw
+	       // to make sim deterministic, count cpu fetches
+	       c_cycles = c_cycles + 1;
+	       if (c_cycles == 16001)
+		 begin
+		    c_cycles = 0;
+		    assert_kw_flag = 1;
+		 end
+	       else
+		 assert_kw_flag = 0;
+`endif
 	    end
 
 	  F1:
@@ -92,7 +120,7 @@ module pdp8_kw(clk, reset, iot, state, mb,
 		   3'o2:
 		     begin
 `ifdef debug
-			$display("CCFF");
+			$display("kw8i: CCFF");
 `endif
 			kw_flag <= 1'b0;
 			kw_clk_en <= 1'b0;
@@ -101,21 +129,21 @@ module pdp8_kw(clk, reset, iot, state, mb,
 		   3'o3:
 		     begin
 `ifdef debug
-			$display("CSCF");
+			$display("kw8i: CSCF");
 `endif
 			kw_flag <= 1'b0;
 		     end
 		   3'o6:
 		     begin
 `ifdef debug
-			$display("CCEC");
+			$display("kw8i: CCEC");
 `endif
 			kw_clk_en <= 1;
 		     end
 		   3'o7:
 		     begin
 `ifdef debug
-			$display("CECI");
+			$display("kw8i: CECI");
 `endif
 			kw_clk_en <= 1;
 			kw_int_en <= 1;
@@ -125,41 +153,54 @@ module pdp8_kw(clk, reset, iot, state, mb,
 
 	  F3:
 	    begin
-	       if (assert_kw_flag)
+	       if (assert_kw_flag && kw_clk_en)
 		 begin
 		    kw_flag <= 1;
 `ifdef debug
-		    if (kw_flag == 0) $display("kw8i: set kw_flag!\n");
+		    $display("kw8i: assert_kw_flag %t\n", $time);
+		    if (kw_flag == 0) $display("kw8i: set kw_flag! %t\n", $time);
 `endif
 		 end
 	    end
 
        endcase // case(state)
 
-   assign assert_kw_flag = kw_ctr == 0;
+   //
+   // once kw clock rolls over,
+   // assert until next F3 cycles
+   // to ensure kw_flag is set if enabled
+   //
+   always @(posedge clk or posedge reset)
+     if (reset)
+       assert_kw_flag <= 0;
+     else
+       if (assert_kw_ctr_zero)
+	 assert_kw_flag <= 1;
+       else
+	 if (state == F3)
+	   assert_kw_flag <= 0;
+   
+`ifndef sim_time_kw
+   assign assert_kw_ctr_zero = kw_ctr == 0;
+`endif
    
    //
-   always @(posedge kw_src_clk or posedge reset)
+   always @(posedge clk or posedge reset)
      if (reset)
        kw_ctr <= 0;
      else
        if (kw_clk_en)
-	 kw_ctr <= kw_ctr + 1;
+	 begin
+	    if (kw_ctr == kw_clk_div[19:0])
+	      kw_ctr <= 0;
+	    else
+	      kw_ctr <= kw_ctr + 1;
 
-   // source clock - divide down cpu clock
-   always @(posedge clk)
-     if (reset)
-       begin
-	  kw_src_ctr <= 0;
-	  kw_src_clk <= 1'b0;
-       end
-     else
-       begin
-	  kw_src_ctr <= kw_src_ctr + 1;
-	  if (kw_src_ctr == 0)
-	    kw_src_clk <= ~kw_src_clk;
-       end
+`ifdef debug_clk
+	    if (kw_ctr[14:0] == 15'b0)
+	      $display("kw8i: ctr %o, max %o", kw_ctr, kw_clk_div[19:0]);
+`endif
+	 end
 
 endmodule // pdp8_kw
 
-	      
