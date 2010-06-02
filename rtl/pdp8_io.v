@@ -89,6 +89,7 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 	      .uart_in(rs232_in),
 	      .uart_out(rs232_out));
 
+`ifndef use_rf_pli
    pdp8_rf tf(.clk(clk),
 	      .reset(reset),
 	      .iot(iot),
@@ -116,7 +117,8 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 	      .ide_cs(ide_cs),
 	      .ide_da(ide_da),
 	      .ide_data_bus(ide_data_bus));
-
+`endif
+   
    assign tt_io_clear_ac = 1'b0;
 
    assign io_data_out =
@@ -150,5 +152,14 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 		       tt_io_selected ? tt_io_clear_ac :
 		       rf_io_selected ? rf_io_clear_ac :
 		       1'b0;
+
+`ifdef use_rf_pli
+   always @(posedge clk or iot or state or mb or io_select)
+     begin
+	$pli_rf(clk, reset, iot, state, mb, io_data_in,
+		io_select, rf_io_selected, rf_io_data_out, rf_io_data_avail,
+		rf_io_interrupt, rf_io_skip, rf_io_clear_ac);
+     end
+`endif
    
 endmodule

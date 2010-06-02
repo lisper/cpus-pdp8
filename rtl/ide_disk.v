@@ -101,6 +101,9 @@ module ide_disk(clk, reset,
    reg 		 set_err, clear_err;
    reg 		 inc_offset;
 
+   reg [11:0] 	 buffer_in_hold;
+   reg 		 grab_buffer_in;
+   
    // 
    ide ide1(.clk(clk), .reset(reset),
 	    .ata_rd(ata_rd), .ata_wr(ata_wr), .ata_addr(ata_addr),
@@ -126,6 +129,7 @@ module ide_disk(clk, reset,
 	  done <= 1'b0;
 	  offset <= 8'b0;
 	  wc <= 8'b0;
+	  buffer_in_hold <= 12'b0;
        end
      else
        begin
@@ -146,6 +150,9 @@ module ide_disk(clk, reset,
 	       offset <= offset + 8'h01;
 	       wc <= wc + 8'h01;
 	    end
+
+	  if (grab_buffer_in)
+	    buffer_in_hold <= buffer_in;
        end
 
    //
@@ -157,8 +164,10 @@ module ide_disk(clk, reset,
      else
        begin
 	  ide_state <= ide_state_next;
-	  //if (ide_state_next != ready)
-	  //$display("ide_state %d", ide_state_next);
+`ifdef debug_write
+	  if (ide_write_req)
+	    $display("ide_disk: state %d", ide_state_next);
+`endif
        end
 
    always @(ide_state or ide_write_req or ide_read_req or
@@ -175,6 +184,7 @@ module ide_disk(clk, reset,
 	clear_done = 0;
 
 	inc_offset = 0;
+	grab_buffer_in = 0;
 	
 	ata_rd = 0;
 	ata_wr = 0;
@@ -321,14 +331,12 @@ module ide_disk(clk, reset,
 	       ata_addr = ATA_STATUS;
 
 	       //if (ata_done) $display("ide_disk: XXX init11 ata_out %x", ata_out);
-	       if (ata_done &&
-		   ~ata_out[IDE_STATUS_BSY] &&
-		   ata_out[IDE_STATUS_DRQ])
+	       if (ata_done && ~ata_out[IDE_STATUS_BSY])
 		 begin
 		    if (ide_write_req)
 		      ide_state_next = write0;
 		    else
-		    if (ide_read_req)
+		    if (ide_read_req && ata_out[IDE_STATUS_DRQ])
 		      ide_state_next = read0;
 		 end
 
@@ -371,7 +379,8 @@ module ide_disk(clk, reset,
 	       //buffer read
 	       buffer_addr = offset;
 	       buffer_rd = 1;
-
+	       grab_buffer_in = 1;
+	       
 	       ata_in = {4'b0, buffer_in};
 	       inc_offset = 1;
 	       ide_state_next = write1;
@@ -379,13 +388,18 @@ module ide_disk(clk, reset,
 
 	  write1:
 	    begin
-	       if (wc == 8'hff)
-		 ide_state_next = last0;
-	       else
-//	       if (wc == 16'hff00)
-//		 ide_state_next = init10;
-//	       else
-		 ide_state_next = write0;
+	       ata_wr = 1;
+	       ata_addr = ATA_DATA;
+	       ata_in = {4'b0, buffer_in_hold};
+	       //$display("ide_disk: write1, %o", buffer_in_hold);
+	       
+	       if (ata_done)
+		 begin
+		    if (wc == 8'h00)
+		      ide_state_next = last0;
+		    else
+		      ide_state_next = write0;
+		 end
 	    end
 
 	  last0:

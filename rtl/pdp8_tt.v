@@ -81,7 +81,8 @@ module pdp8_tt(clk, brgclk, reset,
    //
    fake_uart tt_uart(.clk(clk),
 		     .reset(reset),
-
+		     .state(state),
+		     
 		     .tx_clk(uart_tx_clk),
 		     .tx_req(tto_req),
 		     .tx_ack(tx_ack),
