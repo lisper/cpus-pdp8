@@ -97,20 +97,21 @@ int32 clk (int32 IR, int32 AC)
 {
 switch (IR & 07) {                                      /* decode IR<9:11> */
 
+case 7:
     case 1:                                             /* CLEI */
         int_enable = int_enable | INT_CLK;              /* enable clk ints */
-        int_req = INT_UPDATE;                           /* update interrupts */
+//xxx        int_req = INT_UPDATE;                           /* update interrupts */
         return AC;
 
     case 2:                                             /* CLDI */
         int_enable = int_enable & ~INT_CLK;             /* disable clk ints */
-        int_req = int_req & ~INT_CLK;                   /* update interrupts */
+//xxx        int_req = int_req & ~INT_CLK;                   /* update interrupts */
         return AC;
 
     case 3:                                             /* CLSC */
         if (dev_done & INT_CLK) {                       /* flag set? */
             dev_done = dev_done & ~INT_CLK;             /* clear flag */
-            int_req = int_req & ~INT_CLK;               /* clear int req */
+//xxx            int_req = int_req & ~INT_CLK;               /* clear int req */
             return IOT_SKP + AC;
             }
         return AC;
@@ -118,16 +119,16 @@ switch (IR & 07) {                                      /* decode IR<9:11> */
     case 5:                                             /* CLLE */
         if (AC & 1) int_enable = int_enable | INT_CLK;  /* test AC<11> */
         else int_enable = int_enable & ~INT_CLK;
-        int_req = INT_UPDATE;                           /* update interrupts */
+//xxx        int_req = INT_UPDATE;                           /* update interrupts */
         return AC;
 
     case 6:                                             /* CLCL */
         dev_done = dev_done & ~INT_CLK;                 /* clear flag */
-        int_req = int_req & ~INT_CLK;                   /* clear int req */
+//xxx        int_req = int_req & ~INT_CLK;                   /* clear int req */
         return AC;
 
-    case 7:                                             /* CLSK */
-        return (dev_done & INT_CLK)? IOT_SKP + AC: AC;
+//    case 7:                                             /* CLSK */
+//        return (dev_done & INT_CLK)? IOT_SKP + AC: AC;
 
     default:
         return (stop_inst << IOT_V_REASON) + AC;
@@ -140,8 +141,13 @@ t_stat clk_svc (UNIT *uptr)
 {
 int32 t;
 
+{
+extern unsigned long cycles;
+printf("clock fire; cycles %d\n", cycles);
+}
+
 dev_done = dev_done | INT_CLK;                          /* set done */
-int_req = INT_UPDATE;                                   /* update interrupts */
+//xxx int_req = INT_UPDATE;                                   /* update interrupts */
 t = sim_rtcn_calb (clk_tps, TMR_CLK);                   /* calibrate clock */
 sim_activate (&clk_unit, t);                            /* reactivate unit */
 tmxr_poll = t;                                          /* set mux poll */
@@ -153,7 +159,7 @@ return SCPE_OK;
 t_stat clk_reset (DEVICE *dptr)
 {
 dev_done = dev_done & ~INT_CLK;                         /* clear done, int */
-int_req = int_req & ~INT_CLK;
+//xxx int_req = int_req & ~INT_CLK;
 int_enable = int_enable & ~INT_CLK;                     /* clear enable */
 sim_activate (&clk_unit, clk_unit.wait);                /* activate unit */
 return SCPE_OK;

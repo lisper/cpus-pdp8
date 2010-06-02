@@ -106,6 +106,7 @@
 extern uint16 M[];
 extern int32 int_req, stop_inst;
 extern UNIT cpu_unit;
+extern int dtrace;
 
 int32 rf_sta = 0;                                       /* status register */
 int32 rf_da = 0;                                        /* disk address */
@@ -199,7 +200,7 @@ if (pulse & 6) {                                        /* DMAR, DMAW */
     t = (rf_da & RF_WMASK) - GET_POS (rf_time);         /* delta to new loc */
     if (t < 0) t = t + RF_NUMWD;                        /* wrap around? */
 #if 1
-    printf("xxx rf_go!\n");
+    printf("xxx rf_go! (rf_da %o, wc %o, ma %o)\n", rf_da, M[RF_WC], M[RF_MA]);
     sim_activate (&rf_unit, 0);               /* schedule op */
 #else
     sim_activate (&rf_unit, t * rf_time);               /* schedule op */
@@ -317,6 +318,7 @@ if ((uptr->flags & UNIT_BUF) == 0) {                    /* not buf? abort */
     return IORETURN (rf_stopioe, SCPE_UNATT);
     }
 
+//rf_burst = 0;
 mex = GET_MEX (rf_sta);
 do {
     if ((uint32) rf_da >= rf_unit.capac) {              /* disk overflow? */
@@ -329,8 +331,8 @@ do {
     if (uptr->FUNC == RF_READ) {                        /* read? */
         if (MEM_ADDR_OK (pa))                           /* if !nxm */
             M[pa] = fbuf[rf_da];                        /* read word */
-#if 0
-	printf("dma [%o] <- %o\n", pa, M[pa]);
+#if 1
+	if (dtrace) printf("dma [%o] <- %o\n", pa, M[pa]);
 #endif
         }
     else {                                              /* write */
@@ -347,7 +349,7 @@ do {
 
 if ((M[RF_WC] != 0) && ((rf_sta & RFS_ERR) == 0))       /* more to do? */
 #if 1
-    sim_activate (&rf_unit, 0);                   /* sched next */
+    sim_activate (&rf_unit, 1/*0*/);                   /* sched next */
 #else
     sim_activate (&rf_unit, rf_time);                   /* sched next */
 #endif

@@ -41,6 +41,7 @@
 #include <ctype.h>
 
 extern int32 int_req, int_enable, dev_done, stop_inst;
+extern int cycles;
 
 int32 tti (int32 IR, int32 AC);
 int32 tto (int32 IR, int32 AC);
@@ -136,8 +137,9 @@ DEVICE tto_dev = {
 #define FAKE_INPUT
 #ifdef FAKE_INPUT
 int tt_input_index;
-char tt_input[] = "START\r01:01:85\r10:10\r\r\r";
+char tt_input[] = "START\r01:01:85\r10:10\r";
 int tt_input_count = sizeof(tt_input)-1;
+int tt_refire;
 #endif
 
 /* Terminal input: IOT routine */
@@ -174,7 +176,7 @@ switch (IR & 07) {                                      /* decode IR<9:11> */
 
     case 4:                                             /* KRS */
 #ifdef FAKE_INPUT
-	    printf("xxx rx input %o (%d/%d)\n",
+	    printf("xxx rx input %o (%d/%d)\r\n",
 		   tti_unit.buf, tt_input_index, tt_input_count);
 #endif
         return (AC | tti_unit.buf);                     /* return buffer */
@@ -193,7 +195,7 @@ switch (IR & 07) {                                      /* decode IR<9:11> */
 		void tt_set_event(void);
 		tt_set_event();
 	}
-	printf("xxx rx input %o (%d/%d)\n",
+	printf("xxx rx input %o (%d/%d)\r\n",
 	       tti_unit.buf, tt_input_index, tt_input_count);
 #endif
         return (tti_unit.buf);                          /* return buffer */
@@ -249,16 +251,83 @@ void tt_set_event(void)
 	tt_event = 1;
 }
 
+#if 0
+#define R1 30000
+#define R2 40000
+#define R3 50000
+#define R4 300000
+#define R5 400000
+#else
+#define R1 110000
+#define R2 120000
+#define R3 130000
+#define R4 300000
+#define R5 400000
+#endif
+
 void tt_service(void)
 {
+	if (tt_refire == 0 && (tt_input_index == tt_input_count)) {
+		if (cycles >= R1) {
+			strcpy(tt_input, "LOGIN 2 LXHE\r\r");
+			tt_input_count = strlen(tt_input);
+			tt_input_index = 0;
+			tt_refire++;
+			printf("xxx boom 1; cycles %d\r\n", cycles);
+		}
+	}
+
+	if (tt_refire == 1 && (tt_input_index == tt_input_count)) {
+		if (cycles >= R2) {
+			strcpy(tt_input, "\r");
+			tt_input_count = strlen(tt_input);
+			tt_input_index = 0;
+			tt_refire++;
+			printf("xxx boom 2; cycles %d\r\n", cycles);
+		}
+	}
+
+	if (tt_refire == 2 && (tt_input_index == tt_input_count)) {
+		if (cycles >= R3) {
+			strcpy(tt_input, "\r");
+			tt_input_count = strlen(tt_input);
+			tt_input_index = 0;
+			tt_refire++;
+			printf("xxx boom 3; cycles %d\r\n", cycles);
+		}
+	}
+
+	if (tt_refire == 3 && (tt_input_index == tt_input_count)) {
+		if (cycles >= R4) {
+			strcpy(tt_input, "R FOCAL\r");
+			tt_input_count = strlen(tt_input);
+			tt_input_index = 0;
+			tt_refire++;
+			printf("xxx boom 4; cycles %d\r\n", cycles);
+		}
+	}
+
+	if (tt_refire == 4 && (tt_input_index == tt_input_count)) {
+		if (cycles >= R5) {
+			strcpy(tt_input, "\r");
+			tt_input_count = strlen(tt_input);
+			tt_input_index = 0;
+			tt_refire++;
+			printf("xxx boom 5; cycles %d\r\n", cycles);
+		}
+	}
+
 	if (tt_input_index < tt_input_count &&
             (dev_done & INT_TTI) == 0 && tt_event)
 	{
-		tti_unit.buf = tt_input[tt_input_index++];
+		tti_unit.buf = tt_input[tt_input_index++] & 0xff;
 		tti_unit.pos++;
 		dev_done |= INT_TTI;
 		int_req = INT_UPDATE;
 		tt_event = 0;
+		if (tt_input_index == tt_input_count) {
+			printf("xxx input exhausted %d cycles\r\n", cycles);
+		}
 	}
 
 	if (tt_countdown > 0) {
@@ -266,7 +335,7 @@ void tt_service(void)
 		if (tt_countdown == 0) {
 			int i;
 
-			printf("xxx tx_data %o\n", tt_data);
+			printf("xxx tx_data %o\r\n", tt_data);
 
 			tt_flag = 1;
 
@@ -277,13 +346,25 @@ void tt_service(void)
 			printf("xxx output: ");
 			for (i = 0; i < tt_buf_count; i++) {
 				char ch = tt_buf[i] & 0177;
+if (ch == 0) ch = '@';
+tt_buf[i] = ch;
 				switch (ch) {
 				case '\n': printf("\\n"); break;
 				case '\r': printf("\\r"); break;
-				default: printf("%c", ch & 0177); break;
+				default: printf("%c", ch); break;
 				}
 			}
-			printf("\n");
+			printf("\r\n");
+
+tt_buf[tt_buf_count] = 0;
+
+			if (tt_refire == 5) {
+				extern int need_stop;
+				if (strstr(tt_buf, "RETAIN")) {
+					need_stop = 1;
+					printf("xxx need stop %d cycles\r\n", cycles);
+				}
+			}
 		}
 	} else {
 #if 0
@@ -366,8 +447,18 @@ void check_output(int c)
 		break;
 	case 2:
 		if (c == '.') {
-			need_stop = 1;
+			/*need_stop = 1*/;
+#if 0
+			if (tt_refire == 1) {
+				printf("xxx boom 3\n");
+				strcpy(tt_input, "R FOCAL\r");
+				tt_input_count = strlen(tt_input);
+				tt_input_index = 0;
+				tt_refire++;
+			}
+#endif
 		}
+
 		state = 0;
 		break;
 	}

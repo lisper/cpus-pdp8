@@ -315,11 +315,12 @@ DEVICE cpu_dev = {
     NULL, 0
     };
 
-static int dtrace = 1;
+/*static*/ int dtrace = 1;
 static int mtrace = 0;
 extern void tt_service(void);
 
-static unsigned long cycles;
+/*static*/ unsigned long cycles;
+static unsigned long cycles_last;
 static unsigned long max_cycles;
 int need_stop;
 
@@ -351,6 +352,11 @@ while (reason == 0) {                                   /* loop until halted */
 	cycles++;
 	if (max_cycles && cycles >= max_cycles)
 		need_stop = 1;
+	cycles_last++;
+	if (cycles_last >= 100000) {
+		cycles_last = 0;
+		printf("xxx cycles %d\r\n", (int)cycles);
+	}
 
 	if (need_stop) {
 		printf("\r\nxxx %lu stop\n", cycles);
@@ -366,9 +372,7 @@ while (reason == 0) {                                   /* loop until halted */
         }
 
     if (int_req > INT_PENDING) {                        /* interrupt? */
-#if 1
-	if (UF && 0) { dtrace = 1; mtrace = 1; }
-        //if (dtrace) printf("interrupt @ %o\n", PC);
+#if 0
 	if (dtrace) printf("xxx %lu interrupt @ %o (UF%d IF%o DF%o)\n",
                cycles, PC, UF, IF>>12, DF>>12);
 #endif
@@ -409,11 +413,6 @@ while (reason == 0) {                                   /* loop until halted */
 */
 
 #if 1
-    if (!dtrace) {
-	    if (IR == 06603 && 0)
-		    dtrace = 1;
-    }
-
     if (dtrace) {
 	    printf("pc %04o ir %04o l%o ac %04o ion %d "
 		   "(IF%o DF%o UF%o SF%03o IB%o UB%o)\n",
