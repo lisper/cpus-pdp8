@@ -11,12 +11,16 @@
 `endif
 
 `ifdef sim
+ `define use_fake_uart
  `define debug
  `define sim_time
-//`define debug_s3ram
+`define debug_s3ram
+//`define use_sim_ram_model
+//`define debug_vcd
+//`define debug_log
 `endif
 
-//`define use_sim_ram_model
+//`define use_rf_pli
 
 `include "../rtl/pdp8_tt.v"
 `include "../rtl/pdp8_rf.v"
@@ -48,6 +52,8 @@ module test;
    reg [11:0] switches;
 
    wire [14:0] initial_pc;
+   wire [11:0] pc_out;
+   wire [11:0] ac_out;
    
    wire [11:0] ram_data_in;
    wire        ram_rd;
@@ -92,10 +98,12 @@ module test;
 
    reg 	       rs232_in;
    wire        rs232_out;
-   
+
   pdp8 cpu(.clk(clk),
 	   .reset(reset),
 	   .initial_pc(initial_pc),
+	   .pc_out(pc_out),
+	   .ac_out(ac_out),
 	   .ram_addr(ram_addr),
 	   .ram_data_in(ram_data_out),
 	   .ram_data_out(ram_data_in),
@@ -146,6 +154,7 @@ module test;
 	      .rs232_in(rs232_in),
 	      .rs232_out(rs232_out));
 
+`ifndef use_rf_pli
    pdp8_ram ram(.clk(clk),
 		.reset(reset), 
 		.addr(ram_addr),
@@ -159,7 +168,8 @@ module test;
 		.sram1_ub_n(sram1_ub_n), .sram1_lb_n(sram1_lb_n),
 		.sram2_io(sram2_io), .sram2_ce_n(sram2_ce_n), 
 		.sram2_ub_n(sram2_ub_n), .sram2_lb_n(sram2_lb_n));
-
+`endif
+   
 `ifndef use_sim_model
    ram_s3board sram(.ram_a(sram_a),
 		    .ram_oe_n(sram_oe_n),
@@ -179,13 +189,21 @@ module test;
 
    assign initial_pc = starting_pc;
 
-   
   initial
     begin
        $timeformat(-9, 0, "ns", 7);
 
+`ifdef debug_log
+`else
+`ifdef __CVER__
+	$nolog;
+`endif
+`endif
+
+`ifdef debug_vcd
        $dumpfile("test_pdp8.vcd");
        $dumpvars(0, test);
+`endif
     end
 
   initial
@@ -194,7 +212,7 @@ module test;
        clk = 0;
        reset = 0;
        switches = 0;
-       rs232_in = 0;
+       rs232_in = 1;
 
        max_cycles = 0;
        max_cycles = 100;
@@ -323,6 +341,12 @@ module test;
 			  cpu.l, cpu.ac, cpu.interrupt_enable,
 			  cpu.IF, cpu.DF, cpu.UF, cpu.SF, cpu.IB, cpu.UB,
 			  cpu.interrupt_inhibit_delay);
+
+`ifdef xxx
+	    if (show_one_pc)
+	      #1 $pli_disassemble(cpu.pc, cpu.mb);
+`endif
+	    
 	    show_one_pc = 0;
 	 end
 
@@ -358,10 +382,19 @@ module test;
 	 end
     end
 
+`ifndef use_rf_pli
    always @(posedge clk)
      begin
 	$pli_ide(ide_data_bus, ide_dior, ide_diow, ide_cs, ide_da);
      end
+`endif
 
+`ifdef use_rf_pli
+   always @(reset /*or ram_addr or ram_data_in*/ or ram_rd or ram_wr)
+     begin
+	$pli_ram(reset, ram_addr, ram_data_in, ram_data_out, ram_rd, ram_wr);
+     end
+`endif
+   
 endmodule
 

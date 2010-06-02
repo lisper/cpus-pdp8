@@ -127,9 +127,9 @@ module ram_s3board(ram_a, ram_oe_n, ram_we_n,
 		   ram1_ce_n, ram1_ub_n, ram1_lb_n, ram_we_n, ram_oe_n);
 
 	if (ram_oe_n == 0 && ram_we_n == 1)
-	  $display("ram_s3board: read  [%o] -> %o", ram_a, ram1_io);
+	  $display("ram_s3board: read  [%o] -> %o %t", ram_a, ram1_io, $time);
 	if (ram_oe_n == 1 && ram_we_n == 0)
-	  $display("ram_s3board: write [%o] <- %o", ram_a, ram1_io);
+	  $display("ram_s3board: write [%o] <- %o %t", ram_a, ram1_io, $time);
      end
 `endif
 
