@@ -11,7 +11,6 @@
 `endif
 
 `ifdef sim
- `define use_fake_uart
  `define debug
  `define sim_time
 `define debug_s3ram
@@ -20,7 +19,9 @@
 //`define debug_log
 `endif
 
-//`define use_rf_pli
+`ifndef use_rf_pli
+ `define use_sim_ram_model 1
+`endif
 
 `include "../rtl/pdp8_tt.v"
 `include "../rtl/pdp8_rf.v"
@@ -29,7 +30,12 @@
 `include "../rtl/pdp8_ram.v"
 `include "../rtl/pdp8.v"
 
-`include "../verif/fake_uart.v"
+`ifdef use_fake_uart
+ `include "../verif/fake_uart.v"
+`else
+ `include "../rtl/uart.v"
+`endif
+
 `include "../rtl/brg.v"
 
 `include "../rtl/ide_disk.v"
@@ -170,7 +176,7 @@ module test;
 		.sram2_ub_n(sram2_ub_n), .sram2_lb_n(sram2_lb_n));
 `endif
    
-`ifndef use_sim_model
+`ifndef use_sim_ram_model
    ram_s3board sram(.ram_a(sram_a),
 		    .ram_oe_n(sram_oe_n),
 		    .ram_we_n(sram_we_n),

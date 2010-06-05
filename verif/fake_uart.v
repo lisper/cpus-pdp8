@@ -128,9 +128,10 @@ module fake_uart(clk, reset, state,
 		  r_refires = 3;
 		  $display("xxx boom 3; cycles %d", cycles);
 	       end
-//`define msg_rcat 1
+`define msg_rcat 1
 //`define msg_rfocal 1
-`define msg_pald 1
+//`define msg_rpald 1
+//`define msg_rpip 1
 	     if (r_index == r_count && cycles == 300000/*500000*/)
 	       begin
 `ifdef msg_rcat
@@ -155,7 +156,7 @@ module fake_uart(clk, reset, state,
 		  r_index = 0;
 		  r_count = 8;
 `endif
-`ifdef msg_pald
+`ifdef msg_rpald
 		  rdata[0] = "R";
 		  rdata[1] = " ";
 		  rdata[2] = "P";
@@ -165,6 +166,16 @@ module fake_uart(clk, reset, state,
 		  rdata[6] = "\215";
 		  r_index = 0;
 		  r_count = 7;
+`endif
+`ifdef msg_rpip
+		  rdata[0] = "R";
+		  rdata[1] = " ";
+		  rdata[2] = "P";
+		  rdata[3] = "I";
+		  rdata[4] = "P";
+		  rdata[5] = "\215";
+		  r_index = 0;
+		  r_count = 6;
 `endif
 		  r_refires = 4;
 		  $display("xxx boom 4; cycles %d", cycles);
