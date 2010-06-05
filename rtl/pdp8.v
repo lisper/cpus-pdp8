@@ -287,7 +287,9 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
    
    wire 	interrupt_inhibit;
    wire 	skip_condition;
-   
+
+   wire 	user_interrupt;
+ 	
    wire 	fetch;	// memory cycle to fetch instruction
    wire 	deferred;// memory cycle to get address of operand
    wire 	execute;// memory cycle to getch (store) operand and execute isn
@@ -349,6 +351,12 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 		  (opr && (mb[8] && !mb[0]) && (skip_condition ^ mb[3])) ||
 		  (iot && (io_skip || interrupt_skip));
 
+   assign	user_interrupt =
+				// i/o operation
+				(UF && iot) ||
+				// group 2 - user mode halt or osr
+				(UF && opr && (mb[8] & !mb[0]) && (mb[2] | mb[1]));
+     
    // cpu states
    parameter [3:0]
 		F0 = 4'b0000,
@@ -671,6 +679,7 @@ $display("SINT: UI %b, state %b", UI, state);
 		   IF <= 3'b000;
 		   DF <= 3'b000;
 		   UF <= 1'b0;
+		   UB <= 1'b0;
 		end
 	      else
 		begin
@@ -816,7 +825,9 @@ $display("SINT: UI %b, state %b", UI, state);
 
 		   if (io_data_avail)
 		     begin
+`ifdef debug
 			if (0) $display("io_data clock %o", io_data_in);
+`endif
 			ac <= io_data_in;
 		     end
 
@@ -827,16 +838,18 @@ $display("SINT: UI %b, state %b", UI, state);
 
 		end // if (iot)
 	      
-	      if (io_interrupt || (iot && UF))
+	      if (io_interrupt || user_interrupt)
 		begin
+`ifdef debug
 		   if (0)
-		   $display("F1 - set interrupt; (%b %b %b; %b %b; %b %b %b)",
+		   $display("xxx F1 interrupt; (%b %b %b; %b %b; %b %b %b)",
 			    interrupt_enable, 
 			    interrupt_inhibit,
 			    interrupt_cycle,
 			    io_interrupt, iot && UF,
 			    IB_pending, UB_pending,
 			    interrupt_inhibit_delay);
+`endif
 
 		   interrupt <= 1;
 		end

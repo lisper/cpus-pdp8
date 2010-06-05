@@ -41,37 +41,39 @@ module bootrom(clk, reset, addr, data_out, rd, selected);
 	$display("rom: active %b delay %o addr %o", active, delay, addr);
 `endif
 
-	if (rd)
 `ifdef bootrom_tss8
+	if (rd)
 	  case (addr)
 	    // copy tss8 bootstrap to ram and jump to it
 	    // (see ../rom/rom.pal)
 	    12'o7400: data = 12'o7240;
-	    12'o7401: data = 12'o1223;
+	    12'o7401: data = 12'o1224;
 	    12'o7402: data = 12'o3010;
-	    12'o7403: data = 12'o1216;
+	    12'o7403: data = 12'o1217;
 	    12'o7404: data = 12'o3410;
-	    12'o7405: data = 12'o1217;
+	    12'o7405: data = 12'o1220;
 	    12'o7406: data = 12'o3410;
-	    12'o7407: data = 12'o1220;
+	    12'o7407: data = 12'o1221;
 	    12'o7410: data = 12'o3410;
-	    12'o7411: data = 12'o1221;
+	    12'o7411: data = 12'o1222;
 	    12'o7412: data = 12'o3410;
-	    12'o7413: data = 12'o1222;
+	    12'o7413: data = 12'o1223;
 	    12'o7414: data = 12'o3410;
-	    12'o7415: data = 12'o5623;
-	    12'o7416: data = 12'o7600;
-	    12'o7417: data = 12'o6603;
-	    12'o7420: data = 12'o6622;
-	    12'o7421: data = 12'o5352;
-	    12'o7422: data = 12'o5752;
-	    12'o7423: data = 12'o7750;
+	    12'o7415: data = 12'o7300;
+	    12'o7416: data = 12'o5624;
+	    12'o7417: data = 12'o7600;
+	    12'o7420: data = 12'o6603;
+	    12'o7421: data = 12'o6622;
+	    12'o7422: data = 12'o5352;
+	    12'o7423: data = 12'o5752;
+	    12'o7424: data = 12'o7750;
 	  endcase // case(addr)
 
-	if (rd && active && addr == 12'o7415)
+	if (rd && active && addr == 12'o7416)
 	  deactivate = 1;
 `endif
 `ifdef bootrom_uart
+	if (rd)
 	case (addr)
 	  // run simple uart test
 	  12'o7400: data = 12'o7240;

@@ -73,9 +73,12 @@ module pdp8_kw(clk, reset, iot, state, mb,
      end
    
 `ifdef sim_time_kw
-   integer c_cycles;
+   integer c_cycles, cycles;
    initial
-     c_cycles = 1;
+     begin
+	c_cycles = 0;
+	cycles = 0;
+     end
 `endif
 
    //
@@ -94,14 +97,14 @@ module pdp8_kw(clk, reset, iot, state, mb,
 	    begin
 `ifdef sim_time_kw
 	       // to make sim deterministic, count cpu fetches
+	       cycles = cycles + 1;
 	       c_cycles = c_cycles + 1;
-	       if (c_cycles == 16001)
+	       if (c_cycles > 16004)
 		 begin
 		    c_cycles = 0;
 		    assert_kw_flag = 1;
+		    $display("kw8i assert assert_kw_flag sim");
 		 end
-	       else
-		 assert_kw_flag = 0;
 `endif
 	    end
 
@@ -129,7 +132,7 @@ module pdp8_kw(clk, reset, iot, state, mb,
 		   3'o3:
 		     begin
 `ifdef debug
-			$display("kw8i: CSCF");
+			$display("kw8i: CSCF %d", c_cycles);
 `endif
 			kw_flag <= 1'b0;
 		     end
@@ -153,12 +156,13 @@ module pdp8_kw(clk, reset, iot, state, mb,
 
 	  F3:
 	    begin
-	       if (assert_kw_flag && kw_clk_en)
+	       if (assert_kw_flag/* && kw_clk_en*/)
 		 begin
 		    kw_flag <= 1;
 `ifdef debug
-		    $display("kw8i: assert_kw_flag %t\n", $time);
-		    if (kw_flag == 0) $display("kw8i: set kw_flag! %t\n", $time);
+		    $display("kw8i: assert_kw_flag %t", $time);
+		    if (kw_flag == 0) $display("kw8i: set kw_flag! cycles %d, %t",
+					       cycles, $time);
 `endif
 		 end
 	    end
@@ -175,10 +179,21 @@ module pdp8_kw(clk, reset, iot, state, mb,
        assert_kw_flag <= 0;
      else
        if (assert_kw_ctr_zero)
-	 assert_kw_flag <= 1;
+	 begin
+`ifdef debug
+	    $display("kw8i assert assert_kw_flag rtl");
+`endif
+	    assert_kw_flag <= 1;
+	 end
        else
 	 if (state == F3)
-	   assert_kw_flag <= 0;
+	   begin
+`ifdef debug
+	      if (assert_kw_flag)
+		$display("kw8i deassert assert_kw_flag");
+`endif
+	      assert_kw_flag <= 0;
+	   end
    
 `ifndef sim_time_kw
    assign assert_kw_ctr_zero = kw_ctr == 0;
