@@ -1117,7 +1117,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
        else
 	 if (set_buffer_addr)
 	   begin
+`ifdef debug
 	      $display("set-buffer-addr; clean, disk-addr %o, %t", disk_addr[19:8], $time);
+`endif
 	      buffer_dirty <= 1'b0;
 	      buffer_disk_addr[19:8] <= disk_addr[19:8];
 	   end

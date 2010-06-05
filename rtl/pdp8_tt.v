@@ -124,7 +124,7 @@ module pdp8_tt(clk, brgclk, reset,
    
    // combinatorial
    always @(state or iot or io_select or mb or
-	    rx_int or tx_int or io_data_in or rx_data)
+	    rx_int or tx_int or tx_busy or io_data_in or rx_data)
      begin
 	// sampled during f1
 	io_skip = 1'b0;

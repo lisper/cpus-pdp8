@@ -594,7 +594,10 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 
 				3'b101:					// SINT
 				  begin
-$display("SINT: UI %b, state %b", UI, state);
+`ifdef debug
+				     $display("SINT: UI %b, state %b",
+					      UI, state);
+`endif
 				     if (UI)
 				       interrupt_skip = 1;
 				  end
@@ -802,7 +805,10 @@ $display("user iot: set UI");
 
 				3'b101:					// SINT
 				  begin
-$display("SINT: UI %b, state %b", UI, state);
+`ifdef debug
+				     $display("SINT: UI %b, state %b",
+					      UI, state);
+`endif
 //				     if (UI)
 //				       interrupt_skip = 1;
 				  end

@@ -173,7 +173,7 @@ module ide_disk(clk, reset,
    always @(ide_state or ide_write_req or ide_read_req or
 	    lba or offset or wc or start or
             ata_done or ata_out or
-	    buffer_in)
+	    buffer_in or buffer_in_hold)
      begin
 	ide_state_next = ide_state;
 
