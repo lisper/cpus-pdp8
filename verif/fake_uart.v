@@ -57,11 +57,13 @@ module fake_uart(clk, reset, state,
      begin
 	if (t_state == 1)
 	  begin
-	     t_delay = 20;
+	     t_delay = 38/*20*/;
 	  end
 	if (t_delay > 0)
 	  begin
-	     t_delay = t_delay - 1;
+	     if (state == 4'b0001)
+	       t_delay = t_delay - 1;
+//	     t_delay = t_delay - 1;
 	     if (t_delay == 0)
 	       begin
 		  t_done = 1;
@@ -89,7 +91,7 @@ module fake_uart(clk, reset, state,
 //	       begin
 //		  $display("xxx want input; cycles %d", cycles);
 //	       end
-	     if (r_index == r_count && cycles == 200000)
+	     if (r_index == r_count && cycles == 110000/*200000*/)
 	       begin
 		  rdata[0] = "L";
 		  rdata[1] = "O";
@@ -110,7 +112,7 @@ module fake_uart(clk, reset, state,
 		  r_refires = 1;
 		  $display("xxx boom 1; cycles %d", cycles);
 	       end
-	     if (r_index == r_count && cycles == 300000)
+	     if (r_index == r_count && cycles == 120000/*300000*/)
 	       begin
 		  rdata[0] = "\215";
 		  r_index = 0;
@@ -118,7 +120,7 @@ module fake_uart(clk, reset, state,
 		  r_refires = 2;
 		  $display("xxx boom 2; cycles %d", cycles);
 	       end
-	     if (r_index == r_count && cycles == 400000)
+	     if (r_index == r_count && cycles == 130000/*400000*/)
 	       begin
 		  rdata[0] = "\215";
 		  r_index = 0;
@@ -127,8 +129,9 @@ module fake_uart(clk, reset, state,
 		  $display("xxx boom 3; cycles %d", cycles);
 	       end
 //`define msg_rcat 1
-`define msg_rfocal 1
-	     if (r_index == r_count && cycles == 500000)
+//`define msg_rfocal 1
+`define msg_pald 1
+	     if (r_index == r_count && cycles == 300000/*500000*/)
 	       begin
 `ifdef msg_rcat
 		  rdata[0] = "R";
@@ -152,10 +155,21 @@ module fake_uart(clk, reset, state,
 		  r_index = 0;
 		  r_count = 8;
 `endif
+`ifdef msg_pald
+		  rdata[0] = "R";
+		  rdata[1] = " ";
+		  rdata[2] = "P";
+		  rdata[3] = "A";
+		  rdata[4] = "L";
+		  rdata[5] = "D";
+		  rdata[6] = "\215";
+		  r_index = 0;
+		  r_count = 7;
+`endif
 		  r_refires = 4;
 		  $display("xxx boom 4; cycles %d", cycles);
 	       end
-	     if (r_index == r_count && cycles == 600000)
+	     if (r_index == r_count && cycles == 400000/*600000*/)
 	       begin
 		  rdata[0] = "\215";
 		  r_index = 0;

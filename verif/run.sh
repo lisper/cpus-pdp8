@@ -6,14 +6,6 @@
     test_pdp8.v
 exit 0
 
-../cver/gplcver-2.12a.src/bin/cver  \
-    +loadvpi=../pli/rf/pli_rf.so:vpi_compat_bootstrap \
-    +showpc \
-    +cycles=2000000 \
-    +pc=07400 \
-    test_pdp8.v
-exit 0
-
 #    +loadvpi=../pli/disassemble/pli_disassemble.so:vpi_compat_bootstrap \
 #
 

@@ -336,11 +336,10 @@ module test;
 	      $finish;
 
 	    if (show_one_pc)
-	      #1 $display("pc %o ir %o l%b ac %o ion %o (IF%o DF%o UF%o SF%o IB%o UB%o) %b",
+	      #1 $display("pc %o ir %o l%b ac %o ion %o (IF%o DF%o UF%o SF%o IB%o UB%o)",
 			  cpu.pc, cpu.mb,
 			  cpu.l, cpu.ac, cpu.interrupt_enable,
-			  cpu.IF, cpu.DF, cpu.UF, cpu.SF, cpu.IB, cpu.UB,
-			  cpu.interrupt_inhibit_delay);
+			  cpu.IF, cpu.DF, cpu.UF, cpu.SF, cpu.IB, cpu.UB);
 
 `ifdef xxx
 	    if (show_one_pc)
