@@ -44,7 +44,7 @@ static struct state_s {
     int fifo_rd;
     int fifo_wr;
     int fifo_depth;
-    unsigned short fifo[256 * 64];
+    unsigned short fifo[256 * 128];
 
     int file_inited;
     int file_fd;
@@ -120,7 +120,7 @@ do_ide_read(struct state_s *s)
         ((s->reg_cyllow & 0xff) << 8) |
         (s->reg_secnum & 0xff);
 
-    vpi_printf("pli_ide: lba %08x (%d), seccnt %d\n",
+    vpi_printf("pli_ide: lba %08x (%d), seccnt %d (read)\n",
                s->lba, s->lba*512,s->reg_seccnt);
 
     ret = lseek(s->file_fd, (off_t)s->lba*512, SEEK_SET);
@@ -133,6 +133,40 @@ do_ide_read(struct state_s *s)
     s->fifo_wr = 0;
 
     s->status = (1<<IDE_STATUS_DRDY)|(1<<IDE_STATUS_DSC) | (1<<IDE_STATUS_DRQ);
+}
+
+static void
+do_ide_write(struct state_s *s)
+{
+    s->lba =
+        ((s->reg_drvhead & 0x0f) << 24) |
+        ((s->reg_cylhigh & 0xff) << 16) |
+        ((s->reg_cyllow & 0xff) << 8) |
+        (s->reg_secnum & 0xff);
+
+    vpi_printf("pli_ide: write prep\n");
+
+    s->fifo_depth = (512 * s->reg_seccnt) / 2;
+    s->fifo_rd = 0;
+    s->fifo_wr = 0;
+
+    s->status = (1<<IDE_STATUS_DRDY)|(1<<IDE_STATUS_DSC) | (1<<IDE_STATUS_DRQ);
+}
+
+static void
+do_ide_write_done(struct state_s *s)
+{
+    int ret;
+
+    vpi_printf("pli_ide: lba %08x (%d), seccnt %d (write)\n",
+               s->lba, s->lba*512, s->reg_seccnt);
+
+    ret = lseek(s->file_fd, (off_t)s->lba*512, SEEK_SET);
+    ret = write(s->file_fd, (char *)s->fifo, 512 * s->reg_seccnt);
+    if (ret < 0)
+        perror("write");
+
+    s->status = (1<<IDE_STATUS_DRDY)|(1<<IDE_STATUS_DSC);
 }
 
 /*
@@ -280,11 +314,21 @@ PLI_INT32 pli_ide(void)
             break;
 
         case ATA_DATA:
-            if (1) vpi_printf("pli_ide: write data %04x %s\n", bus, bus_bits);
+            s->fifo[s->fifo_wr] = bus;
+
+            if (0) vpi_printf("pli_ide: write data [%d/%d] %o\n",
+                              s->fifo_wr, s->fifo_depth, bus);
+
+            if (s->fifo_wr < s->fifo_depth)
+                s->fifo_wr++;
+
+            if (s->fifo_wr >= s->fifo_depth) {
+                do_ide_write_done(s);
+            }
             break;
 
         case ATA_COMMAND:
-            vpi_printf("pli_ide: command %04x %s\n", bus, bus_bits);
+            vpi_printf("pli_ide: command %04x\n", bus);
             switch (bus) {
             case 0x0020:
                 vpi_printf("pli_ide: XXX READ\n");
@@ -292,6 +336,7 @@ PLI_INT32 pli_ide(void)
                 break;
             case 0x0030:
                 vpi_printf("pli_ide: XXX WRITE\n");
+                do_ide_write(s);
                 break;
             }
             break;
