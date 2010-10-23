@@ -49,8 +49,8 @@ module pdp8_tt(clk, brgclk, reset,
    wire		     tx_busy;
  	     
    // interface to uart
-   reg [1:0] 	     tto_state;
-   wire [1:0] 	     tto_state_next;
+   reg [2:0] 	     tto_state;
+   wire [2:0] 	     tto_state_next;
    wire 	     tto_empty;
    wire 	     tto_req;
    reg 		     tto_write;
@@ -143,14 +143,17 @@ module pdp8_tt(clk, brgclk, reset,
 		   io_skip = rx_int;
 
 		 if (mb[1])
-		   tti_read = 1;
+		   begin
+		      tti_read = 1;
+		   end
 		 
 		 if (mb[2])
 		   begin
-		      io_data_out = rx_data;
 `ifdef debug_tt_data
-		      $display("xxx rx_data %o", rx_data);
+		      if (mb[1])
+			$display("xxx rx_data %o", rx_data);
 `endif
+		      io_data_out = rx_data;
 		   end
 		 else
 		   io_data_out = 12'b0;
@@ -169,6 +172,10 @@ module pdp8_tt(clk, brgclk, reset,
 		 if (mb[2])
 		   tto_write = 1;
 	      end
+
+	    default:
+	      ;
+	    
 	  endcase // case(io_select)
      end
    
@@ -203,7 +210,12 @@ module pdp8_tt(clk, brgclk, reset,
 		 6'o03:
 		   begin
 		      if (mb[1] /*&& ~assert_rx_int*/)
-			rx_int <= 1'b0;
+			begin
+			   rx_int <= 1'b0;
+`ifdef debug
+			   $display("xxx reset rx_int");
+`endif
+			end
 		   end
 
 		 6'o04:
@@ -214,7 +226,7 @@ module pdp8_tt(clk, brgclk, reset,
 		      if (mb[1] && ~assert_tx_int)
 			begin
 			   tx_int <= 1'b0;
-`ifdef debug_tt_in
+`ifdef debug
 			   $display("xxx reset tx_int");
 `endif
 			end
@@ -226,19 +238,26 @@ tx_int <= 1'b0;
 			   $display("xxx tx_data %o %t", io_data_in, $time);
 `endif
 			end
-		   end // case: 6'o04
+		   end
+
+		 default:
+		   ;
+		 
                endcase
 	    end // if (iot && state == F1)
 	  else
 	    begin
-	       if (assert_rx_int)
+	       if (assert_rx_int && ~rx_int)
 		 begin
-		    //$display("xxx set rx_int");
+$display("xxx set rx_int");
 		    rx_int <= 1;
 		 end
 
-	       if (assert_tx_int)
-		 tx_int <= 1;
+	       if (assert_tx_int && ~tx_int)
+		 begin
+$display("xxx set tx_int");
+		    tx_int <= 1;
+		 end
 
 //	       if (assert_tx_int)
 //		 begin
@@ -273,12 +292,18 @@ tx_int <= 1'b0;
    assign tto_state_next = (tto_state == 0 && tto_write) ? 1 :
 			   (tto_state == 1 && tx_ack) ? 2 :
 			   (tto_state == 2 && ~tx_ack) ? 3 :
-			   (tto_state == 3 && tx_empty) ? 0 :
+			   (tto_state == 3 && tx_empty) ? 4 :
+			   (tto_state == 4) ? 0 :
 			   tto_state;
 
-   assign assert_tx_int = tto_state == 3 && tx_empty;
-//   assign assert_tx_int = tto_empty;
+   assign assert_tx_int = tto_state == 4;
 
+`ifdef debug
+   always @(posedge clk)
+     if (tto_state != 0)
+       $display("tto_state %d; tx_ack %b tx_empty %b",
+		tto_state, tx_ack, tx_empty);
+`endif
    
 `ifdef debug_tt_int
    always @(posedge clk)

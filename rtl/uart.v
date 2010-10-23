@@ -243,6 +243,7 @@ module uart(clk, reset,
 		 4'd7: $display("tx: %b", tx_reg[6]);
 		 4'd8: $display("tx: %b", tx_reg[7]);
 		 4'd9: $display("tx: done");
+		 default: ;
 	       endcase
 `endif
 	       
@@ -261,6 +262,7 @@ module uart(clk, reset,
 		    tx_cnt <= 0;
 		    tx_empty <= 1;
 		 end
+		 default: ;
 	       endcase
 	    end
 

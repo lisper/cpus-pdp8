@@ -8,7 +8,7 @@ module ide_disk(clk, reset,
 		ide_error, ide_done,
 		buffer_addr, buffer_rd, buffer_wr,
 		buffer_in, buffer_out,
-		ide_data_bus, ide_dior, ide_diow, ide_cs, ide_da);
+		ide_data_in, ide_data_out, ide_dior, ide_diow, ide_cs, ide_da);
 
    input clk;
    input reset;
@@ -82,7 +82,8 @@ module ide_disk(clk, reset,
    wire [15:0] 	 ata_out;
    wire 	 ata_done;
 
-   inout [15:0]  ide_data_bus;
+   input [15:0]  ide_data_in;
+   output [15:0] ide_data_out;
    output 	 ide_dior;
    output 	 ide_diow;
    output [1:0]  ide_cs;
@@ -105,12 +106,12 @@ module ide_disk(clk, reset,
    reg 		 grab_buffer_in;
    
    // 
-   ide ide1(.clk(clk), .reset(reset),
-	    .ata_rd(ata_rd), .ata_wr(ata_wr), .ata_addr(ata_addr),
-	    .ata_in(ata_in), .ata_out(ata_out), .ata_done(ata_done),
-	    .ide_data_bus(ide_data_bus),
-	    .ide_dior(ide_dior), .ide_diow(ide_diow),
-	    .ide_cs(ide_cs), .ide_da(ide_da));
+   ide ide(.clk(clk), .reset(reset),
+	   .ata_rd(ata_rd), .ata_wr(ata_wr), .ata_addr(ata_addr),
+	   .ata_in(ata_in), .ata_out(ata_out), .ata_done(ata_done),
+	   .ide_data_in(ide_data_in), .ide_data_out(ide_data_out),
+	   .ide_dior(ide_dior), .ide_diow(ide_diow),
+	   .ide_cs(ide_cs), .ide_da(ide_da));
 
    //
    wire [23:0] 	 lba;
@@ -152,7 +153,12 @@ module ide_disk(clk, reset,
 	    end
 
 	  if (grab_buffer_in)
-	    buffer_in_hold <= buffer_in;
+	    begin
+`ifdef debug
+	       $display("ide_disk: grabbing buffer_in %o", buffer_in);
+`endif
+	       buffer_in_hold <= buffer_in;
+	    end
        end
 
    //
@@ -286,7 +292,7 @@ module ide_disk(clk, reset,
 	    begin
 	       ata_wr = 1;
 	       ata_addr = ATA_CYLHIGH;
-	       ata_in = lba[23:16];		// LBA[23:16]
+	       ata_in = {8'b0, lba[23:16]};	// LBA[23:16]
 	       if (ata_done)
 		 ide_state_next = init8;
 	    end
@@ -379,7 +385,7 @@ module ide_disk(clk, reset,
 	       //buffer read
 	       buffer_addr = offset;
 	       buffer_rd = 1;
-	       grab_buffer_in = 1;
+//	       grab_buffer_in = 1;
 	       
 	       ata_in = {4'b0, buffer_in};
 	       inc_offset = 1;
@@ -388,10 +394,11 @@ module ide_disk(clk, reset,
 
 	  write1:
 	    begin
+	       grab_buffer_in = 1;
 	       ata_wr = 1;
 	       ata_addr = ATA_DATA;
 	       ata_in = {4'b0, buffer_in_hold};
-	       //$display("ide_disk: write1, %o", buffer_in_hold);
+	       $display("ide_disk: write1, %o", buffer_in_hold);
 	       
 	       if (ata_done)
 		 begin
@@ -440,6 +447,37 @@ module ide_disk(clk, reset,
 	  
 	endcase
      end
+
+`ifdef debug_ide_state
+   always @(posedge clk)
+     /* verilator lint_off CASEINCOMPLETE */
+     case (ide_state)
+       ready: $display("ide_state: ready");
+       init0: $display("ide_state: init");
+       init1: $display("ide_state: init1");
+       init2: $display("ide_state: init2");
+       init3: $display("ide_state: init3");
+       init4: $display("ide_state: init4");
+       init5: $display("ide_state: init5");
+       init6: $display("ide_state: init6");
+       init7: $display("ide_state: init7");
+       init8: $display("ide_state: init8");
+       init9: $display("ide_state: init9");
+       init10: $display("ide_state: init10");
+       init11: $display("ide_state: init11");
+       read0: $display("ide_state: read0");
+       read1: $display("ide_state: read1");
+       write0: $display("ide_state: write0");
+       write1: $display("ide_state: write1");
+       last0: $display("ide_state: last0");
+       last1: $display("ide_state: last1");
+       last2: $display("ide_state: last2");
+       last3: $display("ide_state: last3");
+       wait0: $display("ide_state: wait0");
+       wait1: $display("ide_state: wait1");
+     endcase
+     /* verilator lint_on CASEINCOMPLETE */
+`endif
    
 endmodule
 

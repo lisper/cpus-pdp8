@@ -27,15 +27,6 @@ module pdp8_ram(clk, reset, addr, data_in, data_out, rd, wr,
    inout [15:0]  sram2_io;
    output 	 sram2_ce_n, sram2_ub_n, sram2_lb_n;
 
-   
-`ifdef use_sim_model
-   ram_32kx12 ram(.A(addr),
-		  .DI(data_in),
-		  .DO(data_out),
-		  .CE_N(1'b0),
-		  .WE_N(~wr));
-`else
-
    //
    wire 	 rom_decode;
    wire [11:0] 	 rom_data;
@@ -47,8 +38,28 @@ module pdp8_ram(clk, reset, addr, data_in, data_out, rd, wr,
 	       .rd(rd),
 	       .selected(rom_decode));
    
+   
+`ifdef use_sim_ram_model
+
+   wire [11:0] 	 sram_data_in;
+   wire [11:0] 	 sram_data_out;
+   
+   ram_32kx12 ram(.A(addr),
+		  .DI(sram_data_in),
+		  .DO(sram_data_out),
+		  .CE_N(1'b0),
+		  .WE_N(~wr));
+
+   assign sram_data_in = data_in;
+   
+   assign data_out = rom_decode ? rom_data : sram_data_out;
+
+//   always @(posedge clk)
+//     $display("addr %o, rom_decode %b %o", addr, rom_decode, rom_data);
+   
+`else
    //
-   wire 	 sram1_ub, sram1_lb;
+   wire sram1_ub, sram1_lb;
 
    // common
    assign sram_a = {3'b0, addr};

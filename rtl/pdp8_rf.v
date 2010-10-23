@@ -381,7 +381,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	       io_data_avail, io_interrupt, io_skip, io_clear_ac,
 	       ram_read_req, ram_write_req, ram_done,
 	       ram_ma, ram_in, ram_out,
-	       ide_dior, ide_diow, ide_cs, ide_da, ide_data_bus);
+	       ide_dior, ide_diow, ide_cs, ide_da, ide_data_in, ide_data_out);
 
    input clk, reset, iot;
    input [11:0] io_data_in;
@@ -407,7 +407,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
    output 	     ide_diow;
    output [1:0]      ide_cs;
    output [2:0]      ide_da;
-   inout [15:0]      ide_data_bus;
+   input [15:0]      ide_data_in;
+   output [15:0]     ide_data_out;
    
    // -------------------------------------------------------
    
@@ -565,7 +566,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		 .buffer_wr(ide_buffer_wr),
 		 .buffer_in(ide_buffer_in),
 		 .buffer_out(ide_buffer_out),
-		 .ide_data_bus(ide_data_bus),
+		 .ide_data_in(ide_data_in),
+		 .ide_data_out(ide_data_out),
 		 .ide_dior(ide_dior),
 		 .ide_diow(ide_diow), 
 		 .ide_cs(ide_cs),
@@ -617,6 +619,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			$display("rf: DMAW disk_addr %o", {EMA, DMA});
 `endif
 		     end
+		   default:
+		     ;
 		 endcase
 	      end // case: 6'o60
 	    
@@ -640,6 +644,10 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			io_data_out = 0;
 			io_clear_ac = 1;
 		     end
+
+		   default:
+		     ;
+		   
 		 endcase // case(mb[2:0])
 	      end
 	    
@@ -661,6 +669,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			io_data_out = DMA;
 			io_clear_ac = 1;
 		     end
+		   default:
+		     ;
 		 endcase 
 	      end
 		   
@@ -674,9 +684,14 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			io_clear_ac = 1;
 		     end
 		   3'o5: // DXAC
-		     io_data_out = EMA;
+		     io_data_out = { 4'b0, EMA };
+		   default:
+		     ;
 		 endcase // case(mb[2:0])
 	      end
+
+	    default:
+	      ;
 	    
 	  endcase // case(io_select)
      end
@@ -691,8 +706,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	  is_read <= 1'b0;
 	  is_write <= 1'b0;
 
-	  EMA <= 1'b0;
-	  DMA <= 1'b0;
+	  EMA <= 8'b0;
+	  DMA <= 12'b0;
 	  MEX <= 3'b0;
 	  PEF <= 1'b0;
 	  CIE <= 1'b0;
@@ -736,7 +751,12 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		       3'o5: // DIML
 			 begin
 			 end
+		       default:
+			 ;
 		     endcase // case(mb[2:0])
+
+		   default:
+		     ;
 		 endcase
 	    end
 
@@ -772,6 +792,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			    $display("rf: DMAW ac %o", io_data_in);
 `endif
 			 end
+
+		       default:
+			 ;
 		     endcase // case(mb[2:0])
 
 		   6'o61:
@@ -786,6 +809,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
 			      $display("rf: DIML %o", io_data_in);
 `endif
 			 end
+		       default:
+			 ;
 		     endcase // case(mb[2:0])
 		   
 		   6'o64:
@@ -795,10 +820,14 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		       3: // DXAL
 			 begin
 			    // clear ac
-			    EMA <= io_data_in;
+			    EMA <= io_data_in[7:0];
 			 end
+		       default:
+			 ;
 		     endcase
 		   
+		   default:
+		     ;
                  endcase
 
 	      end // if (iot)
@@ -822,6 +851,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
 `endif
 		DCF <= 1'b1;
 	     end
+
+	 default:
+	   ;
 
        endcase // case(state)
 
@@ -945,6 +977,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		    db_next_state = DB_read_new_page;
 		 end
 	    end
+
+	  default:
+	    ;
 	  
 	endcase
      end
@@ -981,6 +1016,9 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		 $display("read-new; buffer-dirty %b, buffer-disk-addr %o, disk-addr %o",
 			  buffer_dirty, buffer_disk_addr[19:8], disk_addr[19:8]);
 	      end
+
+	    default:
+	      ;
 	  endcase
 `endif
        end
@@ -992,7 +1030,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
      if (reset)
        begin
 	  dma_wc <= 12'b0;
-	  dma_addr <= 14'b0;
+	  dma_addr <= 15'b0;
        end
      else
        begin
@@ -1041,7 +1079,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	    DB_next_xfer_read:
 	      begin
 		 /* snoop for our wc & ca */
- 		 if (dma_addr == 14'o07750 && ram_done)
+ 		 if (dma_addr == 15'o07750 && ram_done)
 		   begin
 		      dma_wc <= buff_out;
 `ifdef debug
@@ -1049,7 +1087,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 `endif	
 		   end
 
-		 if (dma_addr == 14'o07751 && ram_done)
+		 if (dma_addr == 15'o07751 && ram_done)
 		   begin
 		      dma_addr[11:0] <= buff_out;
 `ifdef debug
@@ -1079,6 +1117,8 @@ module pdp8_rf(clk, reset, iot, state, mb,
 	      end
 `endif
 
+	    default:
+	      ;
 	  endcase
        end
 
@@ -1162,7 +1202,7 @@ module pdp8_rf(clk, reset, iot, state, mb,
 		   db_state == DB_next_xfer_read ? buff_out :
 		   db_state == DB_begin_xfer_write ? buffer_hold :
 		   db_state == DB_done_xfer ? dma_wc :
-		   db_state == DB_done_xfer1 ? dma_addr :
+		   db_state == DB_done_xfer1 ? dma_addr[11:0] :
 		   12'b0;
 
    assign buffer_rd = db_state == DB_check_xfer_read && buffer_matches_DMA;
@@ -1194,6 +1234,30 @@ module pdp8_rf(clk, reset, iot, state, mb,
        begin
 	  WLS <= 1'b0;
        end
+
+`ifdef debug_rf_state
+   always @(posedge clk)
+     /* verilator lint_off CASEINCOMPLETE */
+     case (db_state)
+       DB_idle: $display("db_state: DB_idle");
+       DB_start_xfer1: $display("db_state: DB_start_xfer1");
+       DB_start_xfer2: $display("db_state: DB_start_xfer2");
+       DB_start_xfer3: $display("db_state: DB_start_xfer3");
+       DB_check_xfer_read: $display("db_state: DB_check_xfer_read");
+       DB_next_xfer_read: $display("db_state: DB_next_xfer_read");
+       DB_next_xfer_incr: $display("db_state: DB_next_xfer_incr");
+       DB_begin_xfer_write: $display("db_state: DB_begin_xfer_write");
+       DB_check_xfer_write: $display("db_state: DB_check_xfer_write");
+       DB_done_xfer: $display("db_state: DB_done_xfer");
+       DB_done_xfer1: $display("db_state: DB_done_xfer1");
+       DB_done_xfer2: $display("db_state: DB_done_xfer2");
+       DB_done_xfer3: $display("db_state: DB_done_xfer3");
+       DB_read_new_page: $display("db_state: DB_read_new_page");
+       DB_write_old_page: $display("db_state: DB_write_old_page %t", $time);
+     endcase
+     /* verilator lint_on CASEINCOMPLETE */
+
+`endif
 
 endmodule
 

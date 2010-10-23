@@ -28,20 +28,32 @@ module ram_256x12(clk, reset, a, din, dout, ce, we);
      begin
 	if (we && ce)
           begin
-`ifdef debug
-	     if (ram_debug)
+`ifdef debug_rf_buffer
+	     if (ram_debug != 0)
 	       $display("rf: buffer ram write [%o] <- %o", a, din);
 `endif
              ram[a] = din;
           end
 
-`ifdef debug
-	if (ram_debug && we == 0 && ce == 1)
+`ifdef debug_rf_buffer
+	if (ram_debug != 0&& we == 0 && ce == 1)
 	  $display("rf: buffer ram read [%o] -> %o", a, ram[a]);
 `endif
      end
-   
+
+//`define is_async   
+`ifdef is_async
    assign dout = ram[a];
+`else
+   reg [11:0] dout;
+   
+   always @(posedge clk)
+     if (reset)
+       dout <= 0;
+     else
+       if (~we && ce)
+	 dout <= ram[a];
+`endif
 
 endmodule
 

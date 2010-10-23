@@ -57,19 +57,23 @@ module pdp8_kw(clk, reset, iot, state, mb,
 	io_selected = 1'b0;
 
 	if (state == F1 && iot)
+	  /* verilator lint_off CASEINCOMPLETE */
 	  case (io_select)
 	    6'o13:
 	      begin
 		 io_selected = 1'b1;
 
+		 /* verilator lint_off CASEINCOMPLETE */
 		 case (mb[2:0] )
 		 3'o3:
 		   if (kw_flag)
 		     io_skip = 1'b1;
 		 endcase
+		 /* verilator lint_on CASEINCOMPLETE */
 		 
 	      end
 	  endcase // case(io_select)
+	  /* verilator lint_on CASEINCOMPLETE */
      end
    
 `ifdef sim_time_kw
@@ -131,7 +135,7 @@ module pdp8_kw(clk, reset, iot, state, mb,
 		     end
 		   3'o3:
 		     begin
-`ifdef debug
+`ifdef sim_time_kw
 			$display("kw8i: CSCF %d", c_cycles);
 `endif
 			kw_flag <= 1'b0;
@@ -151,6 +155,8 @@ module pdp8_kw(clk, reset, iot, state, mb,
 			kw_clk_en <= 1;
 			kw_int_en <= 1;
 		     end
+		   default:
+		     ;
 		 endcase
 	    end
 
@@ -160,13 +166,19 @@ module pdp8_kw(clk, reset, iot, state, mb,
 		 begin
 		    kw_flag <= 1;
 `ifdef debug
+		    if (kw_clk_en)
 		    $display("kw8i: assert_kw_flag %t", $time);
+`endif
+`ifdef sim_time_kw
 		    if (kw_flag == 0) $display("kw8i: set kw_flag! cycles %d, %t",
 					       cycles, $time);
 `endif
 		 end
 	    end
 
+	 default:
+	   ;
+	 
        endcase // case(state)
 
    //
@@ -181,7 +193,8 @@ module pdp8_kw(clk, reset, iot, state, mb,
        if (assert_kw_ctr_zero)
 	 begin
 `ifdef debug
-	    $display("kw8i assert assert_kw_flag rtl");
+	    if (kw_clk_en)
+	      $display("kw8i assert assert_kw_flag rtl");
 `endif
 	    assert_kw_flag <= 1;
 	 end

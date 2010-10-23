@@ -432,9 +432,9 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 
    assign pc_mux = (state == F1 && pc_skip) ? (pc + 12'd2) :
 		   (state == F1 && pc_incr) ? (pc + 12'd1) :
-		   (state == F3 && !(opr || iot) && (!mb[8] & jmp)) ? ma :
+		   (state == F3 && !(opr || iot) && (!mb[8] & jmp)) ? ma[11:0] :
 		   (state == D3 && jmp) ? mb :
-		   (state == E3 && jms) ? ma :
+		   (state == E3 && jms) ? ma[11:0] :
 		   (state == E3 && isz && mb == 12'b0) ? (pc + 12'd1) :
 		   pc;
 
@@ -551,6 +551,7 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 
 	interrupt_skip = 0;
 	
+	/* verilator lint_off CASEINCOMPLETE */
 	case (state)
 	  F1:
 	    begin
@@ -567,7 +568,8 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 	       
 	       if (iot && ~UF)
 		 begin
-		    casex (io_select)
+		    /* verilator lint_off CASEINCOMPLETE */
+		    casez (io_select)
 		      6'b000000:	// ION, IOF
 			case (mb[2:0])
 //			  3'b001:
@@ -577,7 +579,7 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 			      interrupt_skip = 1;
 			endcase
 		      
-		      6'b010xxx:	// CDF..RMF
+		      6'b010???:	// CDF..RMF
 			begin
 //			  if (mb[1])
 //			    begin		// CIF
@@ -616,11 +618,13 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 			  
 			end
 		    endcase // casex(io_select)
+		    /* verilator lint_on CASEINCOMPLETE */
 		    
 		 end // if (iot && ~UF)
 	    end
 
 	endcase
+	/* verilator lint_on CASEINCOMPLETE */
      end
    
      
@@ -664,7 +668,7 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 	      if (interrupt && interrupt_enable &&
 		  !interrupt_inhibit && !interrupt_cycle)
 		begin
-		   if (0)
+		   if (1)
 		   $display("xxx interrupt, pc %o; %b %b %b; %b %b",
 			    pc,
 			    interrupt, interrupt_enable, interrupt_cycle,
@@ -689,7 +693,7 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 		   interrupt_cycle <= 0;
 
 		   if (0)
-		     $display("read ram [%o] -> %o", ram_addr, ram_data_in);
+		   $display("cpu: read ram [%o] -> %o", ram_addr, ram_data_in);
 		   
 		   mb <= ram_data_in;
 		   ir <= ram_data_in[11:9];
@@ -723,16 +727,18 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 		end
 
 	      if (opr)
-		casex ({mb[8],mb[0]})
-		  2'b0x:	// group 1
+		case ({mb[8],mb[0]})
+		  2'b00, 2'b01:	// group 1
 		    begin
 		       case ({mb[7],mb[5]})
+			 2'b00: ;
 			 2'b01: ac <= ~ac;
 			 2'b10: ac <= 12'o0;
 			 2'b11: ac <= 12'o7777;
 		       endcase
 
 		       case ({mb[6],mb[4]})
+			 2'b00: ;
 			 2'b01: l <= ~l;
 			 2'b10: l <= 1'b0;
 			 2'b11: l <= 1'b1;
@@ -750,9 +756,6 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 		       if (mb[7])
 			 ac <= 0;
 		    end
-
-		  default:
-		    ;
 		endcase
 
 	      if (iot && UF)
@@ -763,7 +766,8 @@ $display("user iot: set UI");
 
 	      if (iot && ~UF)
 		begin
-		   casex (io_select)
+		   /* verilator lint_off CASEINCOMPLETE */
+		   casez (io_select)
 		     6'b000000:	// ION, IOF
 		       case (mb[2:0])
 			 3'b001:
@@ -776,7 +780,7 @@ $display("user iot: set UI");
 //				       interrupt_skip = 1;
 		       endcase
 
-		     6'b010xxx:	// CDF..RMF
+		     6'b010???:	// CDF..RMF
 		       begin
 			  if (mb[0])
 			    DF <= mb[5:3];	// CDF
@@ -828,7 +832,8 @@ $display("user iot: set UI");
 			    end // if (mb[2:0] == 3'b100)
 		       end
 		   endcase // case(io_select)
-
+		   /* verilator lint_on CASEINCOMPLETE */
+		   
 		   if (io_data_avail)
 		     begin
 `ifdef debug
@@ -874,6 +879,7 @@ $display("user iot: set UI");
 
 	     	   // group 3
 		   if (mb[8] & mb[0])
+		     /* verilator lint_off CASEINCOMPLETE */
 		     case ({mb[6:4]})
 		       3'b001:			/* MQL */
 			 begin
@@ -883,6 +889,7 @@ $display("user iot: set UI");
 		       3'b100: ac <= ac | mq;	/* MQA */
 		       3'b101: ac <= mq;
 		     endcase
+		   /* verilator lint_on CASEINCOMPLETE */
 		end
 	   end
 
@@ -894,6 +901,7 @@ $display("user iot: set UI");
 		   if (!mb[8])
 		     begin
 			case (mb[3:1])
+			  3'b000: ;
 			  3'b001:		// BSW
 			    {l,ac} <= {l,ac[5:0],ac[11:6]};
 			  3'b010:		// RAL
@@ -904,6 +912,8 @@ $display("user iot: set UI");
 			    {l,ac} <= {ac[0],l,ac[11:1]};
 			  3'b101:		// RTR
 			    {l,ac} <= {ac[1:0],l,ac[11:2]};
+			  3'b110: ;
+			  3'b111: ;
 			endcase
 		     end
 
@@ -1017,7 +1027,11 @@ $display("user iot: set UI");
 		else
 		  if (dca)
 		    ac <= 0;
-	   end
+	   end // case: E3
+
+	 default:
+	   ;
+	 
        endcase // case(state)
    
 endmodule

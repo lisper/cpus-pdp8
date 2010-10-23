@@ -4,7 +4,7 @@
 //
 
 module ide(clk, reset, ata_rd, ata_wr, ata_addr, ata_in, ata_out, ata_done,
-	   ide_data_bus, ide_dior, ide_diow, ide_cs, ide_da);
+	   ide_data_in, ide_data_out, ide_dior, ide_diow, ide_cs, ide_da);
 
    input clk;
    input reset;
@@ -17,7 +17,8 @@ module ide(clk, reset, ata_rd, ata_wr, ata_addr, ata_in, ata_out, ata_done,
    reg [15:0] ata_out;
    output ata_done;
 
-   inout [15:0] ide_data_bus;
+   input [15:0] ide_data_in;
+   output [15:0] ide_data_out;
    output ide_dior;
    output ide_diow;
    output [1:0] ide_cs;
@@ -41,10 +42,10 @@ module ide(clk, reset, ata_rd, ata_wr, ata_addr, ata_in, ata_out, ata_done,
    
 
    // if write, drive ide_bus
-   assign ide_data_bus = (ata_wr && (ata_state == s0 ||
+   assign ide_data_out = (ata_wr && (ata_state == s0 ||
 				     ata_state == s1 ||
 				     ata_state == s2 ||
-   				     ata_state == s3)) ? ata_in : 16'bz;
+   				     ata_state == s3)) ? ata_in : 16'b0;
 
    // assert cs & da during r/w cycle
    assign assert_cs = (ata_rd || ata_wr) && ata_state != s4;
@@ -69,7 +70,7 @@ module ide(clk, reset, ata_rd, ata_wr, ata_addr, ata_in, ata_out, ata_done,
      else
        ata_state <= ata_state_next;
 
-   always @(clk or ata_state or ata_rd or ata_wr or ata_addr or ide_data_bus)
+   always @(clk or ata_state or ata_rd or ata_wr or ata_addr)
      begin
 	case (ata_state)
 	  idle:
@@ -94,6 +95,6 @@ module ide(clk, reset, ata_rd, ata_wr, ata_addr, ata_in, ata_out, ata_done,
        ata_out <= 0;
      else
        if (ata_state == s2 && ata_rd)
-	 ata_out <= ide_data_bus;
+	 ata_out <= ide_data_in;
 
 endmodule // ide

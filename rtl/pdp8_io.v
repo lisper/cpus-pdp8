@@ -8,7 +8,7 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 	       io_data_avail, io_interrupt, io_skip, io_clear_ac,
 	       io_ram_read_req, io_ram_write_req, io_ram_done,
 	       io_ram_ma, io_ram_in, io_ram_out,
-               ide_dior, ide_diow, ide_cs, ide_da, ide_data_bus,
+               ide_dior, ide_diow, ide_cs, ide_da, ide_data_in, ide_data_out,
 	       rs232_in, rs232_out);
    
    input clk;
@@ -37,7 +37,8 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
    output 	     ide_diow;
    output [1:0]      ide_cs;
    output [2:0]      ide_da;
-   inout [15:0]      ide_data_bus;
+   input [15:0]      ide_data_in;
+   output [15:0]     ide_data_out;
 
    input	     rs232_in;
    output	     rs232_out;
@@ -90,7 +91,7 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 	      .uart_out(rs232_out));
 
 `ifndef use_rf_pli
-   pdp8_rf tf(.clk(clk),
+   pdp8_rf rf(.clk(clk),
 	      .reset(reset),
 	      .iot(iot),
 	      .state(state),
@@ -116,7 +117,8 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 	      .ide_diow(ide_diow),
 	      .ide_cs(ide_cs),
 	      .ide_da(ide_da),
-	      .ide_data_bus(ide_data_bus));
+	      .ide_data_in(ide_data_in),
+	      .ide_data_out(ide_data_out));
 `endif
    
    assign tt_io_clear_ac = 1'b0;
@@ -131,8 +133,9 @@ module pdp8_io(clk, brgclk, reset, iot, state, mb,
 			 rf_io_selected ? rf_io_data_avail :
 			 1'b0;
 
-`ifdef debug
-   always @(*)
+`ifdef debug_ints
+//   always @(*)
+   always @(kw_io_interrupt or tt_io_interrupt or rf_io_interrupt or io_interrupt)
      if (io_interrupt)
        $display("io: io_interrupt: %b %b %b", 
 		kw_io_interrupt, tt_io_interrupt, rf_io_interrupt);

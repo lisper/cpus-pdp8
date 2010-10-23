@@ -11,7 +11,7 @@ module ram_32kx12(A, DI, DO, CE_N, WE_N);
    // synthesis translate_off
    integer  i;
    reg [11:0] v;
-   integer    file;
+   reg [63:0] file;
    reg [1023:0] str;
    reg [1023:0] testfilename;
    integer 	n;
@@ -41,14 +41,17 @@ module ram_32kx12(A, DI, DO, CE_N, WE_N);
 	 begin
 	    $display("ram: code filename: %s", testfilename);
 	    file = $fopen(testfilename, "r");
-	    
-	    while ($fscanf(file, "%o %o\n", i, v) > 0)
+	    if (file > 0)
 	      begin
-		 //$display("ram[%o] <- %o", i, v);
-		 ram[i] = v;
+		 while ($fscanf(file, "%o %o\n", i, v) > 0)
+		   begin
+		      $display("ram[%o] <- %o", i, v);
+		      ram[i] = v;
+		   end
+		 
+		 $display("ram: done reading");
+		 $fclose(file);
 	      end
-	    
-	    $fclose(file);
 	 end
     end
    // synthesis translate_on
@@ -64,7 +67,7 @@ module ram_32kx12(A, DI, DO, CE_N, WE_N);
            ram[ A ] = DI;
         end
 
-`ifdef debug_ram
+`ifdef debug_ram_read
 	if (WE_N == 1 && CE_N == 0)
 	  $display("ram: read [%o] -> %o", A, ram[A]);
 `endif
