@@ -317,3 +317,15 @@ rf: start! read disk_addr 0333400 (033 3400) (ma 37000 wc 7001)
 rf: start! write disk_addr 0016000 (001 6000) (ma 26000 wc 6001)
 
 rf: start! read disk_addr 0000000 (000 0000) (ma 20000 wc 0001)
+
+------------------
+
+61 60 15
+xxx int_req 7000020
+xxx int_req 7000020
+xxx int_req 7000020
+xxx int_req 7000020
+xxx int_req 7000020
+xxx int_req 7000020
+xxx int_req 7000010
+xxx rx input 114 (1/14)

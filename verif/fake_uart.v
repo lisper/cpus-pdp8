@@ -55,24 +55,28 @@ module fake_uart(clk, reset, state,
 
    always @(posedge clk)
      begin
+`ifdef debug/*_fake_tx*/
+	if (t_state != 0)
+	  $display("t_state %d t_delay %d t_done %b tx_empty %b",
+		   t_state, t_delay, t_done, tx_empty);
+`endif
+
 	if (t_state == 1)
 	  begin
 	     t_delay = 38/*20*/;
 	  end
-	if (t_delay > 0)
+	if (t_state == 2)
 	  begin
-	     if (state == 4'b0001)
-	       t_delay = t_delay - 1;
-//	     t_delay = t_delay - 1;
-	     if (t_delay == 0)
+	     if (t_delay < 0)
 	       begin
 		  t_done = 1;
-		  //$display("xxx t_done; cycles %d", cycles);
+		  $display("xxx t_done; cycles %d", cycles);
 	       end
-`ifdef debug_fake_tx
-	     $display("t_state %d t_delay %d", t_state, t_delay);
-`endif
+
+	     if (state == 4'b0001)
+	       t_delay = t_delay - 1;
 	  end
+
 	if (t_state == 0)
 	  t_done = 0;
      end
@@ -80,6 +84,8 @@ module fake_uart(clk, reset, state,
    integer cycles;
    initial
      cycles = 0;
+
+   parameter BASE = 230000;
    
    always @(posedge clk)
      begin
@@ -91,28 +97,35 @@ module fake_uart(clk, reset, state,
 //	       begin
 //		  $display("xxx want input; cycles %d", cycles);
 //	       end
-	     if (r_index == r_count && cycles == 110000/*200000*/)
+
+	     if (r_index != r_count && cycles == BASE+10000)
 	       begin
-		  rdata[0] = "L";
-		  rdata[1] = "O";
-		  rdata[2] = "G";
-		  rdata[3] = "I";
-		  rdata[4] = "N";
-		  rdata[5] = " ";
-		  rdata[6] = "2";
-		  rdata[7] = " ";
-		  rdata[8] = "L";
-		  rdata[9] = "X";
-		  rdata[10] = "H";
-		  rdata[11] = "E";
-		  rdata[12] = "\215";
-		  rdata[13] = "\215";
+		  $display("xxx can't boom 1 %d %d", r_index, r_count);
+	       end
+	     if (r_index == r_count && cycles == BASE+10000)
+	       begin
+		  ii = 0;
+		  rdata[ii] = "L"; ii = ii + 1;
+		  rdata[ii] = "O"; ii = ii + 1;
+		  rdata[ii] = "G"; ii = ii + 1;
+		  rdata[ii] = "I"; ii = ii + 1;
+		  rdata[ii] = "N"; ii = ii + 1;
+		  rdata[ii] = " "; ii = ii + 1;
+		  rdata[ii] = "2"; ii = ii + 1;
+		  rdata[ii] = " "; ii = ii + 1;
+		  rdata[ii] = "L"; ii = ii + 1;
+		  rdata[ii] = "X"; ii = ii + 1;
+		  rdata[ii] = "H"; ii = ii + 1;
+		  rdata[ii] = "E"; ii = ii + 1;
+		  rdata[ii] = "\215"; ii = ii + 1;
+		  rdata[ii] = "\215"; ii = ii + 1;
 		  r_index = 0;
-		  r_count = 14;
+		  r_count = ii;
 		  r_refires = 1;
 		  $display("xxx boom 1; cycles %d", cycles);
 	       end
-	     if (r_index == r_count && cycles == 120000/*300000*/)
+
+	     if (r_index == r_count && cycles == BASE+300000)
 	       begin
 		  rdata[0] = "\215";
 		  r_index = 0;
@@ -120,7 +133,7 @@ module fake_uart(clk, reset, state,
 		  r_refires = 2;
 		  $display("xxx boom 2; cycles %d", cycles);
 	       end
-	     if (r_index == r_count && cycles == 130000/*400000*/)
+	     if (r_index == r_count && cycles == BASE+320000)
 	       begin
 		  rdata[0] = "\215";
 		  r_index = 0;
@@ -132,7 +145,7 @@ module fake_uart(clk, reset, state,
 //`define msg_rfocal 1
 //`define msg_rpald 1
 //`define msg_rpip 1
-	     if (r_index == r_count && cycles == 300000/*500000*/)
+	     if (r_index == r_count && cycles == BASE+400000)
 	       begin
 `ifdef msg_rcat
 		  rdata[0] = "R";
@@ -180,7 +193,7 @@ module fake_uart(clk, reset, state,
 		  r_refires = 4;
 		  $display("xxx boom 4; cycles %d", cycles);
 	       end
-	     if (r_index == r_count && cycles == 400000/*600000*/)
+	     if (r_index == r_count && cycles == BASE+500000/*600000*/)
 	       begin
 		  rdata[0] = "\215";
 		  r_index = 0;
@@ -201,7 +214,10 @@ module fake_uart(clk, reset, state,
 
    assign rx_ack = r_state == 1;
    
-   integer r_index, r_count, r_refires;
+   /* verilator lint_off UNOPTFLAT */
+   integer r_index;
+   /* verilator lint_off UNOPTFLAT */
+   integer r_count, r_refires;
 
    integer do_refire, refire_state;
    
@@ -247,18 +263,19 @@ module fake_uart(clk, reset, state,
 	rdata[ii] = "1"; ii=ii+1;
 	rdata[ii] = "0"; ii=ii+1;
 	rdata[ii] = "\215"; ii=ii+1;
+	rdata[ii] = "\215"; ii=ii+1;
 	
 	rx_data = 0;
      end
 
    
-   always @(*)
+    always @(posedge clk)
      begin
 	if (r_state == 2)
 	  begin
 `ifdef debug_fake_rx
-	     $display("xxx dispense %0d %o %t",
-		      r_index, rdata[r_index], $time);
+	     $display("xxx dispense %o %0d %t",
+		      rdata[r_index], r_index, $time);
 `endif
 	     rx_data = rdata[r_index];
 	     r_index = r_index + 1;

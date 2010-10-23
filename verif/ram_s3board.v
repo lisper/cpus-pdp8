@@ -69,7 +69,7 @@ module ram_s3board(ram_a, ram_oe_n, ram_we_n,
    // synthesis translate_off
    integer 	 i;
    reg [15:0] 	 v;
-   integer 	 file;
+   reg [63:0] 	 file;
    reg [1023:0]  str;
    reg [1023:0]  testfilename;
    integer 	 n;
@@ -78,8 +78,8 @@ module ram_s3board(ram_a, ram_oe_n, ram_we_n,
      begin
 	for (i = 0; i < 32768/*8192*/; i=i+1)
 	  begin
-             ram1.ram_h[i] = 7'b0;
-	     ram1.ram_l[i] = 7'b0;
+             ram1.ram_h[i] = 8'b0;
+	     ram1.ram_l[i] = 8'b0;
 	  end
 
 	n = 0;

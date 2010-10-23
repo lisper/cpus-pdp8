@@ -97,7 +97,8 @@ module test;
    wire        sram2_ub_n;
    wire        sram2_lb_n;
 
-   wire [15:0] ide_data_bus;
+   wire [15:0] ide_data_in;
+   wire [15:0] ide_data_out;
    wire        ide_dior, ide_diow;
    wire [1:0]  ide_cs;
    wire [2:0]  ide_da;
@@ -152,11 +153,14 @@ module test;
 	      .io_ram_ma(ext_ram_ma),
 	      .io_ram_in(ext_ram_in),
 	      .io_ram_out(ext_ram_out),
+
    	      .ide_dior(ide_dior),
 	      .ide_diow(ide_diow),
 	      .ide_cs(ide_cs),
 	      .ide_da(ide_da),
-	      .ide_data_bus(ide_data_bus),
+	      .ide_data_in(ide_data_in),
+	      .ide_data_out(ide_data_out),
+
 	      .rs232_in(rs232_in),
 	      .rs232_out(rs232_out));
 
@@ -388,6 +392,11 @@ module test;
     end
 
 `ifndef use_rf_pli
+   wire [15:0] ide_data_bus;
+
+   assign ide_data_in = ide_data_bus;
+   assign ide_data_bus = ~ide_diow ? ide_data_out : 16'bz;
+
    always @(posedge clk)
      begin
 	$pli_ide(ide_data_bus, ide_dior, ide_diow, ide_cs, ide_da);
