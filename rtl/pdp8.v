@@ -668,11 +668,13 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 	      if (interrupt && interrupt_enable &&
 		  !interrupt_inhibit && !interrupt_cycle)
 		begin
+`ifdef debug
 		   if (1)
 		   $display("xxx interrupt, pc %o; %b %b %b; %b %b",
 			    pc,
 			    interrupt, interrupt_enable, interrupt_cycle,
 			    interrupt_inhibit, interrupt_inhibit_delay);
+`endif
 		   interrupt_cycle <= 1;
 		   interrupt <= 0;
 		   interrupt_enable <= 0;
@@ -692,8 +694,10 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 		begin
 		   interrupt_cycle <= 0;
 
+`ifdef debug
 		   if (0)
 		   $display("cpu: read ram [%o] -> %o", ram_addr, ram_data_in);
+`endif
 		   
 		   mb <= ram_data_in;
 		   ir <= ram_data_in[11:9];
@@ -761,7 +765,9 @@ module pdp8(clk, reset, initial_pc, pc_out, ac_out,
 	      if (iot && UF)
 		begin
 		   UI <= 1;
-$display("user iot: set UI");
+`ifdef debug
+		   $display("user iot: set UI");
+`endif
 		end
 
 	      if (iot && ~UF)
@@ -962,7 +968,9 @@ $display("user iot: set UI");
 	 //
 	 D0:
 	   begin
+`ifdef debug
 	      if (0) $display("read ram [%o] -> %o", ram_addr, ram_data_in);
+`endif
 	      mb <= ram_data_in;
 	   end
 
@@ -975,9 +983,11 @@ $display("user iot: set UI");
 
 	 D2:
 	   begin
+`ifdef debug
 	      // write ram
 	      if (ram_wr)
 	      if (0) $display("write ram [%o] <- %o", ram_addr, ram_data_out);
+`endif
 	   end
 	 
 	 D3:
@@ -989,7 +999,9 @@ $display("user iot: set UI");
 	 //
 	 E0:
 	   begin
+`ifdef debug
 	      if (0) $display("read ram [%o] -> %o", ram_addr, ram_data_in);
+`endif
 	      mb <= ram_data_in;
 	   end
 
@@ -1012,9 +1024,11 @@ $display("user iot: set UI");
 	 E2:
 	   begin
 	      // write ram
+`ifdef debug
 	      if (ram_wr)
 	      if (0) $display("write ram [%o] <- %o (pc %o)",
 				ram_addr, ram_data_out, pc);
+`endif
 	   end
 	 
 	 E3:

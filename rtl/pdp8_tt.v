@@ -249,13 +249,17 @@ tx_int <= 1'b0;
 	    begin
 	       if (assert_rx_int && ~rx_int)
 		 begin
-$display("xxx set rx_int");
+`ifdef debug
+		    $display("xxx set rx_int");
+`endif
 		    rx_int <= 1;
 		 end
 
 	       if (assert_tx_int && ~tx_int)
 		 begin
-$display("xxx set tx_int");
+`ifdef debug
+		    $display("xxx set tx_int");
+`endif
 		    tx_int <= 1;
 		 end
 

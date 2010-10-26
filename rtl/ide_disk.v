@@ -398,8 +398,9 @@ module ide_disk(clk, reset,
 	       ata_wr = 1;
 	       ata_addr = ATA_DATA;
 	       ata_in = {4'b0, buffer_in_hold};
+`ifdef debug
 	       $display("ide_disk: write1, %o", buffer_in_hold);
-	       
+`endif	       
 	       if (ata_done)
 		 begin
 		    if (wc == 8'h00)

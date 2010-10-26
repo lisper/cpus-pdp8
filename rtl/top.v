@@ -47,10 +47,13 @@ module top(rs232_txd, rs232_rxd,
    output [1:0]  ide_cs;
    output [2:0]  ide_da;
 
+   wire [15:0] 	 ide_data_in;
+   wire [15:0] 	 ide_data_out;
+
    // -----------------------------------------------------------------
 
 `ifndef sim_time
- `define slower
+// `define slower
 `endif
 
 `ifdef slower
@@ -177,10 +180,14 @@ module top(rs232_txd, rs232_rxd,
 	      .ide_diow(ide_diow),
 	      .ide_cs(ide_cs),
 	      .ide_da(ide_da),
-	      .ide_data_bus(ide_data_bus),
+	      .ide_data_in(ide_data_in),
+	      .ide_data_out(ide_data_out),
 	      .rs232_in(rs232_rxd),
 	      .rs232_out(rs232_txd));
 
+   assign ide_data_bus = ~ide_diow ? ide_data_out : 16'bz;
+   assign ide_data_in = ide_data_bus;
+   
    pdp8_ram ram(.clk(clk),
 		.reset(reset), 
 		.addr(ram_addr),
