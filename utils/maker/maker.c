@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <string.h>
 
 typedef unsigned short u12;
 
@@ -19,6 +20,9 @@ char filled[7][4096];
 u12 rf[RFSIZE];
 int rf_size;
 int rf_fd;
+int clear_flag;
+int patch_flag;
+int debug;
 
 #define MEMSIZE (32*1024)
 
@@ -26,10 +30,24 @@ int disk_load(char *filename)
 {
     int fd, ret;
 
-    rf_fd = open(filename, O_RDWR);
-    if (rf_fd < 0) {
-	perror(filename);
-	return -1;
+    if (clear_flag) {
+        rf_size = 524288 / 2;
+        memset((void *)rf, 0, sizeof(rf));
+        printf("creating rf disk, word size %d\n", rf_size);
+
+        rf_fd = open(filename, O_CREAT | O_RDWR, 0666);
+        if (rf_fd < 0) {
+            perror(filename);
+            return -1;
+        }
+    } 
+    else
+    {
+        rf_fd = open(filename, O_RDWR);
+        if (rf_fd < 0) {
+            perror(filename);
+            return -1;
+        }
     }
 
     ret = read(rf_fd, rf, sizeof(rf));
@@ -41,7 +59,7 @@ int disk_load(char *filename)
 	ret = 0;
     }
 
-    printf("rf_fd %d\n", rf_fd);
+    if (debug) printf("rf_fd %d\n", rf_fd);
 
     return ret;
 }
@@ -171,6 +189,9 @@ int field_load(int dstfield, char *filename)
     csum = 0;
     bad = 0;
 
+    field = -1;
+    newfield = dstfield;
+
     for (o = 0; o < binfile_size && !done; o++) {
 	ch = binfile[o];
 
@@ -220,7 +241,7 @@ int field_load(int dstfield, char *filename)
 		int ignore, allow;
 
 		if (field > 7 || origin >= MEMSIZE) {
-		    printf("%s: too big\n", filename);
+		    printf("%s: too big; field %o, origin %o\n", filename, field, origin);
 		    bad++;
 		}
 
@@ -296,6 +317,11 @@ int eval_scriptline(char *line)
 
     count = sscanf(line, "%s %s %s", word1, word2, word3);
 
+    if (strcmp(word1, "clear") == 0) {
+        rf_size = 524288 / 2;
+        memset((void *)rf, 0, sizeof(rf));
+    }
+
     if (strcmp(word1, "disk") == 0) {
 	if (count < 2) {
 	    fprintf(stderr, "missing disk arg\n");
@@ -303,6 +329,10 @@ int eval_scriptline(char *line)
 	}
 
 	return disk_load(word2);
+    }
+
+    if (strcmp(word1, "patch") == 0) {
+        patch_flag++;
     }
 
     if (strcmp(word1, "field") == 0) {
@@ -317,7 +347,8 @@ int eval_scriptline(char *line)
 	}
 
 	field_load(fld, word3);
-	field_patch(fld);
+	if (patch_flag)
+            field_patch(fld);
 	field_save(fld);
 	if (fld == 3)
 	    field_save(4);
@@ -372,15 +403,33 @@ int eval_scriptfile(char *filename)
     return 0;
 }
 
+extern char *optarg;
+extern int optind;
+
 main(int argc, char **argv)
 {
+    int c;
     char *scriptfile;
 
-    scriptfile = "script";
+    scriptfile = NULL/*"script"*/;
+    clear_flag = 0;
 
-    if (argc > 1)
-        scriptfile = argv[1];
+    while ((c = getopt(argc, argv, "cs:")) != -1) {
+        switch (c) {
+        case 'c':
+            clear_flag++;
+            break;
+        case 's':
+            scriptfile = strdup(optarg);
+            break;
+        }
+    }
 
+    if (optind < argc && scriptfile == NULL) {
+        scriptfile = argv[optind];
+    }
+
+    printf("scriptfile: %s\n", scriptfile);
     if (eval_scriptfile(scriptfile))
 	exit(1);
 
