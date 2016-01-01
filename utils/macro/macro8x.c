@@ -1,3 +1,4 @@
+/* -*- Mode: C; c-basic-offset: 2; indent-tabs-mode: nil -*- */
 /******************************************************************************/
 /*                                                                            */
 /* Program:  MACRO8X                                                          */
@@ -1173,11 +1174,12 @@ void onePass()
             {
               /* Use lookup so symbol will not be counted as reference.       */
               sym = lookup( lexemeToName( name, lexstart, lexterm ));
+//printf("pass %d, name %s clc %o reloc %o\n", pass, name, clc, reloc);
               if( M_DEFINED( sym->type ))
               {
                 if( sym->val != (clc & 07777) && pass == 2 )
                 {
-printf("pass %d, val %o, clc %o\n", pass, sym->val, clc);
+//printf("pass %d, val %o, clc %o\n", pass, sym->val, clc);
                   errorSymbol( &duplicate_label, sym->name, lexstart );
                 }
                 sym->type = sym->type | DUPLICATE;
@@ -1411,6 +1413,10 @@ SYM_T *getExpr()
     /* assert line[lexstart] == delimiter                                     */
     if( is_blank( delimiter ))
     {
+#if 1
+      if( M_UNDEFINED( sym_getexpr.type ))
+        sym_getexpr.val = 0;
+#endif
       return( &sym_getexpr );
     }
 
@@ -1449,6 +1455,10 @@ SYM_T *getExpr()
     default:
       if( isend( line[lexstart] ))
       {
+#if 1
+        if( M_UNDEFINED( sym_getexpr.type ))
+          sym_getexpr.val = 0;
+#endif
         return( &sym_getexpr );
       }
 
@@ -1475,6 +1485,10 @@ SYM_T *getExpr()
         sym_getexpr.val = 0;
         break;
       }
+#if 1
+      if( M_UNDEFINED( sym_getexpr.type ))
+        sym_getexpr.val = 0;
+#endif
       return( &sym_getexpr );
     }
   } /* end while                                                              */
@@ -1502,6 +1516,7 @@ SYM_T *eval()
   if( isalpha( line[lexstart] ))
   {
     sym = evalSymbol();
+//printf("eval; pass %d, sym %p (0%o 0x%x %d) '%s'\n", pass, sym, sym->val, sym->val, sym->val, &line[lexstart]);
     if( M_UNDEFINED( sym->type ))
     {
       if( pass == 2 )
@@ -1539,6 +1554,7 @@ SYM_T *eval()
       sym_eval.type = sym->type;
       sym_eval.val = 0;
       nextLexeme();
+//printf("eval; pass %d, return sym %p\n", pass, sym);
       return( &sym_eval );
     }
     else
@@ -1576,6 +1592,7 @@ SYM_T *eval()
     }
     nextLexeme();
     sym_eval.val = val;
+//printf("eval; pass %d, return val 0x%x\n", pass, val);
     return( &sym_eval );
   }
   else
@@ -1583,6 +1600,7 @@ SYM_T *eval()
     switch( line[lexstart] )
     {
     case '"':                   /* Character literal                          */
+//printf("eval; pass %d, quotes '%s'\n", pass, &line[lexstart]);
       if( lexstart + 2 < maxcc )
       {
         val = line[lexstart + 1] | 0200;
@@ -1656,6 +1674,7 @@ SYM_T *eval()
       nextLexBlank();           /* Go past illegal character.                 */
     }
   }
+//printf("eval; pass %d, return val 0x%x\n", pass, val);
   sym_eval.val = val;
   return( &sym_eval );
 } /* eval()                                                                   */
@@ -3780,7 +3799,7 @@ BOOL pseudoOperators( PSEUDO_T val )
     {
       sym = evalSymbol();
       nextLexeme();
-      if( M_DEFINED_CONDITIONALLY( sym->type ))
+      if( M_DEFINED/*_CONDITIONALLY*/( sym->type ))
       {
         conditionTrue();
       }
@@ -3816,24 +3835,52 @@ BOOL pseudoOperators( PSEUDO_T val )
     break;
 
   case IFNZERO:
-    if( (getExpr())->val == 0 )
+//    if( (getExpr())->val == 0 )
+//    {
+//      conditionFalse();
+//    }
+//    else
+//    {
+//      conditionTrue();
+//    }
     {
-      conditionFalse();
-    }
-    else
-    {
-      conditionTrue();
+      int v;
+      v = (getExpr())->val;
+      v &= 0xfff; if (v & 0x800) v |= -1 << 12;
+      //printf("IFNZERO pass=%d, v=0x%x (%d)\n", pass, v, v);
+      if( v == 0 )
+      {
+        conditionFalse();
+      }
+      else
+      {
+        conditionTrue();
+      }
     }
     break;
 
   case IFZERO:
-    if( (getExpr())->val == 0 )
+//    if( (getExpr())->val == 0 )
+//    {
+//      conditionTrue();
+//    }
+//    else
+//    {
+//      conditionFalse();
+//    }
     {
-      conditionTrue();
-    }
-    else
-    {
-      conditionFalse();
+      int v;
+      v = (getExpr())->val;
+      v &= 0xfff; if (v & 0x800) v |= -1 << 12;
+      //printf("IFZERO pass=%d, v=0x%x (%d)\n", pass, v, v);
+      if( v == 0 )
+      {
+        conditionTrue();
+      }
+      else
+      {
+        conditionFalse();
+      }
     }
     break;
 
@@ -4074,6 +4121,8 @@ BOOL pseudoOperators( PSEUDO_T val )
 
   case ZBLOCK:
     value = (getExpr())->val;
+    value &= 0xfff; if (value & 0x800) value |= -1 << 12;
+    //printf("pseudoOperators; ZBLOCK value 0%o 0x%x %d\n", value, value, value);
     if( value < 0 )
     {
       errorMessage( &zblock_too_small, lexstartprev );
@@ -4119,8 +4168,25 @@ void conditionFalse()
     level = 1;
     while( level > 0 )
     {
-      if( isend( line[cc] ) || ( line[cc] == '/' ))
+//      if( isend( line[cc] ) || ( line[cc] == '/' ))
+//      {
+//        readLine();
+//      }
+      if( isend( line[cc] ))
       {
+        readLine();
+      }
+      else if( line[cc] == '/' && line[cc-1] != '"' )
+      {
+        /* macro end can occur at end of comment */
+        for (; !isend( line[cc] ); cc++) {
+//          if (line[cc] == '<')
+//            level++;
+//          if (line[cc] == '>' && (line[cc+1] == '>' || isend(line[cc+1])))
+//            level--;
+          if (line[cc] == '>' && line[cc-1] == ' ')
+            level--;
+        }
         readLine();
       }
       else
@@ -4147,6 +4213,7 @@ void conditionFalse()
           break;
         } /* end switch                                                       */
       } /* end if                                                             */
+      //printf("level %d '%s'\n", level, &line[cc]);
     } /* end while                                                            */
     nextLexeme();
   }
