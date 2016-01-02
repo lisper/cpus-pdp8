@@ -143,7 +143,8 @@ int32 t;
 
 {
 extern unsigned long cycles;
-printf("clock fire; cycles %d\n", cycles);
+extern FILE *traceout;
+fprintf(traceout, "clock fire; cycles %lu\n", cycles);
 }
 
 dev_done = dev_done | INT_CLK;                          /* set done */

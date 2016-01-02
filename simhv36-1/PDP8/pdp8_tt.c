@@ -134,7 +134,7 @@ DEVICE tto_dev = {
     &tto_dib, 0
     };
 
-#define FAKE_INPUT
+//#define FAKE_INPUT
 #ifdef FAKE_INPUT
 int tt_input_index;
 char tt_input[] = "START\r01:01:85\r10:10\r";
@@ -269,7 +269,7 @@ void tt_service(void)
 {
 	if (tt_refire == 0 && (tt_input_index == tt_input_count)) {
 		if (cycles >= R1) {
-			strcpy(tt_input, "LOGIN 2 LXHE\r\r");
+			strcpy(tt_input, "\rLOGIN 2 LXHE\r\r");
 			tt_input_count = strlen(tt_input);
 			tt_input_index = 0;
 			tt_refire++;

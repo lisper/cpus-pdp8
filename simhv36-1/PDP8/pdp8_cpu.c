@@ -324,6 +324,8 @@ static unsigned long cycles_last;
 static unsigned long max_cycles;
 int need_stop;
 
+FILE *traceout; 
+
 t_stat sim_instr (void)
 {
 int32 IR, MB, IF, DF, LAC, MQ;
@@ -346,25 +348,32 @@ sim_rtcn_init (ttix_unit.wait, TMR_TTX);                /* init ttx calib */
 
 /* Main instruction fetch/decode loop */
 
+if (traceout == NULL) {
+	traceout = fopen("trace.txt", "w");
+}
+
 while (reason == 0) {                                   /* loop until halted */
 
 #if 1
-	cycles++;
-	if (max_cycles && cycles >= max_cycles)
-		need_stop = 1;
-	cycles_last++;
-	if (cycles_last >= 100000) {
-		cycles_last = 0;
-		printf("xxx cycles %d\r\n", (int)cycles);
-	}
+	{
+	 extern FILE *traceout; 
+	 cycles++;
+	 if (max_cycles && cycles >= max_cycles)
+		 need_stop = 1;
+	 cycles_last++;
+	 if (cycles_last >= 100000) {
+		 cycles_last = 0;
+		 fprintf(traceout, "xxx cycles %d\r\n", (int)cycles);
+	 }
 
-	if (need_stop) {
-		printf("\r\nxxx %lu stop\n", cycles);
-		reason = STOP_HALT;
-		if (1) { sim_ttclose(); exit(0); }
-		break;
+	 if (need_stop) {
+		 fprintf(traceout, "\r\nxxx %lu stop\n", cycles);
+		 reason = STOP_HALT;
+		 if (1) { sim_ttclose(); exit(0); }
+		 break;
+	 }
+	 tt_service();
 	}
-	tt_service();
 #endif
 
     if (sim_interval <= 0) {                            /* check clock queue */
@@ -373,8 +382,8 @@ while (reason == 0) {                                   /* loop until halted */
 
     if (int_req > INT_PENDING) {                        /* interrupt? */
 #if 0
-	if (dtrace) printf("xxx %lu interrupt @ %o (UF%d IF%o DF%o)\n",
-               cycles, PC, UF, IF>>12, DF>>12);
+        if (dtrace) { extern FILE *traceout; fprintf(traceout, "xxx %lu interrupt @ %o (UF%d IF%o DF%o)\n",
+						     cycles, PC, UF, IF>>12, DF>>12); }
 #endif
         int_req = int_req & ~INT_ION;                   /* interrupts off */
         SF = (UF << 6) | (IF >> 9) | (DF >> 12);        /* form save field */
@@ -414,11 +423,12 @@ while (reason == 0) {                                   /* loop until halted */
 
 #if 1
     if (dtrace) {
-	    printf("pc %04o ir %04o l%o ac %04o ion %d "
-		   "(IF%o DF%o UF%o SF%03o IB%o UB%o)\n",
-		   MA, IR, LAC & 010000 ? 1 : 0, LAC & 07777,
-		   int_req & INT_ION ? 1 : 0,
-		   IF>>12, DF>>12, UF, SF, IB>>12, UB);
+	    extern FILE *traceout; 
+	    fprintf(traceout, "pc %04o ir %04o l%o ac %04o ion %d "
+		    "(IF%o DF%o UF%o SF%03o IB%o UB%o)\n",
+		    MA, IR, LAC & 010000 ? 1 : 0, LAC & 07777,
+		    int_req & INT_ION ? 1 : 0,
+		    IF>>12, DF>>12, UF, SF, IB>>12, UB);
     }
 #endif
 
@@ -483,7 +493,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         MA = IF | (IR & 0177);                          /* dir addr, page zero */
         LAC = (LAC + M[MA]) & 017777;
 #if 1
-	if (mtrace) printf("mem read [%o] -> %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem read [%o] -> %o\n", MA, M[MA]); }
 #endif
         break;
 
@@ -491,7 +501,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         MA = (MA & 077600) | (IR & 0177);               /* dir addr, curr page */
         LAC = (LAC + M[MA]) & 017777;
 #if 1
-	if (mtrace) printf("mem read [%o] -> %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem read [%o] -> %o\n", MA, M[MA]); }
 #endif
         break;
 
@@ -501,7 +511,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         else MA = DF | (M[MA] = (M[MA] + 1) & 07777);   /* incr before use */
         LAC = (LAC + M[MA]) & 017777;
 #if 1
-	if (mtrace) printf("mem read [%o] -> %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem read [%o] -> %o\n", MA, M[MA]); }
 #endif
         break;
 
@@ -511,7 +521,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         else MA = DF | (M[MA] = (M[MA] + 1) & 07777);   /* incr before use */
         LAC = (LAC + M[MA]) & 017777;
 #if 1
-	if (mtrace) printf("mem read [%o] -> %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem read [%o] -> %o\n", MA, M[MA]); }
 #endif
         break;
 
@@ -554,7 +564,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         M[MA] = LAC & 07777;
         LAC = LAC & 010000;
 #if 1
-	if (mtrace) printf("mem write [%o] <- %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem write [%o] <- %o\n", MA, M[MA]); }
 #endif
         break;
 
@@ -563,7 +573,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         M[MA] = LAC & 07777;
         LAC = LAC & 010000;
 #if 1
-	if (mtrace) printf("mem write [%o] <- %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem write [%o] <- %o\n", MA, M[MA]); }
 #endif
         break;
 
@@ -574,7 +584,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         if (MEM_ADDR_OK (MA)) M[MA] = LAC & 07777;
         LAC = LAC & 010000;
 #if 1
-	if (mtrace) printf("mem write [%o] <- %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem write [%o] <- %o\n", MA, M[MA]); }
 #endif
         break;
 
@@ -585,7 +595,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         if (MEM_ADDR_OK (MA)) M[MA] = LAC & 07777;
         LAC = LAC & 010000;
 #if 1
-	if (mtrace) printf("mem write [%o] <- %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem write [%o] <- %o\n", MA, M[MA]); }
 #endif
         break;
 
@@ -732,7 +742,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         PCQ_ENTRY;
         MA = IF | (IR & 0177);                          /* dir addr, page zero */
 #if 1
-	if (mtrace) printf("mem read [%o] -> %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem read [%o] -> %o\n", MA, M[MA]); }
 #endif
         if ((MA & 07770) != 00010) MA = M[MA];          /* indirect; autoinc? */
         else MA = (M[MA] = (M[MA] + 1) & 07777);        /* incr before use */
@@ -754,7 +764,7 @@ switch ((IR >> 7) & 037) {                              /* decode IR<0:4> */
         PCQ_ENTRY;
         MA = (MA & 077600) | (IR & 0177);               /* dir addr, curr page */
 #if 1
-	if (mtrace) printf("mem read [%o] -> %o\n", MA, M[MA]);
+	if (mtrace) { extern FILE *traceout; fprintf(traceout, "mem read [%o] -> %o\n", MA, M[MA]); }
 #endif
         if ((MA & 07770) != 00010) MA = M[MA];          /* indirect; autoinc? */
         else MA = (M[MA] = (M[MA] + 1) & 07777);        /* incr before use */

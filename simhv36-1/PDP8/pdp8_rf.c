@@ -200,8 +200,12 @@ if (pulse & 6) {                                        /* DMAR, DMAW */
     t = (rf_da & RF_WMASK) - GET_POS (rf_time);         /* delta to new loc */
     if (t < 0) t = t + RF_NUMWD;                        /* wrap around? */
 #if 1
-    printf("xxx rf_go! (rf_da %o, wc %o, ma %o)\n", rf_da, M[RF_WC], M[RF_MA]);
-    sim_activate (&rf_unit, 0);               /* schedule op */
+    {
+     extern FILE *traceout;
+     fprintf(traceout, "xxx rf_go! (rf_da %o, wc %o, ma %o)\n", rf_da, M[RF_WC], M[RF_MA]);
+    }
+    //sim_activate (&rf_unit, 0);               /* schedule op */
+    sim_activate (&rf_unit, t * rf_time);               /* schedule op */
 #else
     sim_activate (&rf_unit, t * rf_time);               /* schedule op */
 #endif
@@ -268,7 +272,10 @@ switch (pulse) {                                        /* decode IR<9:11> */
     case 1:                                             /* DCXA */
         rf_da = rf_da & 07777;                          /* clear DAR<0:7> */
 #if 1
-	printf("xxx rf_da %o\n", rf_da);
+	{
+	 extern FILE *traceout;
+	 fprintf(traceout, "xxx rf_da %o\n", rf_da);
+	}
 #endif
         break;
 
@@ -277,7 +284,10 @@ switch (pulse) {                                        /* decode IR<9:11> */
     case 2:                                             /* DXAL w/o clear */
         rf_da = rf_da | ((AC & 0377) << 12);            /* DAR<0:7> |= AC */
 #if 1
-	printf("xxx rf_da %o\n", rf_da);
+	{
+	 extern FILE *traceout;
+	 fprintf(traceout, "xxx rf_da %o\n", rf_da);
+	}
 #endif
         AC = 0;                                         /* clear AC */
         break;
@@ -332,7 +342,7 @@ do {
         if (MEM_ADDR_OK (pa))                           /* if !nxm */
             M[pa] = fbuf[rf_da];                        /* read word */
 #if 1
-	if (dtrace) printf("dma [%o] <- %o\n", pa, M[pa]);
+	if (dtrace) { extern FILE *traceout; fprintf(traceout, "dma [%o] <- %o\n", pa, M[pa]); }
 #endif
         }
     else {                                              /* write */
@@ -349,7 +359,8 @@ do {
 
 if ((M[RF_WC] != 0) && ((rf_sta & RFS_ERR) == 0))       /* more to do? */
 #if 1
-    sim_activate (&rf_unit, 1/*0*/);                   /* sched next */
+//    sim_activate (&rf_unit, 1/*0*/);                   /* sched next */
+    sim_activate (&rf_unit, rf_time);                   /* sched next */
 #else
     sim_activate (&rf_unit, rf_time);                   /* sched next */
 #endif
